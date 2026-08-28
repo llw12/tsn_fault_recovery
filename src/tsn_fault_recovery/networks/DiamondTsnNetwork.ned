@@ -9,6 +9,7 @@ import inet.node.tsn.TsnSwitch;
 import inet.visualizer.contract.IIntegratedVisualizer;
 import inet.common.scenario.ScenarioManager;
 import tsn_fault_recovery.control.ProfileSwitcher;
+import tsn_fault_recovery.control.OnlineJointRecoveryController;
 
 network DiamondTsnNetwork extends Module
 {
@@ -76,6 +77,10 @@ network DiamondTsnNetwork extends Module
         profileSwitcher: ProfileSwitcher {
     		@display("p=300,80;is=s");
 		}
+
+        onlineJointRecoveryController: OnlineJointRecoveryController {
+            @display("p=390,80;is=s");
+        }
 
     connections:
 

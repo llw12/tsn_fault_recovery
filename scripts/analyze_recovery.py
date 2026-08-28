@@ -5,6 +5,10 @@ The source UdpSocketIo packetSent vector supplies one timestamp per TT send.
 The destination PacketSink packetLifeTime vector supplies the receive timestamp
 and the packet lifetime.  The original send/creation timestamp is therefore
 receive_time - packet_lifetime, which is matched to the source timestamp.
+
+TODO: Replace this inferred matching with explicit packet sequence/identity
+tracking before adding source phase offsets, gPTP/clock drift, multiple sources,
+or more complex concurrent flows.
 """
 
 from __future__ import annotations
@@ -676,18 +680,18 @@ def write_markdown_report(
     lines.extend(
         [
             "",
-            "All checks pass. No NED topology, application parameters, TAS GCL, forwarding code, or ProfileSwitcher logic was changed; measurement is post-processing of INET-native result records.",
+            "All exp01 regression checks pass. The measurement remains post-processing of INET-native result records; later joint-profile modules are disabled in these three configurations.",
             "",
             "## Limitations, uncertainty, and next step",
             "",
             "- Results are deterministic for the current single 20 ms run and configuration; no multi-seed confidence interval is claimed.",
             "- There is no explicit deadline, gPTP clock drift, SMT schedule, or automatic recovery algorithm.",
             "- The 1 ms drain window is conservative relative to the observed sub-0.24 ms TT delay and prevents the t=20 ms tail artifact; changing topology, link rate, or GCL should trigger a review of this window.",
-            "- The next stage should keep the current precomputed forwarding profile `T1` and add a genuinely independent backup-path GCL `P1`, moving from `Profile1 = {T1, P0}` to `Profile1 = {T1, P1}`. This report does not start that work.",
+            "- This report intentionally remains the routing-only `{T1,P0}` regression/ablation. Joint `{T1,P1}` and online recovery are evaluated in exp02 and exp03, not mixed into these historical metrics.",
             "",
             "## Further questions",
             "",
-            "Before later SMT automation, determine whether the backup-path GCL should optimize worst-case TT delay, guard-band overhead, or recovery robustness across multiple failure locations, and define the validation horizon/seeds needed for those comparisons.",
+            "Before replacing the deterministic generator with SMT, define whether the objective is worst-case TT delay, guard-band overhead, or recovery robustness across multiple failure locations, plus the validation horizon needed for those comparisons.",
             "",
         ]
     )

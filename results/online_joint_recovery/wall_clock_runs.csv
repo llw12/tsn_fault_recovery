@@ -1,0 +1,3 @@
+run,solver_wall_time_s,activation_wall_time_s,simulated_solver_delay_s
+run1,2.0563e-05,4.8135e-05,0.001
+run2,2.8807e-05,6.7634e-05,0.001

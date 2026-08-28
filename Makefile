@@ -31,7 +31,10 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/src/tsn_fault_recovery/control/ProfileSwitcher.o
+OBJS = $O/src/tsn_fault_recovery/control/DeterministicJointProfileSolver.o \
+    $O/src/tsn_fault_recovery/control/OnlineJointRecoveryController.o \
+    $O/src/tsn_fault_recovery/control/PipelineScheduleGenerator.o \
+    $O/src/tsn_fault_recovery/control/ProfileSwitcher.o
 
 # Message files
 MSGFILES =

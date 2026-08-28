@@ -61,7 +61,7 @@ ManualRecovery's post-vs-pre mean increase is 19.382 µs (8.880%), while p95 and
 
 The experiment entry builds the existing executable in release mode, runs General/Baseline, LinkFailure, and ManualRecovery under Cmdenv with the IDE-derived NED and image paths, then invokes the Python analyzer on a timestamped raw-result directory. The analyzer cross-checks vector-derived TT delivery against application scalars and enforces the expected TT/BE regression counts.
 
-Raw input for this report: `/home/opp_env/tsn_fault_recovery/experiments/exp01_recovery_metrics/raw/20260828T131031Z`.
+Raw input for this report: `experiments/exp01_recovery_metrics/raw/20260828T141157Z`.
 
 ## Regression and robustness checks
 
@@ -71,15 +71,15 @@ Raw input for this report: `/home/opp_env/tsn_fault_recovery/experiments/exp01_r
 | Failure | 5 / 5 | 24 / 24 | PASS |
 | ManualRecovery | 19 / 19 | 92 / 92 | PASS |
 
-All checks pass. No NED topology, application parameters, TAS GCL, forwarding code, or ProfileSwitcher logic was changed; measurement is post-processing of INET-native result records.
+All exp01 regression checks pass. The measurement remains post-processing of INET-native result records; later joint-profile modules are disabled in these three configurations.
 
 ## Limitations, uncertainty, and next step
 
 - Results are deterministic for the current single 20 ms run and configuration; no multi-seed confidence interval is claimed.
 - There is no explicit deadline, gPTP clock drift, SMT schedule, or automatic recovery algorithm.
 - The 1 ms drain window is conservative relative to the observed sub-0.24 ms TT delay and prevents the t=20 ms tail artifact; changing topology, link rate, or GCL should trigger a review of this window.
-- The next stage should keep the current precomputed forwarding profile `T1` and add a genuinely independent backup-path GCL `P1`, moving from `Profile1 = {T1, P0}` to `Profile1 = {T1, P1}`. This report does not start that work.
+- This report intentionally remains the routing-only `{T1,P0}` regression/ablation. Joint `{T1,P1}` and online recovery are evaluated in exp02 and exp03, not mixed into these historical metrics.
 
 ## Further questions
 
-Before later SMT automation, determine whether the backup-path GCL should optimize worst-case TT delay, guard-band overhead, or recovery robustness across multiple failure locations, and define the validation horizon/seeds needed for those comparisons.
+Before replacing the deterministic generator with SMT, define whether the objective is worst-case TT delay, guard-band overhead, or recovery robustness across multiple failure locations, plus the validation horizon needed for those comparisons.
