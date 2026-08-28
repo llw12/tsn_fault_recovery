@@ -1,0 +1,8 @@
+.cproject
+.nedexclusions
+.nedfolders
+.oppbuildspec
+.project
+.pydevproject
+.settings/
+out/
