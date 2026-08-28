@@ -6,6 +6,7 @@
 #include <omnetpp.h>
 
 #include "ProfileDefinition.h"
+#include "ScheduleTypes.h"
 
 namespace tsn_fault_recovery {
 
@@ -18,17 +19,13 @@ struct FaultEvent
     std::string destination;
 };
 
-struct AffectedFlow
-{
-    std::string flowId;
-    int packetBytes;
-    int trafficClass;
-};
-
 struct SolverInput
 {
     std::vector<AffectedFlow> affectedFlows;
     omnetpp::simtime_t cycleTime;
+    omnetpp::simtime_t timeQuantum;
+    omnetpp::simtime_t ingressMargin;
+    omnetpp::simtime_t hopMargin;
     omnetpp::simtime_t ttWindow;
     int frameOverheadBytes;
     double linkBitrate;
@@ -39,6 +36,12 @@ struct SolverOutput
 {
     ProfileDefinition profile;
     std::vector<std::string> nodePath;
+    std::vector<GateWindow> logicalWindows;
+    ScheduleStatus scheduleStatus = ScheduleStatus::UNKNOWN;
+    int64_t objectiveTicks = -1;
+    double routeSolverWallTimeSeconds = 0;
+    double scheduleSolverWallTimeSeconds = 0;
+    std::string diagnostic;
 };
 
 class JointProfileSolver

@@ -1,7 +1,0 @@
-switch_time_s,module,traffic_class,old_initially_open,old_offset,old_durations,new_initially_open,new_offset,new_durations,readback
-0.006000000,s1.eth[2].macLayer.queue.transmissionGate[1],1,1,0,"[0.0001,0.0009]",1,0,"[0.0001,0.0009]",OK
-0.006000000,s1.eth[2].macLayer.queue.transmissionGate[0],0,0,0,"[0.0001,0.0009]",0,0,"[0.0001,0.0009]",OK
-0.006000000,s3.eth[1].macLayer.queue.transmissionGate[1],1,1,0,"[0.0001,0.0009]",1,0.0009,"[0.0001,0.0009]",OK
-0.006000000,s3.eth[1].macLayer.queue.transmissionGate[0],0,0,0,"[0.0001,0.0009]",0,0.0009,"[0.0001,0.0009]",OK
-0.006000000,s4.eth[2].macLayer.queue.transmissionGate[1],1,1,0,"[0.0001,0.0009]",1,0.0008,"[0.0001,0.0009]",OK
-0.006000000,s4.eth[2].macLayer.queue.transmissionGate[0],0,0,0,"[0.0001,0.0009]",0,0.0008,"[0.0001,0.0009]",OK

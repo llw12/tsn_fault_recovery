@@ -17,13 +17,15 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(QTENV_LIBS) $(CMDENV_LIBS)
 #USERIF_LIBS = $(QTENV_LIBS)
 
 # C++ include paths (with -I)
-INCLUDE_PATH = -I. -I$(INET_4_7_0_PROJ)/src
+Z3_CFLAGS := $(shell pkg-config --cflags z3 2>/dev/null)
+Z3_LIBS := $(shell pkg-config --libs z3 2>/dev/null)
+INCLUDE_PATH = -I. -I$(INET_4_7_0_PROJ)/src $(Z3_CFLAGS)
 
 # Additional object and library files to link with
 EXTRA_OBJS =
 
 # Additional libraries (-L, -l options)
-LIBS = $(LDFLAG_LIBPATH)$(INET_4_7_0_PROJ)/src  -lINET$(D)
+LIBS = $(LDFLAG_LIBPATH)$(INET_4_7_0_PROJ)/src  -lINET$(D) $(Z3_LIBS)
 
 # Output directory
 PROJECT_OUTPUT_DIR = out
@@ -31,10 +33,18 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/src/tsn_fault_recovery/control/DeterministicJointProfileSolver.o \
+OBJS = $O/src/tsn_fault_recovery/control/BfsRouteSolver.o \
+    $O/src/tsn_fault_recovery/control/BfsZ3JointProfileSolver.o \
+    $O/src/tsn_fault_recovery/control/DeterministicJointProfileSolver.o \
+    $O/src/tsn_fault_recovery/control/GateScheduleCompiler.o \
     $O/src/tsn_fault_recovery/control/OnlineJointRecoveryController.o \
+    $O/src/tsn_fault_recovery/control/PacketIdentityRecorder.o \
     $O/src/tsn_fault_recovery/control/PipelineScheduleGenerator.o \
-    $O/src/tsn_fault_recovery/control/ProfileSwitcher.o
+    $O/src/tsn_fault_recovery/control/ProfileSwitcher.o \
+    $O/src/tsn_fault_recovery/control/SmtScheduleSelfTest.o \
+    $O/src/tsn_fault_recovery/control/SmtValidationController.o \
+    $O/src/tsn_fault_recovery/control/TimeTickConverter.o \
+    $O/src/tsn_fault_recovery/control/Z3ScheduleSolver.o
 
 # Message files
 MSGFILES =

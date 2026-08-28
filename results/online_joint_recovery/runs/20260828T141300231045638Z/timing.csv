@@ -1,2 +1,0 @@
-failure_time_s,solver_start_s,solver_end_s,solver_wall_time_s,simulated_solver_delay_s,activation_start_s,activation_end_s,activation_wall_time_s,first_success_s,solve_simulation_time_s,activation_simulation_time_s,switch_to_first_success_s,total_recovery_s
-0.005,0.005,0.005,2.0563e-05,0.001,0.006,0.006,4.8135e-05,0.0060818,0,0,8.18e-05,0.0010818

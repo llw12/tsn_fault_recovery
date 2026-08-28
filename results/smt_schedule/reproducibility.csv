@@ -1,0 +1,6 @@
+artifact,deterministic_fields_identical
+solver_summary.csv,true
+flow_summary.csv,true
+packet_results.csv,true
+gcl.csv,true
+solver_delay_sensitivity.csv,true
