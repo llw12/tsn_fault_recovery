@@ -26,6 +26,9 @@ class YamlTests(unittest.TestCase):
     def test_sequence_mapping_continuation(self):
         self.assertEqual(loads("items:\n  - id: a\n    endpoints: [x, y]\n"), {"items": [{"id": "a", "endpoints": ["x", "y"]}]})
 
+    def test_inline_mapping_with_nested_array(self):
+        self.assertEqual(loads("items:\n  - {id: a, endpoints: [x, y]}\n"), {"items": [{"id": "a", "endpoints": ["x", "y"]}]})
+
 
 class ScenarioTests(unittest.TestCase):
     def rejected_replacement(self, old, new, message):
@@ -39,6 +42,13 @@ class ScenarioTests(unittest.TestCase):
         mesh = load_scenario(ROOT / "configs/scenarios/mesh10.yaml")
         self.assertEqual((len(diamond.nodes), len(diamond.links), len(diamond.tt_flows)), (6, 6, 1))
         self.assertEqual((len(mesh.nodes), len(mesh.links), len(mesh.tt_flows)), (16, 22, 10))
+
+    def test_structured20_scale_and_workload(self):
+        model = load_scenario(ROOT / "configs/scenarios/structured20_auto.yaml")
+        self.assertEqual((sum(n.type == "switch" for n in model.nodes), sum(n.type == "end_system" for n in model.nodes)), (20, 10))
+        self.assertEqual((len(model.links), len(model.tt_flows), len(model.be_flows)), (45, 20, 4))
+        self.assertGreater(len({flow.source for flow in model.tt_flows}), 5)
+        self.assertGreater(len({flow.destination for flow in model.tt_flows}), 5)
 
     def test_deadline_budget_is_explicit(self):
         model = load_scenario(ROOT / "configs/scenarios/diamond.yaml")

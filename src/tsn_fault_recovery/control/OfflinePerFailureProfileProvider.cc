@@ -25,6 +25,7 @@ void OfflinePerFailureProfileProvider::preload(cValueMap *root,
     if (textAt(root, "solver_config_hash") != expectedSolverConfigHash) throw cRuntimeError("offline ProfileStore solver_config_hash is stale");
     if (static_cast<int>(root->get("profile_schema_version").doubleValue()) != 2) throw cRuntimeError("unsupported offline profile schema version");
     entries.clear();
+    faultToClass.clear();
     for (const auto& [candidate, value] : mapAt(root, "faults")->getFields()) {
         auto *item = check_and_cast<cValueMap *>(value.objectValue()); OfflineProfileEntry entry;
         entry.status = parseStatus(textAt(item, "status")); entry.diagnostic = textAt(item, "diagnostic");
@@ -33,6 +34,37 @@ void OfflinePerFailureProfileProvider::preload(cValueMap *root,
         if (entry.status == FaultProfileStatus::SAT) entry.profile = ProfileSerializer::parse(mapAt(item, "profile"), expectedScenarioHash);
         entries[candidate] = entry;
     }
+}
+
+void OfflinePerFailureProfileProvider::preloadExact(cValueMap *root,
+        const std::string& expectedScenarioHash, const std::string& expectedSolverConfigHash) {
+    if (!root) throw cRuntimeError("exact-equivalence Class Store is not an object");
+    if (textAt(root, "scenario_sha256") != expectedScenarioHash) throw cRuntimeError("exact-equivalence Class Store scenario_sha256 is stale");
+    if (textAt(root, "solver_config_hash") != expectedSolverConfigHash) throw cRuntimeError("exact-equivalence Class Store solver_config_hash is stale");
+    if (static_cast<int>(root->get("profile_schema_version").doubleValue()) != 2) throw cRuntimeError("unsupported exact-equivalence profile schema version");
+    entries.clear(); faultToClass.clear();
+    for (const auto& [faultId, value] : mapAt(root, "fault_to_class")->getFields())
+        faultToClass[faultId] = value.stringValue();
+    for (const auto& [classId, value] : mapAt(root, "classes")->getFields()) {
+        auto *item = check_and_cast<cValueMap *>(value.objectValue()); OfflineProfileEntry entry;
+        entry.status = FaultProfileStatus::SAT; entry.diagnostic = "validated exact-equivalence class";
+        auto *affected = arrayAt(item, "affected_flows");
+        for (int i = 0; i < affected->size(); ++i) entry.affectedFlowIds.push_back(affected->get(i).stringValue());
+        entry.profile = ProfileSerializer::parse(mapAt(item, "profile"), expectedScenarioHash);
+        entries[classId] = entry;
+    }
+}
+
+const std::string& OfflinePerFailureProfileProvider::classForFault(const std::string& faultId) const {
+    auto found = faultToClass.find(faultId);
+    if (found == faultToClass.end()) throw cRuntimeError("exact-equivalence Class Store has no class for fault '%s'", faultId.c_str());
+    return found->second;
+}
+
+const OfflineProfileEntry& OfflinePerFailureProfileProvider::lookupClass(const std::string& classId) const {
+    auto found = entries.find(classId);
+    if (found == entries.end()) throw cRuntimeError("exact-equivalence Class Store has no profile for class '%s'", classId.c_str());
+    return found->second;
 }
 
 const OfflineProfileEntry& OfflinePerFailureProfileProvider::lookup(const std::string& faultId) const {

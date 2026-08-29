@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iomanip>
 #include <set>
+#include <sstream>
 #include "AffectedFlowAnalyzer.h"
 #include "ProfileSerializer.h"
 #include "ProfileSwitcher.h"
@@ -19,6 +20,11 @@ std::string quote(const std::string& value) {
     return result + "\"";
 }
 int statusCode(FaultProfileStatus status) { return static_cast<int>(status); }
+std::vector<std::string> splitWords(const char *text) {
+    std::istringstream stream(text); std::vector<std::string> values; std::string value;
+    while (stream >> value) values.push_back(value);
+    return values;
+}
 } // namespace
 
 Define_Module(ScenarioRecoveryController);
@@ -28,13 +34,16 @@ void ScenarioRecoveryController::initialize() {
     initialEvent->setSchedulingPriority(par("initialSchedulingPriority").intValue()); faultEvent->setSchedulingPriority(par("detectionSchedulingPriority").intValue()); activationEvent->setSchedulingPriority(par("activationSchedulingPriority").intValue());
     if (!par("enabled").boolValue()) return;
     mode = par("mode").stringValue(); faultId = par("faultId").stringValue();
-    if (mode != "precompute" && mode != "precompute-per-failure" && mode != "no-recovery" && mode != "online" && mode != "offline-per-failure") throw cRuntimeError("NOT_IMPLEMENTED recovery mode '%s'", mode.c_str());
+    if (mode != "precompute" && mode != "precompute-per-failure" && mode != "precompute-exact-group" &&
+            mode != "no-recovery" && mode != "online" && mode != "offline-per-failure" &&
+            mode != "offline-exact-equivalence") throw cRuntimeError("NOT_IMPLEMENTED recovery mode '%s'", mode.c_str());
     scenario = ScenarioRuntimeAdapter::parseScenario(check_and_cast<cValueMap *>(par("scenario").objectValue()));
     adapter = ScenarioRuntimeAdapter::parsePortMap(check_and_cast<cValueMap *>(par("portMap").objectValue()));
     switcher = check_and_cast<ProfileSwitcher *>(getParentModule()->getSubmodule(par("activatorModule").stringValue()));
     if (mode == "offline-per-failure") loadOfflineStore();
+    if (mode == "offline-exact-equivalence") loadExactStore();
     scheduleAt(SIMTIME_ZERO, initialEvent);
-    if (mode != "precompute" && mode != "precompute-per-failure") scheduleAt(scenario.failureTime, faultEvent);
+    if (mode != "precompute" && mode != "precompute-per-failure" && mode != "precompute-exact-group") scheduleAt(scenario.failureTime, faultEvent);
 }
 
 void ScenarioRecoveryController::recordComputation(const char *prefix, const ProfileComputationResult& result) {
@@ -57,6 +66,7 @@ void ScenarioRecoveryController::initializeProfile() {
     profile0 = ProfileSerializer::parse(check_and_cast<cValueMap *>(par("profile0").objectValue()), scenario.sha256);
     for (const auto& route : profile0.logicalRoutes) initialRoutes[route.flowId] = route;
     if (mode == "precompute-per-failure") { precomputePerFailure(); endSimulation(); return; }
+    if (mode == "precompute-exact-group") { precomputeExactGroup(); endSimulation(); return; }
     switcher->activateProfile(profile0);
 }
 
@@ -91,11 +101,55 @@ void ScenarioRecoveryController::precomputePerFailure() {
     out << "\n  }\n}\n"; recordScalar("scenario.recoveryPrecompute.totalWallTimeSeconds", totalSeconds); recordScalar("scenario.recoveryPrecompute.candidateFaultCount", rows.size());
 }
 
+void ScenarioRecoveryController::precomputeExactGroup() {
+    std::string classId = par("exactClassId").stringValue();
+    auto disabledValues = splitWords(par("exactDisabledLinks").stringValue());
+    auto affected = splitWords(par("exactAffectedFlows").stringValue());
+    std::set<std::string> disabled(disabledValues.begin(), disabledValues.end());
+    JointProfileComputer computer(scenario, adapter);
+    auto result = computer.computeForDisabledLinks("EQ_" + classId, disabled, initialRoutes, affected);
+    double serializationSeconds = 0; long profileBytes = 0;
+    if (result.status == FaultProfileStatus::SAT) {
+        auto start = std::chrono::steady_clock::now();
+        ProfileSerializer::write(result.profile, scenario.sha256, par("exactProfileOutputPath").stringValue());
+        serializationSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        std::ifstream input(par("exactProfileOutputPath").stringValue(), std::ios::binary | std::ios::ate);
+        profileBytes = input ? static_cast<long>(input.tellg()) : 0;
+    }
+    std::ofstream out(par("exactReportOutputPath").stringValue());
+    if (!out) throw cRuntimeError("Cannot write exact-equivalence synthesis report");
+    out << std::setprecision(17) << "{\n  \"schema_version\": 1,\n  \"scenario_sha256\": " << quote(scenario.sha256)
+        << ",\n  \"class_id\": " << quote(classId) << ",\n  \"status\": " << quote(faultProfileStatusName(result.status))
+        << ",\n  \"affected_flows\": [";
+    for (size_t i = 0; i < affected.size(); ++i) { if (i) out << ", "; out << quote(affected[i]); }
+    out << "],\n  \"union_disabled_links\": [";
+    for (size_t i = 0; i < disabledValues.size(); ++i) { if (i) out << ", "; out << quote(disabledValues[i]); }
+    out << "],\n  \"route_solver_wall_us\": " << result.routeSolverWallSeconds * 1e6
+        << ",\n  \"smt_solver_wall_us\": " << result.smtSolverWallSeconds * 1e6
+        << ",\n  \"profile_compile_wall_us\": " << result.profileCompileWallSeconds * 1e6
+        << ",\n  \"serialization_wall_us\": " << serializationSeconds * 1e6
+        << ",\n  \"total_class_synthesis_wall_us\": " << (result.totalWallSeconds + serializationSeconds) * 1e6
+        << ",\n  \"objective\": " << result.scheduleObjectiveTicks
+        << ",\n  \"profile_bytes_raw\": " << profileBytes
+        << ",\n  \"diagnostic\": " << quote(result.diagnostic) << "\n}\n";
+    recordComputation("scenario.exactSynthesis", result);
+}
+
 void ScenarioRecoveryController::loadOfflineStore() {
     auto start = std::chrono::steady_clock::now();
     offlineProvider.preload(check_and_cast<cValueMap *>(par("offlineProfileStore").objectValue()), scenario.sha256, par("solverConfigHash").stringValue());
     offlineProvider.lookup(faultId);
     offlineStoreLoadWallSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count(); recordScalar("scenario.offline.storeLoadWallTimeSeconds", offlineStoreLoadWallSeconds);
+}
+
+void ScenarioRecoveryController::loadExactStore() {
+    auto start = std::chrono::steady_clock::now();
+    offlineProvider.preloadExact(check_and_cast<cValueMap *>(par("exactProfileStore").objectValue()),
+            scenario.sha256, par("solverConfigHash").stringValue());
+    const auto& classId = offlineProvider.classForFault(faultId);
+    offlineProvider.lookupClass(classId);
+    offlineStoreLoadWallSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    recordScalar("scenario.offline.storeLoadWallTimeSeconds", offlineStoreLoadWallSeconds);
 }
 
 void ScenarioRecoveryController::handleFault() {
@@ -109,6 +163,27 @@ void ScenarioRecoveryController::handleFault() {
         recordScalar("scenario.runtime.routeSolverInvocations", 0); recordScalar("scenario.runtime.z3SolverInvocations", 0); recordScalar("scenario.recoveryStatusCode", statusCode(entry.status));
         EV_INFO << "OFFLINE_PROFILE_LOOKUP fault=" << faultId << " status=" << faultProfileStatusName(entry.status) << " wallSeconds=" << lookupWall << endl;
         if (entry.status == FaultProfileStatus::SAT) { recoveryProfile = entry.profile; scheduleAt(simTime() + par("offlineLookupDelay"), activationEvent); }
+        return;
+    }
+    if (mode == "offline-exact-equivalence") {
+        auto classStart = std::chrono::steady_clock::now();
+        const auto& classId = offlineProvider.classForFault(faultId);
+        double classLookupWall = std::chrono::duration<double>(std::chrono::steady_clock::now() - classStart).count();
+        auto profileStart = std::chrono::steady_clock::now();
+        const auto& entry = offlineProvider.lookupClass(classId);
+        double profileLookupWall = std::chrono::duration<double>(std::chrono::steady_clock::now() - profileStart).count();
+        recordScalar("scenario.exact.faultToClassLookupWallTimeSeconds", classLookupWall);
+        recordScalar("scenario.exact.classProfileLookupWallTimeSeconds", profileLookupWall);
+        recordScalar("scenario.offline.lookupWallTimeSeconds", classLookupWall + profileLookupWall);
+        recordScalar("scenario.offline.simulatedLookupDelay", par("offlineLookupDelay").doubleValueInUnit("s"));
+        recordScalar("scenario.runtime.routeSolverInvocations", 0);
+        recordScalar("scenario.runtime.z3SolverInvocations", 0);
+        recordScalar("scenario.runtime.profileSynthesisInvocations", 0);
+        recordScalar("scenario.recoveryStatusCode", statusCode(entry.status));
+        EV_INFO << "EXACT_PROFILE_LOOKUP fault=" << faultId << " class=" << classId
+                << " profile=" << entry.profile.profileId << endl;
+        recoveryProfile = entry.profile;
+        scheduleAt(simTime() + par("offlineLookupDelay"), activationEvent);
         return;
     }
     JointProfileComputer computer(scenario, adapter); auto result = computer.computeForFault("online_" + faultId, faultId, initialRoutes);

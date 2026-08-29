@@ -48,6 +48,26 @@ ProfileComputationResult JointProfileComputer::computeForFault(const std::string
     return compute(profileId, {faultId}, &initialRoutes, affected);
 }
 
+ProfileComputationResult JointProfileComputer::computeForDisabledLinks(const std::string& profileId,
+        const std::set<std::string>& disabledLinks,
+        const std::map<std::string, LogicalRoute>& initialRoutes,
+        const std::vector<std::string>& affectedFlowIds) const
+{
+    if (disabledLinks.empty())
+        throw cRuntimeError("shared Profile synthesis requires at least one disabled link");
+    if (affectedFlowIds.empty())
+        throw cRuntimeError("shared Profile synthesis requires a non-empty affected-flow set");
+    std::set<std::string> expected;
+    for (const auto& [flowId, route] : initialRoutes)
+        if (std::any_of(route.linkPath.begin(), route.linkPath.end(),
+                [&](const std::string& link) { return disabledLinks.count(link); }))
+            expected.insert(flowId);
+    std::set<std::string> declared(affectedFlowIds.begin(), affectedFlowIds.end());
+    if (expected != declared)
+        throw cRuntimeError("shared Profile affected-flow set is inconsistent with union disabled links");
+    return compute(profileId, disabledLinks, &initialRoutes, affectedFlowIds);
+}
+
 ProfileComputationResult JointProfileComputer::compute(const std::string& profileId,
         const std::set<std::string>& disabledLinks,
         const std::map<std::string, LogicalRoute> *preservedRoutes,

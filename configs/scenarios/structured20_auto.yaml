@@ -1,0 +1,137 @@
+schema_version: 1
+name: structured20_auto
+
+simulation:
+  duration: 30ms
+  cycle_time: 1ms
+  time_quantum: 1us
+  failure_time: 10ms
+  solver_delay: 1ms
+  random_seed: 0
+
+network:
+  default_link:
+    bitrate: 1Gbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 25us
+  hop_margin: 3us
+  endpoint_budget: 300us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: es01
+    - id: es02
+    - id: es03
+    - id: es04
+    - id: es05
+    - id: es06
+    - id: es07
+    - id: es08
+    - id: es09
+    - id: es10
+  switches:
+    - id: sw01
+    - id: sw02
+    - id: sw03
+    - id: sw04
+    - id: sw05
+    - id: sw06
+    - id: sw07
+    - id: sw08
+    - id: sw09
+    - id: sw10
+    - id: sw11
+    - id: sw12
+    - id: sw13
+    - id: sw14
+    - id: sw15
+    - id: sw16
+    - id: sw17
+    - id: sw18
+    - id: sw19
+    - id: sw20
+  links:
+    - {id: l_es01_sw01, endpoints: [es01, sw01]}
+    - {id: l_es02_sw03, endpoints: [es02, sw03]}
+    - {id: l_es03_sw05, endpoints: [es03, sw05]}
+    - {id: l_es04_sw06, endpoints: [es04, sw06]}
+    - {id: l_es05_sw10, endpoints: [es05, sw10]}
+    - {id: l_es06_sw11, endpoints: [es06, sw11]}
+    - {id: l_es07_sw15, endpoints: [es07, sw15]}
+    - {id: l_es08_sw16, endpoints: [es08, sw16]}
+    - {id: l_es09_sw18, endpoints: [es09, sw18]}
+    - {id: l_es10_sw20, endpoints: [es10, sw20]}
+    - {id: l_sw01_sw02, endpoints: [sw01, sw02]}
+    - {id: l_sw02_sw03, endpoints: [sw02, sw03]}
+    - {id: l_sw03_sw04, endpoints: [sw03, sw04]}
+    - {id: l_sw04_sw05, endpoints: [sw04, sw05]}
+    - {id: l_sw06_sw07, endpoints: [sw06, sw07]}
+    - {id: l_sw07_sw08, endpoints: [sw07, sw08]}
+    - {id: l_sw08_sw09, endpoints: [sw08, sw09]}
+    - {id: l_sw09_sw10, endpoints: [sw09, sw10]}
+    - {id: l_sw11_sw12, endpoints: [sw11, sw12]}
+    - {id: l_sw12_sw13, endpoints: [sw12, sw13]}
+    - {id: l_sw13_sw14, endpoints: [sw13, sw14]}
+    - {id: l_sw14_sw15, endpoints: [sw14, sw15]}
+    - {id: l_sw16_sw17, endpoints: [sw16, sw17]}
+    - {id: l_sw17_sw18, endpoints: [sw17, sw18]}
+    - {id: l_sw18_sw19, endpoints: [sw18, sw19]}
+    - {id: l_sw19_sw20, endpoints: [sw19, sw20]}
+    - {id: l_sw01_sw06, endpoints: [sw01, sw06]}
+    - {id: l_sw02_sw07, endpoints: [sw02, sw07]}
+    - {id: l_sw03_sw08, endpoints: [sw03, sw08]}
+    - {id: l_sw04_sw09, endpoints: [sw04, sw09]}
+    - {id: l_sw05_sw10, endpoints: [sw05, sw10]}
+    - {id: l_sw06_sw11, endpoints: [sw06, sw11]}
+    - {id: l_sw07_sw12, endpoints: [sw07, sw12]}
+    - {id: l_sw08_sw13, endpoints: [sw08, sw13]}
+    - {id: l_sw09_sw14, endpoints: [sw09, sw14]}
+    - {id: l_sw10_sw15, endpoints: [sw10, sw15]}
+    - {id: l_sw11_sw16, endpoints: [sw11, sw16]}
+    - {id: l_sw12_sw17, endpoints: [sw12, sw17]}
+    - {id: l_sw13_sw18, endpoints: [sw13, sw18]}
+    - {id: l_sw14_sw19, endpoints: [sw14, sw19]}
+    - {id: l_sw15_sw20, endpoints: [sw15, sw20]}
+    - {id: l_sw02_sw08, endpoints: [sw02, sw08]}
+    - {id: l_sw04_sw10, endpoints: [sw04, sw10]}
+    - {id: l_sw11_sw17, endpoints: [sw11, sw17]}
+    - {id: l_sw13_sw19, endpoints: [sw13, sw19]}
+
+traffic:
+  tt_flows:
+    - {id: TT01, source: es01, destination: es10, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 0us, pcp: 4, traffic_class: 1}
+    - {id: TT02, source: es02, destination: es08, packet_size: 220B, period: 1ms, deadline: 900us, release_offset: 20us, pcp: 4, traffic_class: 1}
+    - {id: TT03, source: es03, destination: es06, packet_size: 260B, period: 1ms, deadline: 920us, release_offset: 40us, pcp: 4, traffic_class: 1}
+    - {id: TT04, source: es04, destination: es09, packet_size: 300B, period: 1ms, deadline: 940us, release_offset: 60us, pcp: 4, traffic_class: 1}
+    - {id: TT05, source: es05, destination: es01, packet_size: 340B, period: 1ms, deadline: 950us, release_offset: 80us, pcp: 4, traffic_class: 1}
+    - {id: TT06, source: es06, destination: es05, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 100us, pcp: 4, traffic_class: 1}
+    - {id: TT07, source: es07, destination: es02, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 120us, pcp: 4, traffic_class: 1}
+    - {id: TT08, source: es08, destination: es03, packet_size: 260B, period: 1ms, deadline: 920us, release_offset: 140us, pcp: 4, traffic_class: 1}
+    - {id: TT09, source: es09, destination: es04, packet_size: 300B, period: 1ms, deadline: 940us, release_offset: 160us, pcp: 4, traffic_class: 1}
+    - {id: TT10, source: es10, destination: es07, packet_size: 340B, period: 1ms, deadline: 950us, release_offset: 180us, pcp: 4, traffic_class: 1}
+    - {id: TT11, source: es01, destination: es07, packet_size: 200B, period: 1ms, deadline: 900us, release_offset: 200us, pcp: 4, traffic_class: 1}
+    - {id: TT12, source: es02, destination: es10, packet_size: 240B, period: 1ms, deadline: 930us, release_offset: 220us, pcp: 4, traffic_class: 1}
+    - {id: TT13, source: es03, destination: es09, packet_size: 280B, period: 1ms, deadline: 930us, release_offset: 240us, pcp: 4, traffic_class: 1}
+    - {id: TT14, source: es04, destination: es06, packet_size: 320B, period: 1ms, deadline: 940us, release_offset: 260us, pcp: 4, traffic_class: 1}
+    - {id: TT15, source: es05, destination: es08, packet_size: 360B, period: 1ms, deadline: 950us, release_offset: 280us, pcp: 4, traffic_class: 1}
+    - {id: TT16, source: es06, destination: es03, packet_size: 200B, period: 1ms, deadline: 900us, release_offset: 300us, pcp: 4, traffic_class: 1}
+    - {id: TT17, source: es07, destination: es01, packet_size: 240B, period: 1ms, deadline: 920us, release_offset: 320us, pcp: 4, traffic_class: 1}
+    - {id: TT18, source: es08, destination: es05, packet_size: 280B, period: 1ms, deadline: 930us, release_offset: 340us, pcp: 4, traffic_class: 1}
+    - {id: TT19, source: es09, destination: es02, packet_size: 320B, period: 1ms, deadline: 940us, release_offset: 360us, pcp: 4, traffic_class: 1}
+    - {id: TT20, source: es10, destination: es04, packet_size: 360B, period: 1ms, deadline: 950us, release_offset: 380us, pcp: 4, traffic_class: 1}
+  be_flows:
+    - {id: BE01, source: es01, destination: es10, packet_size: 1000B, interval: 500us, release_offset: 0us, pcp: 0, traffic_class: 0}
+    - {id: BE02, source: es03, destination: es08, packet_size: 1100B, interval: 500us, release_offset: 80us, pcp: 0, traffic_class: 0}
+    - {id: BE03, source: es06, destination: es05, packet_size: 1200B, interval: 500us, release_offset: 160us, pcp: 0, traffic_class: 0}
+    - {id: BE04, source: es09, destination: es02, packet_size: 1300B, interval: 500us, release_offset: 240us, pcp: 0, traffic_class: 0}
+
+faults:
+  model: single_link
+  candidate_selection:
+    mode: auto
+    scope: switch-switch
+    criterion: tt-primary-route-used

@@ -22,10 +22,13 @@ SUMMARY_FIELDS = [
     "runtime_lookup_wall_us", "simulated_decision_delay_s",
     "route_solver_wall_us_runtime", "smt_solver_wall_us_runtime",
     "runtime_route_solver_invocations", "runtime_z3_solver_invocations",
+    "runtime_profile_synthesis_invocations", "fault_to_class_lookup_wall_us", "class_profile_lookup_wall_us",
     "activation_wall_us", "tt_sent", "tt_received", "tt_lost", "deadline_miss_count",
     "deadline_miss_ratio", "failure_time_s", "decision_ready_time_s", "activation_time_s",
     "first_success_after_fault_s", "decision_delay_s", "activation_to_first_success_s",
     "recovery_duration_s",
+    "stable_post_recovery_start_s", "stable_tt_sent", "stable_tt_received", "stable_tt_lost",
+    "stable_deadline_miss_count", "post_recovery_delivery_ok", "post_recovery_deadline_ok",
 ]
 
 
@@ -80,7 +83,7 @@ def _write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
 def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
                 precompute_wall_ms: float | None = None, *, store: dict | None = None,
                 profile_metrics: dict | None = None,
-                offline_lookup_delay_s: float = 0.0) -> dict:
+                offline_lookup_delay_s: float = 0.0, class_store: dict | None = None) -> dict:
     raw = run_dir / "raw"
     vec_files, sca_files = list(raw.glob("*.vec")), list(raw.glob("*.sca"))
     if len(vec_files) != 1 or len(sca_files) != 1:
@@ -128,7 +131,7 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
     nodes=scenario["nodes"]
     affected_count = len(affected)
     store_entry = store["faults"][fault_id] if store else None
-    if mode == "offline-per-failure":
+    if mode in {"offline-per-failure", "offline-exact-equivalence"}:
         recovery_status = "RECOVERED" if store_entry["status"] == "SAT" and activation is not None else ("NO_ACTION" if store_entry["status"] == "NO_AFFECTED_TT" else "UNRECOVERABLE")
         recovery_action = "ACTIVATE_PROFILE" if store_entry["status"] == "SAT" else "NO_ACTION"
         simulated_delay = offline_lookup_delay_s
@@ -148,7 +151,11 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
         "recoverable_fault_count": None, "unrecoverable_fault_count": None,
     }
     initial_bytes = (run_dir/"profile0.json").stat().st_size
-    offline_only = mode == "offline-per-failure"
+    offline_only = mode in {"offline-per-failure", "offline-exact-equivalence"}
+    stable_start = activation + scenario["simulation"]["cycle_time_s"] if activation is not None else None
+    stable_packets = [row for row in packet_rows if row["flow_id"] in tt and stable_start is not None and row["send_time_s"] >= stable_start and row["send_time_s"] <= scenario["simulation"]["duration_s"] - tt[row["flow_id"]]["period_s"] + 1e-12]
+    stable_received = sum(row["received"] for row in stable_packets)
+    stable_misses = sum(row["received"] and not row["deadline_met"] for row in stable_packets)
     summary={key:None for key in SUMMARY_FIELDS}; summary.update({
         "scenario":scenario["scenario_name"], "mode":mode, "fault_id":fault_id,
         "recovery_status":recovery_status, "recovery_action":recovery_action, "num_nodes":len(nodes),
@@ -172,6 +179,9 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
         "smt_solver_wall_us_runtime":(_scalar(scalars,"scenario.online.scheduleWallTimeSeconds") or 0)*1e6 if mode=="online" else 0,
         "runtime_route_solver_invocations":int(_scalar(scalars,"scenario.runtime.routeSolverInvocations",0)),
         "runtime_z3_solver_invocations":int(_scalar(scalars,"scenario.runtime.z3SolverInvocations",0)),
+        "runtime_profile_synthesis_invocations":int(_scalar(scalars,"scenario.runtime.profileSynthesisInvocations",0)),
+        "fault_to_class_lookup_wall_us":(_scalar(scalars,"scenario.exact.faultToClassLookupWallTimeSeconds") or 0)*1e6 if mode=="offline-exact-equivalence" else None,
+        "class_profile_lookup_wall_us":(_scalar(scalars,"scenario.exact.classProfileLookupWallTimeSeconds") or 0)*1e6 if mode=="offline-exact-equivalence" else None,
         "activation_wall_us":(_scalar(scalars,"scenario.activationWallTimeSeconds") or 0)*1e6 if activation is not None else None,
         "tt_sent":tt_sent, "tt_received":tt_received, "tt_lost":tt_sent-tt_received,
         "deadline_miss_count":misses, "deadline_miss_ratio":misses/tt_received if tt_received else None,
@@ -179,6 +189,11 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
         "first_success_after_fault_s":first_success, "decision_delay_s":simulated_delay,
         "activation_to_first_success_s":first_success-activation if first_success is not None and activation is not None else None,
         "recovery_duration_s":first_success-failure if first_success is not None else None,
+        "stable_post_recovery_start_s":stable_start, "stable_tt_sent":len(stable_packets),
+        "stable_tt_received":stable_received, "stable_tt_lost":len(stable_packets)-stable_received,
+        "stable_deadline_miss_count":stable_misses,
+        "post_recovery_delivery_ok":stable_start is not None and len(stable_packets) > 0 and stable_received == len(stable_packets),
+        "post_recovery_deadline_ok":stable_start is not None and len(stable_packets) > 0 and stable_misses == 0,
     })
     _write_csv(run_dir/"summary.csv",[summary],SUMMARY_FIELDS)
     timing_fields=["scenario","mode","fault_id","failure_time_s","decision_ready_time_s","activation_time_s","route_solver_wall_us_runtime","smt_solver_wall_us_runtime","profile_compilation_wall_us","simulated_decision_delay_s","runtime_lookup_wall_us","activation_wall_us","initial_profile_precompute_wall_ms","recovery_precompute_wall_ms"]

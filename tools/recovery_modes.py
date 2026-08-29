@@ -14,6 +14,7 @@ MODES = {
     "no-recovery": RecoveryMode("no-recovery", True, None),
     "online": RecoveryMode("online", True, "online-at-fault"),
     "offline-per-failure": RecoveryMode("offline-per-failure", True, "precomputed-per-failure"),
+    "offline-exact-equivalence": RecoveryMode("offline-exact-equivalence", True, "precomputed-exact-class"),
     "offline-cluster": RecoveryMode("offline-cluster", False, "precomputed-cluster"),
 }
 

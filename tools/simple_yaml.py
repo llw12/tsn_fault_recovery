@@ -14,6 +14,24 @@ class YamlSubsetError(ValueError):
     pass
 
 
+def _inline_parts(text: str) -> list[str]:
+    parts, start, depth, quote = [], 0, 0, None
+    for index, ch in enumerate(text):
+        if quote:
+            if ch == quote and (index == 0 or text[index - 1] != "\\"):
+                quote = None
+        elif ch in "'\"":
+            quote = ch
+        elif ch in "[{":
+            depth += 1
+        elif ch in "]}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append(text[start:index].strip()); start = index + 1
+    parts.append(text[start:].strip())
+    return [part for part in parts if part]
+
+
 def _scalar(text: str):
     text = text.strip()
     if not text:
@@ -23,7 +41,18 @@ def _scalar(text: str):
             return json.loads(text.replace("'", '"'))
         except json.JSONDecodeError:
             if text.startswith("[") and text.endswith("]"):
-                return [_scalar(item) for item in text[1:-1].split(",") if item.strip()]
+                return [_scalar(item) for item in _inline_parts(text[1:-1])]
+            if text.startswith("{") and text.endswith("}"):
+                result = {}
+                for item in _inline_parts(text[1:-1]):
+                    if ":" not in item:
+                        raise YamlSubsetError(f"invalid inline mapping entry: {item}")
+                    key, value = item.split(":", 1)
+                    key = key.strip().strip("'\"")
+                    if not key or key in result:
+                        raise YamlSubsetError(f"invalid or duplicate inline mapping key: {key!r}")
+                    result[key] = _scalar(value.strip())
+                return result
             raise YamlSubsetError(f"invalid inline collection: {text}")
     if len(text) >= 2 and text[0] == text[-1] and text[0] in "'\"":
         return text[1:-1]
@@ -80,6 +109,8 @@ def loads(text: str):
                         raise YamlSubsetError(f"line {line_number}: empty sequence item")
                     value, index = parse_block(index, tokens[index][0])
                     result.append(value)
+                elif rest.startswith(("[", "{")):
+                    result.append(_scalar(rest))
                 elif ":" in rest:
                     key, value_text = mapping_entry(rest, line_number)
                     item = {}

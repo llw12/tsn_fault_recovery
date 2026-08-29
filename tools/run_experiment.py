@@ -23,6 +23,7 @@ from tools.recovery_modes import MODES, require_implemented
 from tools.scenario_model import load_scenario
 from tools.analyze_critical_links import discover
 from tools.critical_link import affected_flow_set_hash
+from tools.exact_equivalence import ExactEquivalenceError, class_store_metrics, validate_class_store
 
 IMPLEMENTED = tuple(name for name, mode in MODES.items() if mode.implemented)
 NOT_IMPLEMENTED = tuple(name for name, mode in MODES.items() if not mode.implemented)
@@ -82,13 +83,16 @@ def scalar_from_file(path: Path, name: str) -> float | None:
 
 def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generated: Path,
                   recovery: bool, store: dict | None = None, store_path: Path | None = None,
-                  offline_lookup_delay_s: float | None = None) -> None:
+                  offline_lookup_delay_s: float | None = None, class_store: dict | None = None,
+                  class_store_path: Path | None = None) -> None:
     code_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True,
                                  stdout=subprocess.PIPE, check=True).stdout.strip()
     entry = store["faults"][fault] if store else None
     candidate_artifact = json.loads((generated / "fault_analysis/candidate_faults.json").read_text())
     candidate_by_id = {item["fault_id"]: item for item in candidate_artifact["candidate_faults"]}
     candidate = candidate_by_id.get(fault)
+    class_id = class_store["fault_to_class"][fault] if class_store else None
+    class_entry = class_store["classes"][class_id] if class_store else None
     manifest = {
         "schema_version": 1, "scenario_name": scenario["scenario_name"], "scenario_sha256": scenario["scenario_sha256"],
         "mode": mode, "fault_id": fault,
@@ -103,17 +107,21 @@ def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generate
         "omnetpp_version": "6.4.0", "inet_version": "4.7.0", "z3_version": version(["z3", "--version"], "unknown"),
         "simulation_duration_s": scenario["simulation"]["duration_s"], "cycle_time_s": scenario["simulation"]["cycle_time_s"],
         "random_seed": scenario["simulation"]["random_seed"], "deterministic": True,
-        "profile0_id": "P0", "recovery_profile_id": (entry.get("profile_id") if entry and entry["status"] == "SAT" else (f"online_{fault}" if recovery else None)),
+        "profile0_id": "P0", "recovery_profile_id": (class_entry.get("profile_id") if class_entry else (entry.get("profile_id") if entry and entry["status"] == "SAT" else (f"online_{fault}" if recovery else None))),
         "generated_ned_sha256": digest(generated / "ScenarioNetwork.ned"), "generated_ini_sha256": digest(generated / "omnetpp.ini"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "profile_strategy": "per-failure" if store else None,
-        "profile_store_sha256": file_sha256(store_path) if store_path else None,
+        "profile_strategy": (class_store.get("strategy") if class_store else ("per-failure" if store else None)),
+        "profile_store_sha256": file_sha256(class_store_path or store_path) if (class_store_path or store_path) else None,
         "profile_store_scenario_sha256": store.get("scenario_sha256") if store else None,
         "offline_precompute_code_commit": store.get("precompute_code_commit") if store else None,
         "runtime_code_commit": code_commit,
-        "recovery_profile_sha256": entry.get("profile_sha256") if entry else None,
+        "recovery_profile_sha256": class_entry.get("profile_sha256") if class_entry else (entry.get("profile_sha256") if entry else None),
+        "equivalence_class_id": class_id,
+        "equivalence_class_size": len(class_entry["members"]) if class_entry else None,
+        "equivalence_class_type": class_entry["class_type"] if class_entry else None,
+        "per_failure_store_sha256": class_store.get("per_failure_store_sha256") if class_store else None,
         "offline_lookup_delay_s": offline_lookup_delay_s,
-        "runtime_solver_invocations": {"route": 0, "z3": 0} if mode == "offline-per-failure" else None,
+        "runtime_solver_invocations": {"route": 0, "z3": 0, "profile_synthesis": 0} if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
         "artifacts": {"scenario": "scenario.json", "port_map": "port_map.json", "profile0": "profile0.json",
                       "candidate_faults": "candidate_faults.json",
                       "recovery_profile": "recovery_profile.json" if recovery else None},
@@ -140,11 +148,11 @@ def main() -> int:
     precompute_seconds = scalar_from_file(precompute_scalars[0], "scenario.precompute.totalWallTimeSeconds") if len(precompute_scalars) == 1 else None
     precompute_wall_ms = precompute_seconds * 1e3 if precompute_seconds is not None else None
     scenario = json.loads((generated / "scenario.json").read_text())
-    modes = IMPLEMENTED if args.mode == "all" else (args.mode,)
+    modes = ("no-recovery", "online", "offline-per-failure") if args.mode == "all" else (args.mode,)
     store_path = generated / "profiles/per_failure/store.json"
     port_map = json.loads((generated / "port_map.json").read_text())
     store = None
-    if "offline-per-failure" in modes:
+    if any(mode in modes for mode in ("offline-per-failure", "offline-exact-equivalence")):
         try:
             store = validate_store(store_path, scenario, port_map)
         except ProfileStoreError as error:
@@ -153,6 +161,17 @@ def main() -> int:
         if not runtime_path.exists():
             raise SystemExit(f"missing runtime ProfileStore: {runtime_path}; run precompute_profiles.py first")
     metrics = store_metrics(store_path, generated / "profiles/profile0.json") if store else None
+    class_store_path = generated / "profiles/exact_equivalence/store.json"
+    class_store = None
+    exact_metrics = None
+    if "offline-exact-equivalence" in modes:
+        try:
+            class_store = validate_class_store(class_store_path, scenario, port_map)
+        except ExactEquivalenceError as error:
+            raise SystemExit(str(error)) from error
+        if args.fault not in class_store["fault_to_class"]:
+            raise SystemExit(f"fault {args.fault!r} has no recoverable exact-equivalence class")
+        exact_metrics = class_store_metrics(class_store_path)
     run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     summaries = []
     for mode in modes:
@@ -162,10 +181,11 @@ def main() -> int:
         if copied_recovery.exists(): copied_recovery.unlink()
         recovery_generated = generated / "profiles" / f"{mode}_{args.fault}.json"
         if recovery_generated.exists(): recovery_generated.unlink()
-        label = {"no-recovery": "NoRecovery", "online": "Online", "offline-per-failure": "Offline"}[mode]
+        label = {"no-recovery": "NoRecovery", "online": "Online", "offline-per-failure": "Offline",
+                 "offline-exact-equivalence": "Exact"}[mode]
         config = label + f"_{args.fault}"
         overrides = ([f"--*.scenarioRecoveryController.offlineLookupDelay={args.offline_lookup_delay_us}us"]
-                     if mode == "offline-per-failure" else None)
+                     if mode in {"offline-per-failure", "offline-exact-equivalence"} else None)
         run_omnet(generated, config, run_dir / "raw", run_dir / "run.log", overrides)
         for source_path, name in ((generated/"scenario.json","scenario.json"),(generated/"port_map.json","port_map.json"),(generated/"profiles/profile0.json","profile0.json"),(generated/"fault_analysis/candidate_faults.json","candidate_faults.json")):
             shutil.copy2(source_path, run_dir / name)
@@ -188,14 +208,22 @@ def main() -> int:
                         raise RuntimeError(f"online/offline semantic profile mismatch for {args.fault}")
         elif mode == "offline-per-failure" and store["faults"][args.fault]["status"] == "SAT":
             shutil.copy2(store_path.parent / store["faults"][args.fault]["profile_file"], run_dir / "recovery_profile.json")
-        if store:
+        elif mode == "offline-exact-equivalence":
+            class_id = class_store["fault_to_class"][args.fault]
+            class_entry = class_store["classes"][class_id]
+            shutil.copy2(class_store_path.parent / class_entry["profile_file"], run_dir / "recovery_profile.json")
+        if store and mode == "offline-per-failure":
             shutil.copy2(store_path, run_dir / "profile_store.json")
+        if class_store and mode == "offline-exact-equivalence":
+            shutil.copy2(class_store_path, run_dir / "class_store.json")
         make_manifest(run_dir, scenario, mode, args.fault, generated, (run_dir / "recovery_profile.json").exists(),
-                      store if mode == "offline-per-failure" else None,
+                      store if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
                       store_path if mode == "offline-per-failure" else None,
-                      args.offline_lookup_delay_us * 1e-6 if mode == "offline-per-failure" else None)
+                      args.offline_lookup_delay_us * 1e-6 if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
+                      class_store if mode == "offline-exact-equivalence" else None,
+                      class_store_path if mode == "offline-exact-equivalence" else None)
         summaries.append(analyze_run(run_dir, scenario, mode, args.fault, precompute_wall_ms,
-                                     store=store, profile_metrics=metrics,
+                                     store=store, profile_metrics=exact_metrics if mode == "offline-exact-equivalence" else metrics,
                                      offline_lookup_delay_s=args.offline_lookup_delay_us * 1e-6))
         print(run_dir)
     if args.mode == "all":

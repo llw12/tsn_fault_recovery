@@ -50,6 +50,10 @@ class JointProfileComputer
     ProfileComputationResult computeInitial(const std::string& profileId) const;
     ProfileComputationResult computeForFault(const std::string& profileId, const std::string& faultId,
             const std::map<std::string, LogicalRoute>& initialRoutes) const;
+    ProfileComputationResult computeForDisabledLinks(const std::string& profileId,
+            const std::set<std::string>& disabledLinks,
+            const std::map<std::string, LogicalRoute>& initialRoutes,
+            const std::vector<std::string>& affectedFlowIds) const;
 
   private:
     ProfileComputationResult compute(const std::string& profileId, const std::set<std::string>& disabledLinks,

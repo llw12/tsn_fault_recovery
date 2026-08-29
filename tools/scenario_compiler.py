@@ -110,6 +110,7 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
         '*.scenarioRecoveryController.portMap = readJSON("port_map.json")',
         '*.scenarioRecoveryController.profile0 = readJSON("profiles/profile0.json")',
         '*.scenarioRecoveryController.offlineProfileStore = readJSON("profiles/profile0.json")',
+        '*.scenarioRecoveryController.exactProfileStore = readJSON("profiles/profile0.json")',
         "*.packetIdentityRecorder.enabled = true", "",
     ]
     port_map = build_port_map(model)
@@ -183,6 +184,10 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
         "*.packetIdentityRecorder.enabled = false", "*.scenarioRecoveryController.mode = \"precompute-per-failure\"",
         '*.scenarioRecoveryController.perFailureProfileDirectory = "profiles/per_failure/raw"',
         '*.scenarioRecoveryController.perFailureReportOutputPath = "profiles/per_failure/precompute_report.json"', "",
+        "[Config ScenarioExactGroupPrecompute]", "sim-time-limit = 0s",
+        "*.packetIdentityRecorder.enabled = false", '*.scenarioRecoveryController.mode = "precompute-exact-group"',
+        '*.scenarioRecoveryController.exactProfileOutputPath = "profiles/exact_equivalence/raw/profile.raw.json"',
+        '*.scenarioRecoveryController.exactReportOutputPath = "profiles/exact_equivalence/raw/report.json"', "",
     ]
     link_by_id = {link.id: link for link in model.links}
     for fault_id in fault_candidates if fault_candidates is not None else model.fault_candidates:
@@ -206,6 +211,14 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
             '*.scenarioRecoveryController.mode = "offline-per-failure"',
             f'*.scenarioRecoveryController.faultId = "{fault_id}"',
             '*.scenarioRecoveryController.offlineProfileStore = readJSON("profiles/per_failure/runtime_store.json")',
+            f'*.scenarioRecoveryController.solverConfigHash = "{config_hash}"',
+            '*.scenarioRecoveryController.offlineLookupDelay = 0us', "",
+        ]
+        lines += [
+            f"[Config Exact_{config_suffix}]", f'*.scenarioManager.script = xml("{script}")',
+            '*.scenarioRecoveryController.mode = "offline-exact-equivalence"',
+            f'*.scenarioRecoveryController.faultId = "{fault_id}"',
+            '*.scenarioRecoveryController.exactProfileStore = readJSON("profiles/exact_equivalence/runtime_store.json")',
             f'*.scenarioRecoveryController.solverConfigHash = "{config_hash}"',
             '*.scenarioRecoveryController.offlineLookupDelay = 0us', "",
         ]

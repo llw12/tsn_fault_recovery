@@ -24,7 +24,9 @@ class ScenarioRecoveryController : public omnetpp::cSimpleModule {
     double offlineStoreLoadWallSeconds = 0;
     void initializeProfile();
     void precomputePerFailure();
+    void precomputeExactGroup();
     void loadOfflineStore();
+    void loadExactStore();
     void handleFault();
     void activateRecovery();
     void writeFaultAnalysis() const;

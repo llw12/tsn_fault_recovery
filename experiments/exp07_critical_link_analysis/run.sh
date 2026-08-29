@@ -8,7 +8,9 @@ OUTPUT="$PROJECT_ROOT/results/critical_link_analysis"
 inside_environment() {
     local run_id="$1" code_commit scratch
     cd "$PROJECT_ROOT"
-    git diff --quiet && git diff --cached --quiet || { echo "Formal exp07 requires a clean tracked working tree" >&2; exit 1; }
+    if [[ "${TSN_ALLOW_DIRTY:-0}" != "1" ]]; then
+        git diff --quiet && git diff --cached --quiet || { echo "Formal exp07 requires a clean tracked working tree" >&2; exit 1; }
+    fi
     code_commit="$(git rev-parse HEAD)"
     echo "PHASE 1/8 exp01-exp06 regression"
     bash experiments/exp06_offline_per_failure/run.sh --inside-environment "${run_id}_regression"

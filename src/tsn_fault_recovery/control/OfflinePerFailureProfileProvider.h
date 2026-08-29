@@ -20,10 +20,15 @@ struct OfflineProfileEntry {
 class OfflinePerFailureProfileProvider {
   private:
     std::map<std::string, OfflineProfileEntry> entries;
+    std::map<std::string, std::string> faultToClass;
   public:
     void preload(omnetpp::cValueMap *root, const std::string& expectedScenarioHash,
             const std::string& expectedSolverConfigHash);
     const OfflineProfileEntry& lookup(const std::string& faultId) const;
+    void preloadExact(omnetpp::cValueMap *root, const std::string& expectedScenarioHash,
+            const std::string& expectedSolverConfigHash);
+    const std::string& classForFault(const std::string& faultId) const;
+    const OfflineProfileEntry& lookupClass(const std::string& classId) const;
     size_t size() const { return entries.size(); }
 };
 
