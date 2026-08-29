@@ -92,10 +92,6 @@ def _shared_profile(raw: dict, scenario: dict, candidate_artifact: dict,
         "logical_routes": raw["logical_routes"], "routes": raw["routes"],
         "gate_schedules": raw["gate_schedules"], "schedule_status": "SAT",
         "schedule_objective": report["objective"],
-        "route_solver_wall_us_precompute": report["route_solver_wall_us"],
-        "smt_solver_wall_us_precompute": report["smt_solver_wall_us"],
-        "profile_build_wall_us": report["profile_compile_wall_us"],
-        "synthesis_wall_us": report["total_class_synthesis_wall_us"],
     }
     profile["semantic_profile_hash"] = semantic_profile_hash(profile)
     profile["profile_sha256"] = profile_content_hash(profile)

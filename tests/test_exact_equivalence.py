@@ -120,6 +120,11 @@ class ExactStoreTests(unittest.TestCase):
         store=self.build(); c=next(e for e in store["classes"].values() if e["class_type"]=="SINGLETON"); self.assertEqual(c["profile_source"],"PER_FAILURE_REUSE")
     def test_16_shared_profile_has_union_metadata(self):
         store=self.build(); c=next(e for e in store["classes"].values() if e["class_type"]=="MULTI_FAULT_SHARED"); self.assertEqual(c["union_disabled_links"],["f1","f2"])
+    def test_16b_shared_profile_hash_ignores_measured_wall_time(self):
+        first=self.build(); c=next(e for e in first["classes"].values() if e["class_type"]=="MULTI_FAULT_SHARED")
+        report=deepcopy(self.report); entry=next(iter(report.values())); entry["route_solver_wall_us"]=101; entry["smt_solver_wall_us"]=202; entry["profile_compile_wall_us"]=303; entry["total_class_synthesis_wall_us"]=707
+        second=build_class_store(self.generated,report); d=next(e for e in second["classes"].values() if e["class_type"]=="MULTI_FAULT_SHARED")
+        self.assertEqual((c["profile_sha256"],c["profile_file_sha256"]),(d["profile_sha256"],d["profile_file_sha256"]))
     def test_17_fault_to_class_complete(self): self.assertEqual(sorted(self.build()["fault_to_class"]), ["f1","f2","f3"])
     def test_18_same_members_load_same_sha(self):
         store=self.build(); self.assertEqual(len({store["classes"][store["fault_to_class"][f]]["profile_sha256"] for f in ("f1","f2")}),1)
