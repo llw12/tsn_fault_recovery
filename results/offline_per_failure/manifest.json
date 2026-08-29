@@ -1,0 +1,25 @@
+{
+  "experiment": "exp06_offline_per_failure",
+  "git_commit": "586420df7fa3687e9c615aab25febbe7d076e4cd",
+  "offline_precompute_code_commit": "586420df7fa3687e9c615aab25febbe7d076e4cd",
+  "online_offline_semantic_equality": "PASS",
+  "profile_store_sha256": {
+    "diamond": "89be117625c2decd3ce62781805fef60d5a26d2785b327a8a37ee234f03320f0",
+    "mesh10": "6f2faa52faacc7df4d1b1285db984a95308f3b1638594c23d14f63b739257f8e"
+  },
+  "profile_strategy": "per-failure",
+  "regression": {
+    "exp01": "PASS",
+    "exp02": "PASS",
+    "exp03": "PASS",
+    "exp04": "PASS",
+    "exp05": "PASS"
+  },
+  "run_id": "20260829T024615Z",
+  "runtime_code_commit": "586420df7fa3687e9c615aab25febbe7d076e4cd",
+  "runtime_solver_assertion": {
+    "offline_route_invocations": 0,
+    "offline_z3_invocations": 0
+  },
+  "schema_version": 1
+}

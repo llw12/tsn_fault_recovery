@@ -1,0 +1,3 @@
+scenario,fault_id,offline_lookup_delay_us,recovery_duration_us,tt_lost,deadline_miss_count,runtime_route_solver_invocations,runtime_z3_solver_invocations
+diamond,l_s1_s2,100,1346.32,1,0,0,0
+mesh10,l_sw2_sw5,100,268.15999999999997,2,0,0,0
