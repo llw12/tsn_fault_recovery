@@ -2,6 +2,7 @@
 #include <omnetpp.h>
 #include "AffectedFlowAnalyzer.h"
 #include "BfsRouteSolver.h"
+#include "ForwardingRealizabilityValidator.h"
 #include "ScenarioRuntimeAdapter.h"
 
 using namespace omnetpp;
@@ -19,7 +20,11 @@ class ScenarioFrameworkSelfTest : public cSimpleModule {
     require(routes.at("TT2").linkPath==two.linkPath,"unaffected route preserved");
     ScenarioRuntimeAdapter adapter({{{"l4","a"},{"eth2","a.eth[2]"}},{{"l6","c"},{"eth1","c.eth[1]"}}});
     auto paths=adapter.egressPaths(one,graph); require(paths==std::vector<std::string>({"a.eth[2]","c.eth[1]"}),"logical route compiles through port map");
-    EV_INFO<<"SCENARIO_FRAMEWORK_SELF_TESTS PASS count=6"<<endl;
+    std::vector<RouteDefinition> conflicting={{"a","es5","eth1","TT1","l3"},{"a","es5","eth2","TT2","l4"}};
+    auto conflict=ForwardingRealizabilityValidator::validate(conflicting); require(!conflict.valid && conflict.diagnostic.find("destination-MAC forwarding conflict")!=std::string::npos,"forwarding conflict rejected");
+    std::vector<RouteDefinition> compatible={{"a","es5","eth1","TT1","l3"},{"a","es5","eth1","TT2","l3"}};
+    require(ForwardingRealizabilityValidator::validate(compatible).valid,"compatible forwarding accepted");
+    EV_INFO<<"SCENARIO_FRAMEWORK_SELF_TESTS PASS count=8"<<endl;
   }
 };
 Define_Module(ScenarioFrameworkSelfTest);

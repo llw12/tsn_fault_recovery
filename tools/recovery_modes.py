@@ -13,7 +13,7 @@ class RecoveryMode:
 MODES = {
     "no-recovery": RecoveryMode("no-recovery", True, None),
     "online": RecoveryMode("online", True, "online-at-fault"),
-    "offline-per-failure": RecoveryMode("offline-per-failure", False, "precomputed-per-failure"),
+    "offline-per-failure": RecoveryMode("offline-per-failure", True, "precomputed-per-failure"),
     "offline-cluster": RecoveryMode("offline-cluster", False, "precomputed-cluster"),
 }
 

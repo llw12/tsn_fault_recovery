@@ -11,12 +11,21 @@ from statistics import mean
 
 
 SUMMARY_FIELDS = [
-    "scenario", "mode", "fault_id", "num_nodes", "num_switches", "num_end_systems", "num_links",
-    "num_tt_flows", "num_be_flows", "tt_sent", "tt_received", "tt_lost", "deadline_miss_count",
-    "deadline_miss_ratio", "failure_time_s", "first_success_after_fault_s", "recovery_duration_s",
-    "route_solver_wall_us", "smt_solver_wall_us", "total_solver_wall_us", "simulated_solver_delay_s",
-    "activation_wall_us", "offline_precompute_wall_ms", "profile_count", "profile_storage_bytes",
-    "cluster_count", "compression_ratio",
+    "scenario", "mode", "fault_id", "recovery_status", "recovery_action", "num_nodes", "num_switches",
+    "num_end_systems", "num_links", "num_tt_flows", "num_be_flows",
+    "candidate_fault_count", "relevant_fault_count", "no_action_fault_count",
+    "recoverable_fault_count", "unrecoverable_fault_count",
+    "initial_profile_precompute_wall_ms", "recovery_precompute_wall_ms",
+    "initial_profile_count", "recovery_profile_count", "total_profile_count",
+    "initial_profile_storage_bytes", "recovery_profile_storage_bytes",
+    "profile_store_metadata_bytes", "total_profile_storage_bytes",
+    "runtime_lookup_wall_us", "simulated_decision_delay_s",
+    "route_solver_wall_us_runtime", "smt_solver_wall_us_runtime",
+    "runtime_route_solver_invocations", "runtime_z3_solver_invocations",
+    "activation_wall_us", "tt_sent", "tt_received", "tt_lost", "deadline_miss_count",
+    "deadline_miss_ratio", "failure_time_s", "decision_ready_time_s", "activation_time_s",
+    "first_success_after_fault_s", "decision_delay_s", "activation_to_first_success_s",
+    "recovery_duration_s",
 ]
 
 
@@ -68,7 +77,10 @@ def _write_csv(path: Path, rows: list[dict], fields: list[str]) -> None:
             writer.writerow({key: "" if row.get(key) is None else (f"{row[key]:.12g}" if isinstance(row.get(key), float) else row.get(key, "")) for key in fields})
 
 
-def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str, precompute_wall_ms: float | None = None) -> dict:
+def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
+                precompute_wall_ms: float | None = None, *, store: dict | None = None,
+                profile_metrics: dict | None = None,
+                offline_lookup_delay_s: float = 0.0) -> dict:
     raw = run_dir / "raw"
     vec_files, sca_files = list(raw.glob("*.vec")), list(raw.glob("*.sca"))
     if len(vec_files) != 1 or len(sca_files) != 1:
@@ -82,7 +94,8 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str, precomp
     fault_analysis = json.loads((run_dir / "fault_analysis.json").read_text())["faults"]
     affected = set(fault_analysis[fault_id])
     failure = scenario["simulation"]["failure_time_s"]
-    activation = _scalar(scalars, "scenario.online.activationTime")
+    activation = _scalar(scalars, "scenario.activationTime")
+    if activation is None: activation = _scalar(scalars, "scenario.online.activationTime")
     packet_rows, flow_rows = [], []
     for flow_id, flow in {**tt, **be}.items():
         directions = vectors.get(flow_id, {}); sends = {seq: time for time, seq in directions.get("sent", [])}; receives = {seq: time for time, seq in directions.get("received", [])}
@@ -112,12 +125,65 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str, precomp
     _write_csv(run_dir / "packets.csv", packet_rows, packet_fields); _write_csv(run_dir / "flows.csv", flow_rows, flow_fields)
     tt_rows = [row for row in flow_rows if row["flow_id"] in tt]; tt_sent=sum(row["sent"] for row in tt_rows); tt_received=sum(row["received"] for row in tt_rows); misses=sum(row["deadline_miss_count"] for row in tt_rows)
     first_success = min((row["receive_time_s"] for row in packet_rows if row["flow_id"] in affected and row["send_time_s"] >= failure and row["received"]), default=None)
-    nodes=scenario["nodes"]; profile_bytes=(run_dir/"profile0.json").stat().st_size+(recovery_path.stat().st_size if recovery_path.exists() else 0)
-    summary={key:None for key in SUMMARY_FIELDS}; summary.update({"scenario":scenario["scenario_name"],"mode":mode,"fault_id":fault_id,"num_nodes":len(nodes),"num_switches":sum(n["type"]=="switch" for n in nodes),"num_end_systems":sum(n["type"]=="end_system" for n in nodes),"num_links":len(scenario["links"]),"num_tt_flows":len(tt),"num_be_flows":len(be),"tt_sent":tt_sent,"tt_received":tt_received,"tt_lost":tt_sent-tt_received,"deadline_miss_count":misses,"deadline_miss_ratio":misses/tt_received if tt_received else None,"failure_time_s":failure,"first_success_after_fault_s":first_success,"recovery_duration_s":first_success-failure if first_success is not None else None,"route_solver_wall_us":(_scalar(scalars,"scenario.online.routeWallTimeSeconds") or 0)*1e6 if mode=="online" else None,"smt_solver_wall_us":(_scalar(scalars,"scenario.online.scheduleWallTimeSeconds") or 0)*1e6 if mode=="online" else None,"total_solver_wall_us":(_scalar(scalars,"scenario.online.totalWallTimeSeconds") or 0)*1e6 if mode=="online" else None,"simulated_solver_delay_s":scenario["simulation"]["solver_delay_s"] if mode=="online" else None,"activation_wall_us":(_scalar(scalars,"scenario.online.activationWallTimeSeconds") or 0)*1e6 if mode=="online" else None,"offline_precompute_wall_ms":precompute_wall_ms,"profile_count":2 if recovery else 1,"profile_storage_bytes":profile_bytes})
+    nodes=scenario["nodes"]
+    affected_count = len(affected)
+    store_entry = store["faults"][fault_id] if store else None
+    if mode == "offline-per-failure":
+        recovery_status = "RECOVERED" if store_entry["status"] == "SAT" and activation is not None else ("NO_ACTION" if store_entry["status"] == "NO_AFFECTED_TT" else "UNRECOVERABLE")
+        recovery_action = "ACTIVATE_PROFILE" if store_entry["status"] == "SAT" else "NO_ACTION"
+        simulated_delay = offline_lookup_delay_s
+    elif mode == "online":
+        recovery_status = "NO_ACTION" if not affected else ("RECOVERED" if activation is not None else "UNRECOVERABLE")
+        recovery_action = "NO_ACTION" if not affected else ("ACTIVATE_PROFILE" if activation is not None else "NO_ACTION")
+        simulated_delay = scenario["simulation"]["solver_delay_s"] if affected else 0.0
+    else:
+        recovery_status = "NO_ACTION" if not affected else "NOT_ATTEMPTED"
+        recovery_action = "NO_ACTION"
+        simulated_delay = 0.0
+    decision_ready = failure + simulated_delay
+    base_counts = profile_metrics or {
+        "candidate_fault_count": len(scenario["fault_candidates"]),
+        "relevant_fault_count": sum(bool(value) for value in fault_analysis.values()),
+        "no_action_fault_count": sum(not value for value in fault_analysis.values()),
+        "recoverable_fault_count": None, "unrecoverable_fault_count": None,
+    }
+    initial_bytes = (run_dir/"profile0.json").stat().st_size
+    offline_only = mode == "offline-per-failure"
+    summary={key:None for key in SUMMARY_FIELDS}; summary.update({
+        "scenario":scenario["scenario_name"], "mode":mode, "fault_id":fault_id,
+        "recovery_status":recovery_status, "recovery_action":recovery_action, "num_nodes":len(nodes),
+        "num_switches":sum(n["type"]=="switch" for n in nodes),
+        "num_end_systems":sum(n["type"]=="end_system" for n in nodes), "num_links":len(scenario["links"]),
+        "num_tt_flows":len(tt), "num_be_flows":len(be),
+        "candidate_fault_count":base_counts["candidate_fault_count"], "relevant_fault_count":base_counts["relevant_fault_count"],
+        "no_action_fault_count":base_counts["no_action_fault_count"], "recoverable_fault_count":base_counts["recoverable_fault_count"],
+        "unrecoverable_fault_count":base_counts["unrecoverable_fault_count"],
+        "initial_profile_precompute_wall_ms":precompute_wall_ms,
+        "recovery_precompute_wall_ms":base_counts.get("recovery_precompute_wall_ms") if offline_only else None,
+        "initial_profile_count":1, "recovery_profile_count":base_counts.get("recovery_profile_count", 0) if offline_only else 0,
+        "total_profile_count":base_counts.get("total_profile_count", 1) if offline_only else 1,
+        "initial_profile_storage_bytes":initial_bytes,
+        "recovery_profile_storage_bytes":base_counts.get("recovery_profile_storage_bytes", 0) if offline_only else 0,
+        "profile_store_metadata_bytes":base_counts.get("profile_store_metadata_bytes", 0) if offline_only else 0,
+        "total_profile_storage_bytes":base_counts.get("total_profile_storage_bytes", initial_bytes) if offline_only else initial_bytes,
+        "runtime_lookup_wall_us":(_scalar(scalars,"scenario.offline.lookupWallTimeSeconds") or 0)*1e6 if offline_only else None,
+        "simulated_decision_delay_s":simulated_delay,
+        "route_solver_wall_us_runtime":(_scalar(scalars,"scenario.online.routeWallTimeSeconds") or 0)*1e6 if mode=="online" else 0,
+        "smt_solver_wall_us_runtime":(_scalar(scalars,"scenario.online.scheduleWallTimeSeconds") or 0)*1e6 if mode=="online" else 0,
+        "runtime_route_solver_invocations":int(_scalar(scalars,"scenario.runtime.routeSolverInvocations",0)),
+        "runtime_z3_solver_invocations":int(_scalar(scalars,"scenario.runtime.z3SolverInvocations",0)),
+        "activation_wall_us":(_scalar(scalars,"scenario.activationWallTimeSeconds") or 0)*1e6 if activation is not None else None,
+        "tt_sent":tt_sent, "tt_received":tt_received, "tt_lost":tt_sent-tt_received,
+        "deadline_miss_count":misses, "deadline_miss_ratio":misses/tt_received if tt_received else None,
+        "failure_time_s":failure, "decision_ready_time_s":decision_ready, "activation_time_s":activation,
+        "first_success_after_fault_s":first_success, "decision_delay_s":simulated_delay,
+        "activation_to_first_success_s":first_success-activation if first_success is not None and activation is not None else None,
+        "recovery_duration_s":first_success-failure if first_success is not None else None,
+    })
     _write_csv(run_dir/"summary.csv",[summary],SUMMARY_FIELDS)
-    timing_fields=["scenario","mode","fault_id","failure_time_s","activation_time_s","route_solver_wall_us","smt_solver_wall_us","profile_compilation_wall_us","total_solver_wall_us","simulated_solver_delay_s","activation_wall_us","offline_precompute_wall_ms"]
+    timing_fields=["scenario","mode","fault_id","failure_time_s","decision_ready_time_s","activation_time_s","route_solver_wall_us_runtime","smt_solver_wall_us_runtime","profile_compilation_wall_us","simulated_decision_delay_s","runtime_lookup_wall_us","activation_wall_us","initial_profile_precompute_wall_ms","recovery_precompute_wall_ms"]
     timing={key:summary.get(key) for key in timing_fields}; timing["activation_time_s"]=activation; timing["profile_compilation_wall_us"]=(_scalar(scalars,"scenario.online.profileCompilationWallTimeSeconds") or 0)*1e6 if mode=="online" else None; _write_csv(run_dir/"timing.csv",[timing],timing_fields)
     lines=[f"# {scenario['scenario_name']} / {mode} / {fault_id}","",f"TT delivery: {tt_received}/{tt_sent}; loss: {tt_sent-tt_received}; delivered deadline misses: {misses}.","",f"Affected TT flows: {', '.join(sorted(affected)) or 'none'}."]
-    if mode=="online": lines += ["",f"First successful TT reception after fault: {first_success:.9g} s; recovery duration: {summary['recovery_duration_s']:.9g} s."]
+    if first_success is not None: lines += ["",f"First successful TT reception after fault: {first_success:.9g} s; recovery duration: {summary['recovery_duration_s']:.9g} s."]
     (run_dir/"summary.md").write_text("\n".join(lines)+"\n")
     return summary

@@ -7,6 +7,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 from tools.scenario_model import ScenarioModel, load_scenario, write_canonical
+from tools.profile_store import solver_config_hash
 
 
 def _seconds(value: float) -> str:
@@ -108,6 +109,7 @@ def render_ini(model: ScenarioModel) -> str:
         '*.scenarioRecoveryController.scenario = readJSON("scenario.json")',
         '*.scenarioRecoveryController.portMap = readJSON("port_map.json")',
         '*.scenarioRecoveryController.profile0 = readJSON("profiles/profile0.json")',
+        '*.scenarioRecoveryController.offlineProfileStore = readJSON("profiles/profile0.json")',
         "*.packetIdentityRecorder.enabled = true", "",
     ]
     port_map = build_port_map(model)
@@ -160,6 +162,9 @@ def render_ini(model: ScenarioModel) -> str:
                 f"*.{switch}.eth[*].macLayer.queue.transmissionGate[{traffic_class}].initiallyOpen = {initially_open}",
                 f"*.{switch}.eth[*].macLayer.queue.transmissionGate[{traffic_class}].durations = [{_seconds(model.simulation.cycle_time_s / 2)}, {_seconds(model.simulation.cycle_time_s / 2)}]",
             ]
+    scenario_value = model.canonical_dict()
+    scenario_value["scenario_sha256"] = model.sha256()
+    config_hash = solver_config_hash(scenario_value, port_map)
     lines += ["", f'*.packetIdentityRecorder.flowIds = "{_quoted_words([flow.id for flow in all_flows])}"']
     source_modules, destination_modules = [], []
     for flow in all_flows:
@@ -174,6 +179,10 @@ def render_ini(model: ScenarioModel) -> str:
         '*.scenarioRecoveryController.mode = "precompute"',
         '*.scenarioRecoveryController.profileOutputPath = "profiles/profile0.json"',
         '*.scenarioRecoveryController.faultAnalysisOutputPath = "fault_analysis.json"', "",
+        "[Config ScenarioPerFailurePrecompute]", "sim-time-limit = 0s",
+        "*.packetIdentityRecorder.enabled = false", "*.scenarioRecoveryController.mode = \"precompute-per-failure\"",
+        '*.scenarioRecoveryController.perFailureProfileDirectory = "profiles/per_failure/raw"',
+        '*.scenarioRecoveryController.perFailureReportOutputPath = "profiles/per_failure/precompute_report.json"', "",
     ]
     link_by_id = {link.id: link for link in model.links}
     for fault_id in model.fault_candidates:
@@ -192,6 +201,14 @@ def render_ini(model: ScenarioModel) -> str:
                 f'*.scenarioRecoveryController.mode = "{mode}"', f'*.scenarioRecoveryController.faultId = "{fault_id}"',
                 f'*.scenarioRecoveryController.recoveryProfileOutputPath = "profiles/{mode}_{fault_id}.json"', "",
             ]
+        lines += [
+            f"[Config Offline_{config_suffix}]", f'*.scenarioManager.script = xml("{script}")',
+            '*.scenarioRecoveryController.mode = "offline-per-failure"',
+            f'*.scenarioRecoveryController.faultId = "{fault_id}"',
+            '*.scenarioRecoveryController.offlineProfileStore = readJSON("profiles/per_failure/runtime_store.json")',
+            f'*.scenarioRecoveryController.solverConfigHash = "{config_hash}"',
+            '*.scenarioRecoveryController.offlineLookupDelay = 0us', "",
+        ]
     return "\n".join(lines)
 
 

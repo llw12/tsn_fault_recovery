@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "PipelineScheduleGenerator.h"
+#include "ForwardingRealizabilityValidator.h"
 #include "inet/linklayer/ethernet/common/MacForwardingTable.h"
 #include "inet/networklayer/common/InterfaceTable.h"
 #include "inet/networklayer/common/NetworkInterface.h"
@@ -143,6 +144,9 @@ void ProfileSwitcher::validateProfile(const ProfileDefinition& profile) const
         if (route.switchPath.empty() || route.destinationPath.empty() || route.egressInterface.empty())
             throw cRuntimeError("Profile '%s' contains an incomplete route entry", profile.profileId.c_str());
     }
+    auto forwarding = ForwardingRealizabilityValidator::validate(profile.routes);
+    if (!forwarding.valid)
+        throw cRuntimeError("Profile '%s' is not forwarding-realizable: %s", profile.profileId.c_str(), forwarding.diagnostic.c_str());
     for (const auto& gate : profile.gateSchedules) {
         if (gate.gatePath.empty() || gate.trafficClass < 0 || gate.durations.empty() || gate.durations.size() % 2 != 0)
             throw cRuntimeError("Profile '%s' contains an invalid gate entry", profile.profileId.c_str());

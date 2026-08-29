@@ -37,8 +37,11 @@ OBJS = $O/src/tsn_fault_recovery/control/AffectedFlowAnalyzer.o \
     $O/src/tsn_fault_recovery/control/BfsRouteSolver.o \
     $O/src/tsn_fault_recovery/control/BfsZ3JointProfileSolver.o \
     $O/src/tsn_fault_recovery/control/DeterministicJointProfileSolver.o \
+    $O/src/tsn_fault_recovery/control/ForwardingRealizabilityValidator.o \
     $O/src/tsn_fault_recovery/control/GateScheduleCompiler.o \
+    $O/src/tsn_fault_recovery/control/JointProfileComputer.o \
     $O/src/tsn_fault_recovery/control/LegacyRuntimeTopologyAdapter.o \
+    $O/src/tsn_fault_recovery/control/OfflinePerFailureProfileProvider.o \
     $O/src/tsn_fault_recovery/control/OnlineJointRecoveryController.o \
     $O/src/tsn_fault_recovery/control/PacketIdentityRecorder.o \
     $O/src/tsn_fault_recovery/control/PipelineScheduleGenerator.o \
