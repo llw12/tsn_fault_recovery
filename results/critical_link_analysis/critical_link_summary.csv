@@ -1,0 +1,3 @@
+scenario,physical_link_count,switch_switch_link_count,tt_used_internal_link_count,auto_candidate_fault_count,recoverable_sat_count,no_route_count,unsat_count,forwarding_conflict_count,affected_flow_set_unique_count,semantic_profile_unique_count,per_failure_recovery_profile_count,duplicate_semantic_profile_count
+diamond_auto,6,4,2,2,2,0,0,0,1,1,2,1
+mesh10_auto,22,16,12,12,12,0,0,0,10,10,12,2

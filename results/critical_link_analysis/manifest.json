@@ -1,0 +1,45 @@
+{
+  "artifacts": {
+    "affected_flow_heatmap.png": "a90a00f6ce7a212e28102b4b09c72988e87a697bb66f76e6b6dc13873822da59",
+    "affected_flow_matrix.csv": "4e8cdf7d631085211bb98985c73514a78f7e67186e0aa5eafc612883f7b48903",
+    "candidate_faults.json": "78906f76598c11c7c1bddcab998b297bc572e8a56fcb22eab3d1074115791065",
+    "critical_link_analysis.csv": "436601e1ee0b935ffb7cb5d3d77efea40b6203f86f945bf398f4187a52328838",
+    "critical_link_summary.csv": "861a792cd1c3efa58d7d6344db4c829766a27643e1580f96e7adc8f5e35858bb",
+    "critical_links_topology.png": "f73e98b75614c0c3e5a454be4c71d36c617a79d2bef0dde7df650c715c8a4361",
+    "exact_affected_set_groups.csv": "a4dac5ac26c5d90780b98826ea4ba88742100638fdd5945300f69738f4b90770",
+    "fault_equivalence_dataset.csv": "a8b0a78b495f61d615454bfea246b5b7e28ec191b1770bd3c95b4a263757c30e",
+    "jaccard_heatmap.png": "b45dd23843e5f3c9d07801dbc000e0d85c2adb1cdd44fdbcbd66803d900310a0",
+    "jaccard_similarity_matrix.csv": "8b0ca56b561dc0383c73434d95b720110183bb82c45ce43c4a621fc29a95c8af",
+    "jaccard_vs_profile_identity.png": "5d6849809cd50bd627ec94dd9a449cbf62f90af49f1ed951b38e0180628e869f",
+    "pairwise_fault_similarity.csv": "a7d86e34bbc2917c9d66a5781e864e437abcc45f571ebadad40564e4dc7eeeec",
+    "profile_similarity_by_jaccard.csv": "b80b1a3a16aca1904f2d1de30fe1207d9493f76177e5c828cd3f4af9c0fd3a22",
+    "summary.md": "bee0a45fb2c7702ecf33ca3cabe25ace5a3acf020759a433aae64f4bb8ab2b39"
+  },
+  "candidate_sets": {
+    "diamond_auto": {
+      "candidate_fault_count": 2,
+      "candidate_set_sha256": "10613052300bc536b586401c2f159e02dae6d88cd386d277f7eea5dedee44f61",
+      "policy": {
+        "criterion": "tt-primary-route-used",
+        "exclude": [],
+        "mode": "auto",
+        "scope": "switch-switch"
+      }
+    },
+    "mesh10_auto": {
+      "candidate_fault_count": 12,
+      "candidate_set_sha256": "8fbc0d9bbf58bbbc81d92644b07f00048787138ae14a918965ca1f4131c291a9",
+      "policy": {
+        "criterion": "tt-primary-route-used",
+        "exclude": [],
+        "mode": "auto",
+        "scope": "switch-switch"
+      }
+    }
+  },
+  "git_commit": "26b0aa32bbd41ff79dd19f736a6ca63c6315ac76",
+  "inet_version": "4.7.0",
+  "omnetpp_version": "6.4.0",
+  "schema_version": 1,
+  "z3_version": "4.16.0"
+}

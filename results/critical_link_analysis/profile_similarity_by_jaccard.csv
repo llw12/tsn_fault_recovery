@@ -1,0 +1,7 @@
+jaccard_bin,pair_count,both_sat_count,same_profile_count,same_profile_ratio
+0,46,46,0,0.0
+"(0,0.25]",2,2,0,0.0
+"(0.25,0.5]",13,13,0,0.0
+"(0.5,0.75]",2,2,0,0.0
+"(0.75,1)",1,1,0,0.0
+1,3,3,3,1.0

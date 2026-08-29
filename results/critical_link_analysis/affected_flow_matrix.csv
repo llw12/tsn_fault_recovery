@@ -1,0 +1,15 @@
+scenario,fault_id,TT,TT1,TT10,TT2,TT3,TT4,TT5,TT6,TT7,TT8,TT9
+diamond_auto,l_s1_s2,1,0,0,0,0,0,0,0,0,0,0
+diamond_auto,l_s2_s4,1,0,0,0,0,0,0,0,0,0,0
+mesh10_auto,l_sw1_sw2,0,1,0,0,0,0,0,0,1,0,0
+mesh10_auto,l_sw1_sw3,0,0,1,0,0,0,1,0,0,0,0
+mesh10_auto,l_sw2_sw3,0,0,0,0,0,1,0,0,0,1,0
+mesh10_auto,l_sw2_sw5,0,1,0,1,0,0,0,0,1,0,0
+mesh10_auto,l_sw3_sw4,0,0,1,0,0,1,1,0,0,1,0
+mesh10_auto,l_sw4_sw6,0,0,0,0,0,0,0,1,0,0,1
+mesh10_auto,l_sw4_sw7,0,0,1,0,1,1,1,0,0,1,0
+mesh10_auto,l_sw5_sw8,0,1,0,1,0,0,0,0,1,0,0
+mesh10_auto,l_sw6_sw8,0,0,0,0,0,0,0,1,0,0,1
+mesh10_auto,l_sw7_sw9,0,0,0,0,1,0,1,0,0,0,0
+mesh10_auto,l_sw8_sw10,0,0,0,1,0,0,0,1,1,0,1
+mesh10_auto,l_sw8_sw9,0,1,0,0,0,0,0,0,0,0,0
