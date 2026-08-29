@@ -1,0 +1,205 @@
+schema_version: 1
+name: mesh10
+
+simulation:
+  duration: 25ms
+  cycle_time: 1ms
+  time_quantum: 1us
+  failure_time: 8ms
+  solver_delay: 1ms
+  random_seed: 0
+
+network:
+  default_link:
+    bitrate: 1Gbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 30us
+  hop_margin: 4us
+  endpoint_budget: 350us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: es1
+    - id: es2
+    - id: es3
+    - id: es4
+    - id: es5
+    - id: es6
+  switches:
+    - id: sw1
+    - id: sw2
+    - id: sw3
+    - id: sw4
+    - id: sw5
+    - id: sw6
+    - id: sw7
+    - id: sw8
+    - id: sw9
+    - id: sw10
+  links:
+    - id: l_es1_sw1
+      endpoints: [es1, sw1]
+    - id: l_es2_sw2
+      endpoints: [es2, sw2]
+    - id: l_es3_sw4
+      endpoints: [es3, sw4]
+    - id: l_es4_sw7
+      endpoints: [es4, sw7]
+    - id: l_es5_sw9
+      endpoints: [es5, sw9]
+    - id: l_es6_sw10
+      endpoints: [es6, sw10]
+    - id: l_sw1_sw2
+      endpoints: [sw1, sw2]
+    - id: l_sw1_sw3
+      endpoints: [sw1, sw3]
+    - id: l_sw2_sw3
+      endpoints: [sw2, sw3]
+    - id: l_sw2_sw5
+      endpoints: [sw2, sw5]
+    - id: l_sw3_sw4
+      endpoints: [sw3, sw4]
+    - id: l_sw3_sw6
+      endpoints: [sw3, sw6]
+    - id: l_sw4_sw6
+      endpoints: [sw4, sw6]
+    - id: l_sw4_sw7
+      endpoints: [sw4, sw7]
+    - id: l_sw5_sw6
+      endpoints: [sw5, sw6]
+    - id: l_sw5_sw8
+      endpoints: [sw5, sw8]
+    - id: l_sw6_sw7
+      endpoints: [sw6, sw7]
+    - id: l_sw6_sw8
+      endpoints: [sw6, sw8]
+    - id: l_sw7_sw9
+      endpoints: [sw7, sw9]
+    - id: l_sw8_sw9
+      endpoints: [sw8, sw9]
+    - id: l_sw8_sw10
+      endpoints: [sw8, sw10]
+    - id: l_sw9_sw10
+      endpoints: [sw9, sw10]
+
+traffic:
+  tt_flows:
+    - id: TT1
+      source: es1
+      destination: es5
+      packet_size: 200B
+      period: 1ms
+      deadline: 900us
+      release_offset: 0us
+      pcp: 4
+      traffic_class: 1
+    - id: TT2
+      source: es2
+      destination: es6
+      packet_size: 300B
+      period: 1ms
+      deadline: 900us
+      release_offset: 20us
+      pcp: 4
+      traffic_class: 1
+    - id: TT3
+      source: es3
+      destination: es5
+      packet_size: 400B
+      period: 1ms
+      deadline: 900us
+      release_offset: 40us
+      pcp: 4
+      traffic_class: 1
+    - id: TT4
+      source: es4
+      destination: es2
+      packet_size: 500B
+      period: 1ms
+      deadline: 950us
+      release_offset: 60us
+      pcp: 4
+      traffic_class: 1
+    - id: TT5
+      source: es5
+      destination: es1
+      packet_size: 200B
+      period: 1ms
+      deadline: 900us
+      release_offset: 80us
+      pcp: 4
+      traffic_class: 1
+    - id: TT6
+      source: es6
+      destination: es3
+      packet_size: 300B
+      period: 1ms
+      deadline: 900us
+      release_offset: 100us
+      pcp: 4
+      traffic_class: 1
+    - id: TT7
+      source: es1
+      destination: es6
+      packet_size: 400B
+      period: 1ms
+      deadline: 950us
+      release_offset: 120us
+      pcp: 4
+      traffic_class: 1
+    - id: TT8
+      source: es2
+      destination: es4
+      packet_size: 500B
+      period: 1ms
+      deadline: 950us
+      release_offset: 140us
+      pcp: 4
+      traffic_class: 1
+    - id: TT9
+      source: es3
+      destination: es6
+      packet_size: 200B
+      period: 1ms
+      deadline: 900us
+      release_offset: 160us
+      pcp: 4
+      traffic_class: 1
+    - id: TT10
+      source: es4
+      destination: es1
+      packet_size: 300B
+      period: 1ms
+      deadline: 950us
+      release_offset: 180us
+      pcp: 4
+      traffic_class: 1
+  be_flows:
+    - id: BE1
+      source: es1
+      destination: es5
+      packet_size: 1000B
+      interval: 500us
+      release_offset: 0us
+      pcp: 0
+      traffic_class: 0
+    - id: BE2
+      source: es4
+      destination: es2
+      packet_size: 1200B
+      interval: 500us
+      release_offset: 100us
+      pcp: 0
+      traffic_class: 0
+
+faults:
+  model: single_link
+  candidates:
+    - l_sw2_sw5
+    - l_sw3_sw6
+    - l_sw6_sw8
+    - l_sw7_sw9

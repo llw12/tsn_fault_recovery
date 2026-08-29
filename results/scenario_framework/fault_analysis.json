@@ -1,0 +1,34 @@
+{
+  "diamond": {
+    "faults": {
+      "l_s1_s2": [
+        "TT"
+      ],
+      "l_s1_s3": [],
+      "l_s2_s4": [
+        "TT"
+      ],
+      "l_s3_s4": []
+    },
+    "scenario_sha256": "e73c98c41edd37c766c24b78b8be96b6048c64d38d30b71f99b6a9473fa67a1b"
+  },
+  "mesh10": {
+    "faults": {
+      "l_sw2_sw5": [
+        "TT1",
+        "TT2",
+        "TT7"
+      ],
+      "l_sw3_sw6": [],
+      "l_sw6_sw8": [
+        "TT6",
+        "TT9"
+      ],
+      "l_sw7_sw9": [
+        "TT3",
+        "TT5"
+      ]
+    },
+    "scenario_sha256": "f25d42b46271b5addcad76c7a99cf69804c7debe7833c9e8aed0b3cf47038002"
+  }
+}

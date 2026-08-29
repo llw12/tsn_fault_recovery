@@ -4,6 +4,7 @@
 
 #include "BfsRouteSolver.h"
 #include "GateScheduleCompiler.h"
+#include "LegacyRuntimeTopologyAdapter.h"
 #include "TimeTickConverter.h"
 #include "Z3ScheduleSolver.h"
 
@@ -14,12 +15,20 @@ SolverOutput BfsZ3JointProfileSolver::solve(omnetpp::cModule *network,
 {
     BfsRouteSolver routeSolver;
     auto routeStart = std::chrono::steady_clock::now();
-    RoutePath route = routeSolver.solve(network, fault);
+    auto capture = LegacyRuntimeTopologyAdapter::capture(network);
+    std::vector<RoutePath> routes;
+    std::vector<LogicalRoute> logicalRoutes;
+    for (const auto& flow : input.affectedFlows) {
+        auto logical = routeSolver.solve(capture.graph, flow.flowId, flow.source, flow.destination);
+        routes.push_back(LegacyRuntimeTopologyAdapter::compile(logical, flow.destination, capture, network));
+        logicalRoutes.push_back(logical);
+    }
     auto routeEnd = std::chrono::steady_clock::now();
 
     ScheduleRequest request;
     request.flows = input.affectedFlows;
-    request.routeEgressPaths.assign(input.affectedFlows.size(), route.egressInterfacePaths);
+    for (const auto& route : routes)
+        request.routeEgressPaths.push_back(route.egressInterfacePaths);
     request.cycleTime = input.cycleTime;
     request.timeQuantum = input.timeQuantum;
     request.ingressMargin = input.ingressMargin;
@@ -32,8 +41,10 @@ SolverOutput BfsZ3JointProfileSolver::solve(omnetpp::cModule *network,
     ScheduleResult schedule = scheduleSolver.solve(request);
     SolverOutput output;
     output.profile.profileId = "online-bfs-z3";
-    output.profile.routes = route.routes;
-    output.nodePath = route.nodePath;
+    for (const auto& route : routes)
+        output.profile.routes.insert(output.profile.routes.end(), route.routes.begin(), route.routes.end());
+    output.profile.logicalRoutes = logicalRoutes;
+    output.nodePath = routes.front().nodePath;
     output.logicalWindows = schedule.windows;
     output.scheduleStatus = schedule.status;
     output.objectiveTicks = schedule.objectiveTicks;

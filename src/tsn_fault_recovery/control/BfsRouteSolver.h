@@ -8,7 +8,9 @@ namespace tsn_fault_recovery {
 class BfsRouteSolver : public RouteSolver
 {
   public:
-    virtual RoutePath solve(omnetpp::cModule *network, const FaultEvent& fault) override;
+    virtual LogicalRoute solve(const NetworkGraph& graph, const std::string& flowId,
+            const std::string& source, const std::string& destination,
+            const std::set<std::string>& disabledLinks = {}) const override;
 };
 
 } // namespace tsn_fault_recovery

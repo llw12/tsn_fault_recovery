@@ -193,6 +193,7 @@ ActivationResult ProfileSwitcher::activateProfile(const ProfileDefinition& profi
         if (readback != newId)
             throw cRuntimeError("Forwarding readback failed for '%s'", route.definition->switchPath.c_str());
         EV_INFO << "PROFILE_ROUTE switch=" << route.definition->switchPath << " destination=" << route.destinationMac
+                << " flow=" << route.definition->flowId << " logicalLink=" << route.definition->logicalLinkId
                 << " oldInterfaceId=" << route.oldInterfaceId << " newInterface=" << route.definition->egressInterface
                 << " newInterfaceId=" << newId << endl;
     }

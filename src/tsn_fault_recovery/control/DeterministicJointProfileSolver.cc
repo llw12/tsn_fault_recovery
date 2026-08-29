@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "BfsRouteSolver.h"
+#include "LegacyRuntimeTopologyAdapter.h"
 #include "PipelineScheduleGenerator.h"
 
 using namespace omnetpp;
@@ -17,12 +18,15 @@ SolverOutput DeterministicJointProfileSolver::solve(cModule *network, const Faul
     const AffectedFlow& ttFlow = input.affectedFlows.front();
     BfsRouteSolver routeSolver;
     auto routeStart = std::chrono::steady_clock::now();
-    RoutePath route = routeSolver.solve(network, fault);
+    auto capture = LegacyRuntimeTopologyAdapter::capture(network);
+    auto logical = routeSolver.solve(capture.graph, ttFlow.flowId, ttFlow.source, ttFlow.destination);
+    RoutePath route = LegacyRuntimeTopologyAdapter::compile(logical, ttFlow.destination, capture, network);
     auto routeEnd = std::chrono::steady_clock::now();
     SolverOutput output;
     output.nodePath = route.nodePath;
     output.profile.profileId = "online-joint";
     output.profile.routes = route.routes;
+    output.profile.logicalRoutes = {logical};
     auto scheduleStart = std::chrono::steady_clock::now();
     output.profile.gateSchedules = PipelineScheduleGenerator::generate(
             route.egressInterfacePaths, input.cycleTime, input.ttWindow, ttFlow.packetBytes,

@@ -21,6 +21,9 @@ struct AffectedFlow
     omnetpp::simtime_t period;
     omnetpp::simtime_t deadline;
     omnetpp::simtime_t releaseOffset;
+    // E2E deadline is the measurement contract; the reduced budget is the SMT constraint.
+    omnetpp::simtime_t deadlineE2E;
+    omnetpp::simtime_t scheduleDeadlineBudget;
 };
 
 struct RoutePath

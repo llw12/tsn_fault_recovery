@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <omnetpp.h>
+#include "../model/NetworkGraph.h"
 
 namespace tsn_fault_recovery {
 
@@ -13,6 +14,8 @@ struct RouteDefinition
     std::string switchPath;
     std::string destinationPath;
     std::string egressInterface;
+    std::string flowId;
+    std::string logicalLinkId;
 };
 
 struct GateScheduleDefinition
@@ -29,6 +32,7 @@ struct ProfileDefinition
     std::string profileId;
     std::vector<RouteDefinition> routes;
     std::vector<GateScheduleDefinition> gateSchedules;
+    std::vector<LogicalRoute> logicalRoutes;
 };
 
 struct ActivationResult

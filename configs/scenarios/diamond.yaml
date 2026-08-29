@@ -1,0 +1,74 @@
+schema_version: 1
+name: diamond
+
+simulation:
+  duration: 20ms
+  cycle_time: 1ms
+  time_quantum: 1us
+  failure_time: 5ms
+  solver_delay: 1ms
+  random_seed: 0
+
+network:
+  default_link:
+    bitrate: 100Mbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 150us
+  hop_margin: 5us
+  endpoint_budget: 320us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: source
+    - id: destination
+  switches:
+    - id: s1
+    - id: s2
+    - id: s3
+    - id: s4
+  links:
+    - id: l_source_s1
+      endpoints: [source, s1]
+    - id: l_s1_s2
+      endpoints: [s1, s2]
+    - id: l_s1_s3
+      endpoints: [s1, s3]
+    - id: l_s2_s4
+      endpoints: [s2, s4]
+    - id: l_s3_s4
+      endpoints: [s3, s4]
+    - id: l_s4_destination
+      endpoints: [s4, destination]
+
+traffic:
+  tt_flows:
+    - id: TT
+      source: source
+      destination: destination
+      packet_size: 200B
+      period: 1ms
+      deadline: 1ms
+      release_offset: 0us
+      pcp: 4
+      traffic_class: 1
+  be_flows:
+    - id: BE
+      source: source
+      destination: destination
+      packet_size: 1400B
+      interval: 200us
+      release_offset: 0us
+      pcp: 0
+      traffic_class: 0
+
+faults:
+  model: single_link
+  candidates:
+    - l_s1_s2
+    - l_s1_s3
+    - l_s2_s4
+    - l_s3_s4

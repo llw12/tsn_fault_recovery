@@ -9,7 +9,11 @@ out/
 /tsn_fault_recovery
 experiments/*/raw/
 results/*/runs/
+results/scenarios/
+generated/
 simulations/*/results/
 scripts/__pycache__/
+tools/__pycache__/
+tests/__pycache__/
 core
 core.*

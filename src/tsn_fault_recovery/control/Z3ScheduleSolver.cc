@@ -16,6 +16,12 @@ using namespace omnetpp;
 namespace tsn_fault_recovery {
 
 namespace {
+simtime_t schedulingDeadline(const AffectedFlow& flow) {
+    return flow.scheduleDeadlineBudget > SIMTIME_ZERO ? flow.scheduleDeadlineBudget : flow.deadline;
+}
+}
+
+namespace {
 
 z3::expr integer(z3::context& context, int64_t value)
 {
@@ -35,7 +41,7 @@ std::string explainUnsat(const ScheduleRequest& request, int64_t cycleTicks,
 {
     for (size_t f = 0; f < request.flows.size(); ++f) {
         int64_t release = TimeTickConverter::exactTicks(request.flows[f].releaseOffset, request.timeQuantum, "releaseOffset");
-        int64_t deadline = TimeTickConverter::exactTicks(request.flows[f].deadline, request.timeQuantum, "deadline");
+        int64_t deadline = TimeTickConverter::exactTicks(schedulingDeadline(request.flows[f]), request.timeQuantum, "scheduleDeadlineBudget");
         int64_t hops = request.routeEgressPaths[f].size();
         int64_t minimumCompletion = release + ingressTicks + hops * txTicks[f]
                 + std::max<int64_t>(0, hops - 1) * marginTicks;
@@ -72,7 +78,7 @@ ScheduleResult Z3ScheduleSolver::solve(const ScheduleRequest& request)
             throw cRuntimeError("Flow '%s' has incomplete identity or route data", flow.flowId.c_str());
         if (TimeTickConverter::exactTicks(flow.period, request.timeQuantum, "period") != cycleTicks)
             throw cRuntimeError("Flow '%s' period must equal the single-cycle hyperperiod", flow.flowId.c_str());
-        TimeTickConverter::exactTicks(flow.deadline, request.timeQuantum, "deadline");
+        TimeTickConverter::exactTicks(schedulingDeadline(flow), request.timeQuantum, "scheduleDeadlineBudget");
         TimeTickConverter::exactTicks(flow.releaseOffset, request.timeQuantum, "releaseOffset");
         txTicks.push_back(TimeTickConverter::serializationTicks(flow.packetBytes,
                 request.frameOverheadBytes, request.linkBitrate, request.timeQuantum));
@@ -93,7 +99,7 @@ ScheduleResult Z3ScheduleSolver::solve(const ScheduleRequest& request)
     z3::expr totalCompletion = integer(context, 0);
     for (size_t f = 0; f < request.flows.size(); ++f) {
         int64_t release = TimeTickConverter::exactTicks(request.flows[f].releaseOffset, request.timeQuantum, "releaseOffset");
-        int64_t deadline = TimeTickConverter::exactTicks(request.flows[f].deadline, request.timeQuantum, "deadline");
+        int64_t deadline = TimeTickConverter::exactTicks(schedulingDeadline(request.flows[f]), request.timeQuantum, "scheduleDeadlineBudget");
         for (size_t h = 0; h < starts[f].size(); ++h) {
             optimizer.add(starts[f][h] >= 0);
             optimizer.add(starts[f][h] + integer(context, txTicks[f]) <= integer(context, cycleTicks));

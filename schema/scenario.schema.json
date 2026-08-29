@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/llw12/tsn_fault_recovery/blob/main/schema/scenario.schema.json",
+  "title": "TSN Fault Recovery Scenario v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "name", "simulation", "network", "topology", "traffic", "faults"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+    "simulation": {
+      "type": "object",
+      "required": ["duration", "cycle_time", "time_quantum"],
+      "properties": {
+        "duration": {"type": "string"}, "cycle_time": {"type": "string"},
+        "time_quantum": {"type": "string"}, "failure_time": {"type": "string"},
+        "solver_delay": {"type": "string"}, "random_seed": {"type": "integer"}
+      }
+    },
+    "network": {
+      "type": "object", "required": ["default_link"],
+      "properties": {"default_link": {"type": "object", "required": ["bitrate", "propagation_delay"]}}
+    },
+    "scheduling": {"type": "object"},
+    "topology": {
+      "type": "object", "required": ["end_systems", "switches", "links"],
+      "properties": {
+        "end_systems": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "switches": {"type": "array", "items": {"$ref": "#/$defs/node"}},
+        "links": {"type": "array", "items": {"$ref": "#/$defs/link"}}
+      }
+    },
+    "traffic": {
+      "type": "object", "required": ["tt_flows", "be_flows"],
+      "properties": {
+        "tt_flows": {"type": "array", "items": {"$ref": "#/$defs/tt_flow"}},
+        "be_flows": {"type": "array", "items": {"$ref": "#/$defs/be_flow"}}
+      }
+    },
+    "faults": {
+      "type": "object", "required": ["model", "candidates"],
+      "properties": {
+        "model": {"const": "single_link"},
+        "candidates": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "node": {"type": "object", "required": ["id"], "properties": {"id": {"type": "string"}}},
+    "link": {
+      "type": "object", "required": ["id", "endpoints"],
+      "properties": {"id": {"type": "string"}, "endpoints": {"type": "array", "minItems": 2, "maxItems": 2}, "bitrate": {"type": "string"}, "propagation_delay": {"type": "string"}}
+    },
+    "flow_common": {
+      "type": "object", "required": ["id", "source", "destination", "packet_size", "pcp", "traffic_class"]
+    },
+    "tt_flow": {
+      "allOf": [{"$ref": "#/$defs/flow_common"}],
+      "type": "object", "required": ["period", "deadline", "release_offset"]
+    },
+    "be_flow": {
+      "allOf": [{"$ref": "#/$defs/flow_common"}],
+      "type": "object", "required": ["interval"]
+    }
+  }
+}

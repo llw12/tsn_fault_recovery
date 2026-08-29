@@ -33,18 +33,25 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/src/tsn_fault_recovery/control/BfsRouteSolver.o \
+OBJS = $O/src/tsn_fault_recovery/control/AffectedFlowAnalyzer.o \
+    $O/src/tsn_fault_recovery/control/BfsRouteSolver.o \
     $O/src/tsn_fault_recovery/control/BfsZ3JointProfileSolver.o \
     $O/src/tsn_fault_recovery/control/DeterministicJointProfileSolver.o \
     $O/src/tsn_fault_recovery/control/GateScheduleCompiler.o \
+    $O/src/tsn_fault_recovery/control/LegacyRuntimeTopologyAdapter.o \
     $O/src/tsn_fault_recovery/control/OnlineJointRecoveryController.o \
     $O/src/tsn_fault_recovery/control/PacketIdentityRecorder.o \
     $O/src/tsn_fault_recovery/control/PipelineScheduleGenerator.o \
+    $O/src/tsn_fault_recovery/control/ProfileSerializer.o \
     $O/src/tsn_fault_recovery/control/ProfileSwitcher.o \
+    $O/src/tsn_fault_recovery/control/ScenarioRecoveryController.o \
+    $O/src/tsn_fault_recovery/control/ScenarioFrameworkSelfTest.o \
+    $O/src/tsn_fault_recovery/control/ScenarioRuntimeAdapter.o \
     $O/src/tsn_fault_recovery/control/SmtScheduleSelfTest.o \
     $O/src/tsn_fault_recovery/control/SmtValidationController.o \
     $O/src/tsn_fault_recovery/control/TimeTickConverter.o \
-    $O/src/tsn_fault_recovery/control/Z3ScheduleSolver.o
+    $O/src/tsn_fault_recovery/control/Z3ScheduleSolver.o \
+    $O/src/tsn_fault_recovery/model/NetworkGraph.o
 
 # Message files
 MSGFILES =
