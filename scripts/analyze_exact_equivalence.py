@@ -226,8 +226,9 @@ def main():
     assert all(row["status"] in {"VALIDATED_SHARED", "VALIDATED_SINGLETON"} for row in classes)
     assert all(abs(row["profile_count_compression_ratio"] - (1-row["final_equivalence_class_count"]/row["per_failure_profile_count"])) < 1e-12 for row in compression)
     assert all(abs(row["storage_compression_ratio"] - (1-row["equivalence_profile_bytes"]/row["per_failure_profile_bytes"])) < 1e-12 for row in compression)
-    for class_id in {row["class_id"] for row in validations}:
-        assert len({row["profile_sha256"] for row in validations if row["class_id"] == class_id}) == 1
+    for scenario, class_id in {(row["scenario"], row["class_id"]) for row in validations}:
+        assert len({row["profile_sha256"] for row in validations
+                    if row["scenario"] == scenario and row["class_id"] == class_id}) == 1
     artifact_paths=sorted(p for p in output.rglob("*") if p.is_file() and p.name!="manifest.json")
     manifest={"schema_version":1,"git_commit":args.code_commit,"omnetpp_version":"6.4.0","inet_version":"4.7.0","z3_version":"4.16.0","run_id":args.run_id,"artifacts":{p.relative_to(output).as_posix():hashlib.sha256(p.read_bytes()).hexdigest() for p in artifact_paths}}
     (output/"manifest.json").write_text(json.dumps(manifest,indent=2,sort_keys=True)+"\n")
