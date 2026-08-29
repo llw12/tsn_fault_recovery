@@ -1,0 +1,9 @@
+scenario,candidate_group_id,member_count,union_disabled_links,status,grouping_wall_us,robust_route_wall_us,z3_wall_us,profile_compile_wall_us,serialization_wall_us,total_class_synthesis_wall_us,diagnostic
+diamond_auto,G0001,2,l_s1_s2;l_s2_s4,SHARED_SAT,66.781,7.846000000000001,8807.868999999999,10.675,122.07799999999999,9856.641999999998,lexicographic optimum found
+mesh10_auto,G0005,2,l_sw4_sw6;l_sw6_sw8,SHARED_SAT,105.481,28.935,60176.174,45.864,169.629,61417.32199999999,lexicographic optimum found
+mesh10_auto,G0006,2,l_sw2_sw5;l_sw5_sw8,SHARED_SAT,105.481,40.571999999999996,54940.163,42.576,176.21699999999998,56198.108,lexicographic optimum found
+structured20_auto,G0001,2,l_sw11_sw17;l_sw17_sw18,SHARED_SAT,140.679,53.394,227215.094,100.921,251.835,228783.551,lexicographic optimum found
+structured20_auto,G0005,2,l_sw08_sw09;l_sw09_sw10,SHARED_SAT,140.679,88.68599999999999,231116.617,125.256,249.95,232759.25699999998,lexicographic optimum found
+structured20_auto,G0011,2,l_sw03_sw08;l_sw13_sw18,SHARED_SAT,140.679,76.852,223484.99899999998,115.65899999999999,250.62199999999999,224964.075,lexicographic optimum found
+structured20_auto,G0016,2,l_sw06_sw07;l_sw07_sw08,SHARED_SAT,140.679,120.225,216548.47499999998,129.335,267.58799999999997,218344.673,lexicographic optimum found
+structured20_auto,G0017,2,l_sw13_sw19;l_sw19_sw20,SHARED_SAT,140.679,74.687,239954.738,119.46,265.902,241782.91900000002,lexicographic optimum found

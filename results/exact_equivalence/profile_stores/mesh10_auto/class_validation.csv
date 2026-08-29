@@ -1,0 +1,13 @@
+scenario,class_id,fault_id,class_size,profile_id,profile_sha256,same_profile_for_all_members,activation_ok,failed_link_avoided,forwarding_valid,tt_sent,tt_received,tt_lost,deadline_miss_count,deadline_miss_ratio,first_success_after_fault_s,recovery_duration_us,stable_post_recovery_start_s,post_recovery_delivery_ok,post_recovery_deadline_ok,runtime_route_solver_invocations,runtime_z3_solver_invocations,runtime_profile_synthesis_invocations,validation_pass,diagnostic
+mesh10_auto,C0001,l_sw3_sw4,1,PF_l_sw3_sw4,cae28d343b8e48af7c357cd2e0c2d3a3dc238576f03313d4d840665e77802227,True,True,True,True,241,241,0,0,0.0,0.008107728,107.728,0.009,True,True,0,0,0,True,
+mesh10_auto,C0002,l_sw1_sw2,1,PF_l_sw1_sw2,86e19cf7c02781ca6f7c33b2318e689c519bc9720fd251d3eb266a78258c2064,True,True,True,True,241,241,0,0,0.0,0.008054912,54.912,0.009,True,True,0,0,0,True,
+mesh10_auto,C0003,l_sw8_sw9,1,PF_l_sw8_sw9,df3330682882b535b08ef449b31e454a6967437a534b0c1a9887838e2a629122,True,True,True,True,241,241,0,0,0.0,0.008054912,54.912,0.009,True,True,0,0,0,True,
+mesh10_auto,C0004,l_sw8_sw10,1,PF_l_sw8_sw10,f785f1591181db2129a2ce09f6c1bda98ee6fab95880fd3cb61ff065ee8d13a7,True,True,True,True,241,241,0,0,0.0,0.008055072,55.071999999999996,0.009,True,True,0,0,0,True,
+mesh10_auto,C0005,l_sw4_sw6,2,EQ_C0005,61886e5b71b4b77ecdc360a533baf8594c5d4657572eb2d152ae72a6b6b63324,True,True,True,True,241,241,0,0,0.0,0.008141328,141.328,0.009,True,True,0,0,0,True,
+mesh10_auto,C0005,l_sw6_sw8,2,EQ_C0005,61886e5b71b4b77ecdc360a533baf8594c5d4657572eb2d152ae72a6b6b63324,True,True,True,True,241,241,0,0,0.0,0.008141328,141.328,0.009,True,True,0,0,0,True,
+mesh10_auto,C0006,l_sw2_sw5,2,EQ_C0006,8f7735452f029bea8b8c4d3b7995d8816788f0af59378af31bbffab118be96dc,True,True,True,True,241,241,0,0,0.0,0.008054912,54.912,0.009,True,True,0,0,0,True,
+mesh10_auto,C0006,l_sw5_sw8,2,EQ_C0006,8f7735452f029bea8b8c4d3b7995d8816788f0af59378af31bbffab118be96dc,True,True,True,True,241,241,0,0,0.0,0.008054912,54.912,0.009,True,True,0,0,0,True,
+mesh10_auto,C0007,l_sw7_sw9,1,PF_l_sw7_sw9,be2a3d4a70eaa03ef798c9ac7bca1952bc089123fc39e49af63b7790b5049cb7,True,True,True,True,241,241,0,0,0.0,0.008084528,84.528,0.009,True,True,0,0,0,True,
+mesh10_auto,C0008,l_sw4_sw7,1,PF_l_sw4_sw7,5c67637dbe0ded3530bfb63ca5c350bdcddb4259c908635dd984caf6b1bb3317,True,True,True,True,241,241,0,0,0.0,0.008084528,84.528,0.009,True,True,0,0,0,True,
+mesh10_auto,C0009,l_sw2_sw3,1,PF_l_sw2_sw3,973fa60747ca2de5fbdbb2e5d7b9cb9642977fbcd1b1bcdb1c800a550236c89f,True,True,True,True,241,241,0,0,0.0,0.008107728,107.728,0.009,True,True,0,0,0,True,
+mesh10_auto,C0010,l_sw1_sw3,1,PF_l_sw1_sw3,4885994b6e4708a6a6580798000d6de8dbb42294b6d24801575a32a1af90c6cf,True,True,True,True,241,241,0,0,0.0,0.00812016,120.16,0.009,True,True,0,0,0,True,

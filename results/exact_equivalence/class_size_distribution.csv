@@ -1,0 +1,6 @@
+scenario,class_size,class_count,fault_count
+diamond_auto,2,1,2
+mesh10_auto,1,8,8
+mesh10_auto,2,2,4
+structured20_auto,1,12,12
+structured20_auto,2,5,10

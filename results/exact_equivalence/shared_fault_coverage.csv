@@ -1,0 +1,4 @@
+scenario,recoverable_fault_count,faults_in_shared_classes,shared_fault_coverage
+diamond_auto,2,2,1.0
+mesh10_auto,12,4,0.3333333333333333
+structured20_auto,22,10,0.45454545454545453
