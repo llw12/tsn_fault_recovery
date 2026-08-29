@@ -17,10 +17,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from tools.result_analyzer import SUMMARY_FIELDS, analyze_run
+from tools.omnet_runner import run_omnet
 from tools.profile_store import ProfileStoreError, file_sha256, semantic_profile_hash, store_metrics, validate_store
 from tools.recovery_modes import MODES, require_implemented
-from tools.scenario_compiler import compile_scenario
 from tools.scenario_model import load_scenario
+from tools.analyze_critical_links import discover
+from tools.critical_link import affected_flow_set_hash
 
 IMPLEMENTED = tuple(name for name, mode in MODES.items() if mode.implemented)
 NOT_IMPLEMENTED = tuple(name for name, mode in MODES.items() if not mode.implemented)
@@ -61,20 +63,6 @@ def enter_environment(args) -> int:
     return subprocess.run(executable).returncode
 
 
-def run_omnet(generated: Path, config: str, result_dir: Path, log: Path,
-              overrides: list[str] | None = None) -> None:
-    result_dir.mkdir(parents=True, exist_ok=True)
-    command = [str(ROOT / "tsn_fault_recovery"), "-u", "Cmdenv", "-n",
-               f"{generated.parent}:{ROOT / 'src'}:/home/opp_env/inet-4.7.0/src",
-               "-l", "/home/opp_env/inet-4.7.0/src/INET", "-f", "omnetpp.ini", "-c", config,
-               f"--result-dir={result_dir}"]
-    command += overrides or []
-    completed = subprocess.run(command, cwd=generated, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    log.write_text(completed.stdout, encoding="utf-8")
-    if completed.returncode:
-        raise RuntimeError(f"OMNeT++ config {config} failed; see {log}")
-
-
 def version(command: list[str], fallback: str) -> str:
     try:
         output = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=10).stdout.strip()
@@ -98,9 +86,19 @@ def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generate
     code_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True,
                                  stdout=subprocess.PIPE, check=True).stdout.strip()
     entry = store["faults"][fault] if store else None
+    candidate_artifact = json.loads((generated / "fault_analysis/candidate_faults.json").read_text())
+    candidate_by_id = {item["fault_id"]: item for item in candidate_artifact["candidate_faults"]}
+    candidate = candidate_by_id.get(fault)
     manifest = {
         "schema_version": 1, "scenario_name": scenario["scenario_name"], "scenario_sha256": scenario["scenario_sha256"],
         "mode": mode, "fault_id": fault,
+        "fault_candidate_mode": candidate_artifact["policy"]["mode"],
+        "fault_candidate_scope": candidate_artifact["policy"].get("scope"),
+        "fault_candidate_criterion": candidate_artifact["policy"].get("criterion"),
+        "candidate_set_sha256": candidate_artifact["candidate_set_sha256"],
+        "candidate_fault_count": len(candidate_artifact["candidate_faults"]),
+        "fault_is_candidate": candidate is not None,
+        "affected_flow_set_sha256": candidate["affected_flow_set_sha256"] if candidate else affected_flow_set_hash([]),
         "git_commit": code_commit,
         "omnetpp_version": "6.4.0", "inet_version": "4.7.0", "z3_version": version(["z3", "--version"], "unknown"),
         "simulation_duration_s": scenario["simulation"]["duration_s"], "cycle_time_s": scenario["simulation"]["cycle_time_s"],
@@ -117,6 +115,7 @@ def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generate
         "offline_lookup_delay_s": offline_lookup_delay_s,
         "runtime_solver_invocations": {"route": 0, "z3": 0} if mode == "offline-per-failure" else None,
         "artifacts": {"scenario": "scenario.json", "port_map": "port_map.json", "profile0": "profile0.json",
+                      "candidate_faults": "candidate_faults.json",
                       "recovery_profile": "recovery_profile.json" if recovery else None},
     }
     (run_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -132,13 +131,11 @@ def main() -> int:
         return enter_environment(args)
     source = args.scenario if args.scenario.is_absolute() else ROOT / args.scenario
     model = load_scenario(source)
-    if args.fault not in model.fault_candidates:
-        raise SystemExit(f"fault {args.fault!r} is not a candidate in scenario {model.scenario_name}")
-    generated = compile_scenario(source, ROOT / "generated")
-    if not args.skip_build:
-        subprocess.run(["make", "-j", str(os.cpu_count() or 2)], cwd=ROOT, check=True)
+    generated, candidate_artifact = discover(source, skip_build=args.skip_build)
+    candidate_faults = tuple(item["fault_id"] for item in candidate_artifact["candidate_faults"])
+    if args.fault not in candidate_faults:
+        raise SystemExit(f"fault {args.fault!r} is not a discovered candidate in scenario {model.scenario_name}")
     precompute_dir = generated / "precompute-results"
-    run_omnet(generated, "ScenarioPrecompute", precompute_dir, generated / "precompute.log")
     precompute_scalars = list(precompute_dir.glob("*.sca"))
     precompute_seconds = scalar_from_file(precompute_scalars[0], "scenario.precompute.totalWallTimeSeconds") if len(precompute_scalars) == 1 else None
     precompute_wall_ms = precompute_seconds * 1e3 if precompute_seconds is not None else None
@@ -170,10 +167,17 @@ def main() -> int:
         overrides = ([f"--*.scenarioRecoveryController.offlineLookupDelay={args.offline_lookup_delay_us}us"]
                      if mode == "offline-per-failure" else None)
         run_omnet(generated, config, run_dir / "raw", run_dir / "run.log", overrides)
-        for source_path, name in ((generated/"scenario.json","scenario.json"),(generated/"port_map.json","port_map.json"),(generated/"profiles/profile0.json","profile0.json"),(generated/"fault_analysis.json","fault_analysis.json")):
+        for source_path, name in ((generated/"scenario.json","scenario.json"),(generated/"port_map.json","port_map.json"),(generated/"profiles/profile0.json","profile0.json"),(generated/"fault_analysis/candidate_faults.json","candidate_faults.json")):
             shutil.copy2(source_path, run_dir / name)
+        candidate_document = json.loads((run_dir / "candidate_faults.json").read_text())
+        legacy_fault_analysis = {"scenario_sha256": scenario["scenario_sha256"],
+                                 "faults": {item["fault_id"]: item["affected_flows"]
+                                            for item in candidate_document["candidate_faults"]}}
+        (run_dir / "fault_analysis.json").write_text(
+            json.dumps(legacy_fault_analysis, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         if mode == "online":
-            affected_now = json.loads((generated / "fault_analysis.json").read_text())["faults"][args.fault]
+            candidate_rows = candidate_document["candidate_faults"]
+            affected_now = next(item["affected_flows"] for item in candidate_rows if item["fault_id"] == args.fault)
             if affected_now:
                 if not recovery_generated.exists(): raise RuntimeError("online run did not emit a recovery profile")
                 shutil.copy2(recovery_generated, run_dir / "recovery_profile.json")

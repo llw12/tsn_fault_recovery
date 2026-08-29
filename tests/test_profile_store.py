@@ -10,6 +10,7 @@ from tools.profile_store import (
     validate_store, write_json,
 )
 from tools.scenario_compiler import compile_scenario
+from tools.critical_link import sha256_value
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -49,6 +50,18 @@ class ProfileStoreTests(unittest.TestCase):
         write_json(root / "precompute_report.json", {"schema_version": 1,
             "scenario_sha256": self.scenario["scenario_sha256"],
             "total_precompute_wall_s": .012, "faults": rows})
+        policy = self.scenario["fault_candidate_policy"]
+        candidates = [{"fault_id": fault, "affected_flows": rows[fault]["affected_flows"],
+                       "affected_flow_count": len(rows[fault]["affected_flows"]),
+                       "affected_flow_set_sha256": sha256_value(rows[fault]["affected_flows"]),
+                       "affected_load_bps": 0} for fault in self.scenario["fault_candidates"]]
+        artifact = {"schema_version": 1, "scenario_name": "diamond",
+                    "scenario_sha256": self.scenario["scenario_sha256"], "policy": policy,
+                    "candidate_faults": candidates, "all_links": [], "excluded_links": []}
+        artifact["candidate_set_sha256"] = sha256_value({
+            "scenario_sha256": artifact["scenario_sha256"], "policy": policy,
+            "candidate_faults": candidates})
+        write_json(self.generated / "fault_analysis/candidate_faults.json", artifact)
         (self.generated / "profiles/profile0.json").write_text('{"profile_id":"P0"}\n')
         self.store = build_store(self.generated)
         self.path = root / "store.json"
@@ -148,6 +161,11 @@ class ProfileStoreTests(unittest.TestCase):
         def remove(value): value["faults"].pop("l_s3_s4")
         self.rewrite_store(remove)
         with self.assertRaisesRegex(ProfileStoreError, "candidate faults/order"): validate_store(self.path, self.scenario, self.port_map)
+
+    def test_candidate_hash_mismatch_rejected(self):
+        self.rewrite_store(lambda value: value.update(candidate_set_sha256="stale"))
+        with self.assertRaisesRegex(ProfileStoreError, "candidate_set_sha256"):
+            validate_store(self.path, self.scenario, self.port_map)
 
     def test_storage_bytes_deterministic(self):
         first = store_metrics(self.path, self.generated / "profiles/profile0.json")

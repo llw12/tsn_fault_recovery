@@ -1,5 +1,5 @@
 schema_version: 1
-name: diamond
+name: diamond_auto
 
 simulation:
   duration: 20ms
@@ -68,9 +68,6 @@ traffic:
 faults:
   model: single_link
   candidate_selection:
-    mode: explicit
-  candidates:
-    - l_s1_s2
-    - l_s1_s3
-    - l_s2_s4
-    - l_s3_s4
+    mode: auto
+    scope: switch-switch
+    criterion: tt-primary-route-used

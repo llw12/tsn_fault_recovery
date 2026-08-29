@@ -92,7 +92,7 @@ def _mapping(entries: list[str]) -> str:
     return "[" + ", ".join(entries) + "]"
 
 
-def render_ini(model: ScenarioModel) -> str:
+def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = None) -> str:
     package = f"{model.scenario_name}.ScenarioNetwork"
     all_flows = list(model.tt_flows) + list(model.be_flows)
     flows_by_source: dict[str, list] = {}
@@ -185,7 +185,7 @@ def render_ini(model: ScenarioModel) -> str:
         '*.scenarioRecoveryController.perFailureReportOutputPath = "profiles/per_failure/precompute_report.json"', "",
     ]
     link_by_id = {link.id: link for link in model.links}
-    for fault_id in model.fault_candidates:
+    for fault_id in fault_candidates if fault_candidates is not None else model.fault_candidates:
         link = link_by_id[fault_id]
         endpoint_a = port_map["links"][fault_id]["a"]
         endpoint_b = port_map["links"][fault_id]["b"]
@@ -212,14 +212,28 @@ def render_ini(model: ScenarioModel) -> str:
     return "\n".join(lines)
 
 
-def compile_scenario(source: str | Path, output_root: str | Path) -> Path:
+def compile_scenario(source: str | Path, output_root: str | Path,
+                     resolved_candidate_faults: tuple[str, ...] | None = None) -> Path:
     model = load_scenario(source)
+    if resolved_candidate_faults is not None:
+        known = {link.id for link in model.links}
+        if tuple(sorted(resolved_candidate_faults)) != resolved_candidate_faults:
+            raise ValueError("resolved candidate faults must use deterministic sorted order")
+        if any(item not in known for item in resolved_candidate_faults):
+            raise ValueError("resolved candidate fault is not a physical link")
+        if model.candidate_selection.mode == "explicit" and resolved_candidate_faults != model.fault_candidates:
+            raise ValueError("resolved explicit candidates differ from YAML candidates")
+    candidates = model.fault_candidates if resolved_candidate_faults is None else resolved_candidate_faults
     destination = Path(output_root) / model.scenario_name
     (destination / "profiles").mkdir(parents=True, exist_ok=True)
-    write_canonical(model, destination / "scenario.json")
+    scenario_value = model.canonical_dict()
+    scenario_value["fault_candidates"] = list(candidates)
+    scenario_value["scenario_sha256"] = model.sha256()
+    (destination / "scenario.json").write_text(
+        json.dumps(scenario_value, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
     (destination / "port_map.json").write_text(json.dumps(build_port_map(model), indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (destination / "ScenarioNetwork.ned").write_text(render_ned(model), encoding="utf-8")
-    ini = render_ini(model)
+    ini = render_ini(model, candidates)
     (destination / "base.ini").write_text(ini, encoding="utf-8")
     (destination / "omnetpp.ini").write_text(ini, encoding="utf-8")
     placeholder = destination / "profiles/profile0.json"

@@ -8,7 +8,9 @@ OUTPUT="$PROJECT_ROOT/results/offline_per_failure"
 inside_environment() {
     local run_id="$1" code_commit
     cd "$PROJECT_ROOT"
-    git diff --quiet && git diff --cached --quiet || { echo "Formal exp06 requires a clean tracked working tree" >&2; exit 1; }
+    if [[ "${TSN_ALLOW_DIRTY:-0}" != "1" ]]; then
+        git diff --quiet && git diff --cached --quiet || { echo "Formal exp06 requires a clean tracked working tree" >&2; exit 1; }
+    fi
     code_commit="$(git rev-parse HEAD)"
     make -j"$(nproc)"
     python3 -m unittest discover -s tests -v

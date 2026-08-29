@@ -12,9 +12,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+from tools.analyze_critical_links import discover
 from tools.profile_store import build_store
-from tools.run_experiment import run_omnet
-from tools.scenario_compiler import compile_scenario
+from tools.omnet_runner import run_omnet
 
 
 def parse_args():
@@ -40,13 +40,14 @@ def main() -> int:
     args = parse_args()
     if not args.inside_environment: return enter_environment(args)
     source = args.scenario if args.scenario.is_absolute() else ROOT / args.scenario
-    generated = compile_scenario(source, ROOT / "generated")
-    if not args.skip_build: subprocess.run(["make", "-j", str(os.cpu_count() or 2)], cwd=ROOT, check=True)
+    generated, analysis = discover(source, skip_build=args.skip_build)
     root = generated / "profiles/per_failure"
     (root / "raw").mkdir(parents=True, exist_ok=True)
-    run_omnet(generated, "ScenarioPrecompute", generated / "precompute-results", generated / "precompute.log")
     run_omnet(generated, "ScenarioPerFailurePrecompute", root / "precompute-results", root / "precompute.log")
     store = build_store(generated)
+    if analysis["policy"]["mode"] == "auto" and any(
+            entry["status"] == "NO_AFFECTED_TT" for entry in store["faults"].values()):
+        raise RuntimeError("auto candidate discovery and AffectedFlowAnalyzer disagree: NO_AFFECTED_TT")
     print(root / "store.json")
     print(f"candidate_faults={len(store['faults'])} recovery_profiles={sum(x['status'] == 'SAT' for x in store['faults'].values())}")
     return 0

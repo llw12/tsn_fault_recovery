@@ -83,6 +83,14 @@ class SchedulingConfig:
 
 
 @dataclass(frozen=True)
+class CandidateSelection:
+    mode: str
+    scope: str | None
+    criterion: str | None
+    exclude: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class ScenarioModel:
     schema_version: int
     scenario_name: str
@@ -93,9 +101,15 @@ class ScenarioModel:
     links: tuple[Link, ...]
     tt_flows: tuple[TTFlow, ...]
     be_flows: tuple[BEFlow, ...]
+    candidate_selection: CandidateSelection
     fault_candidates: tuple[str, ...]
 
     def canonical_dict(self) -> dict:
+        policy = {"mode": self.candidate_selection.mode, "exclude": list(self.candidate_selection.exclude)}
+        if self.candidate_selection.scope is not None:
+            policy["scope"] = self.candidate_selection.scope
+        if self.candidate_selection.criterion is not None:
+            policy["criterion"] = self.candidate_selection.criterion
         return {
             "schema_version": self.schema_version,
             "scenario_name": self.scenario_name,
@@ -106,6 +120,7 @@ class ScenarioModel:
             "links": [asdict(item) for item in self.links],
             "tt_flows": [asdict(item) for item in self.tt_flows],
             "be_flows": [asdict(item) for item in self.be_flows],
+            "fault_candidate_policy": policy,
             "fault_candidates": list(self.fault_candidates),
         }
 
@@ -288,18 +303,49 @@ def load_scenario(path: str | Path) -> ScenarioModel:
 
     if faults.get("model") != "single_link":
         raise ScenarioValidationError("only faults.model=single_link is supported")
-    candidates = faults.get("candidates")
-    if not isinstance(candidates, list) or not candidates:
-        raise ScenarioValidationError("fault candidates must be a non-empty list")
     link_set = set(link_ids)
+    selection_raw = faults.get("candidate_selection", {"mode": "explicit"})
+    if not isinstance(selection_raw, dict):
+        raise ScenarioValidationError("faults.candidate_selection must be a mapping")
+    mode = selection_raw.get("mode")
+    if mode not in {"explicit", "auto"}:
+        raise ScenarioValidationError("candidate selection mode must be explicit or auto")
+    exclude = selection_raw.get("exclude", faults.get("exclude", []))
+    if not isinstance(exclude, list) or any(not isinstance(item, str) for item in exclude):
+        raise ScenarioValidationError("candidate selection exclude must be a list of link IDs")
+    missing_excludes = [candidate for candidate in exclude if candidate not in link_set]
+    if missing_excludes:
+        raise ScenarioValidationError(f"excluded candidate link does not exist: {', '.join(missing_excludes)}")
+    if _duplicates(exclude):
+        raise ScenarioValidationError("candidate selection exclude contains duplicates")
+    candidates = faults.get("candidates", [])
+    if mode == "explicit" and (not isinstance(candidates, list) or not candidates):
+        raise ScenarioValidationError("explicit fault candidates must be a non-empty list")
+    if mode == "auto" and candidates:
+        raise ScenarioValidationError("auto candidate selection must not declare candidates")
+    if not isinstance(candidates, list):
+        raise ScenarioValidationError("fault candidates must be a list")
     missing_faults = [candidate for candidate in candidates if candidate not in link_set]
     if missing_faults:
         raise ScenarioValidationError(f"fault candidate link does not exist: {', '.join(missing_faults)}")
     if scheduling.be_traffic_class < 0:
         raise ScenarioValidationError("BE traffic class must be non-negative")
+    if _duplicates(candidates):
+        raise ScenarioValidationError("fault candidates contain duplicates")
+    if mode == "auto":
+        scope = selection_raw.get("scope")
+        criterion = selection_raw.get("criterion")
+        if scope != "switch-switch":
+            raise ScenarioValidationError("auto candidate selection requires scope=switch-switch")
+        if criterion != "tt-primary-route-used":
+            raise ScenarioValidationError("auto candidate selection requires criterion=tt-primary-route-used")
+    else:
+        scope = selection_raw.get("scope")
+        criterion = selection_raw.get("criterion")
+    selection = CandidateSelection(mode, scope, criterion, tuple(sorted(exclude)))
     return ScenarioModel(1, name, simulation, network, scheduling, nodes, links,
             tuple(sorted(tt_flows, key=lambda item: item.id)), tuple(sorted(be_flows, key=lambda item: item.id)),
-            tuple(sorted(candidates)))
+            selection, tuple(sorted(candidates)))
 
 
 def write_canonical(model: ScenarioModel, path: Path) -> None:

@@ -38,9 +38,18 @@
       }
     },
     "faults": {
-      "type": "object", "required": ["model", "candidates"],
+      "type": "object", "required": ["model"],
       "properties": {
         "model": {"const": "single_link"},
+        "candidate_selection": {
+          "type": "object", "required": ["mode"],
+          "properties": {
+            "mode": {"enum": ["explicit", "auto"]},
+            "scope": {"enum": ["switch-switch"]},
+            "criterion": {"enum": ["tt-primary-route-used"]},
+            "exclude": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+          }
+        },
         "candidates": {"type": "array", "minItems": 1, "items": {"type": "string"}}
       }
     }

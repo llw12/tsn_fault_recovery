@@ -1,5 +1,5 @@
 schema_version: 1
-name: mesh10
+name: mesh10_auto
 
 simulation:
   duration: 25ms
@@ -199,9 +199,6 @@ traffic:
 faults:
   model: single_link
   candidate_selection:
-    mode: explicit
-  candidates:
-    - l_sw2_sw5
-    - l_sw3_sw6
-    - l_sw6_sw8
-    - l_sw7_sw9
+    mode: auto
+    scope: switch-switch
+    criterion: tt-primary-route-used

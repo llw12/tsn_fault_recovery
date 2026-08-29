@@ -11,7 +11,7 @@ from copy import deepcopy
 from pathlib import Path
 
 PROFILE_SCHEMA_VERSION = 2
-STORE_SCHEMA_VERSION = 1
+STORE_SCHEMA_VERSION = 2
 STRATEGY = "per-failure"
 MODEL_VERSION = "bfs-z3-joint-tas-v1"
 VALID_STATUSES = {"SAT", "NO_AFFECTED_TT", "NO_ROUTE", "UNSAT", "FORWARDING_CONFLICT", "ERROR"}
@@ -113,8 +113,12 @@ def build_store(generated: Path) -> dict:
     port_map = json.loads((generated / "port_map.json").read_text(encoding="utf-8"))
     root = generated / "profiles/per_failure"
     report = json.loads((root / "precompute_report.json").read_text(encoding="utf-8"))
+    candidate_artifact = json.loads((generated / "fault_analysis/candidate_faults.json").read_text(encoding="utf-8"))
     if report["scenario_sha256"] != scenario["scenario_sha256"]:
         raise ProfileStoreError("precompute report scenario hash does not match generated scenario")
+    discovered_ids = [item["fault_id"] for item in candidate_artifact["candidate_faults"]]
+    if discovered_ids != scenario["fault_candidates"]:
+        raise ProfileStoreError("candidate artifact does not match generated scenario candidates")
     profile_dir = root / "profiles"
     profile_dir.mkdir(parents=True, exist_ok=True)
     faults: dict[str, dict] = {}
@@ -185,6 +189,8 @@ def build_store(generated: Path) -> dict:
         "scenario_sha256": scenario["scenario_sha256"],
         "port_map_sha256": file_sha256(generated / "port_map.json"),
         "strategy": STRATEGY,
+        "candidate_set_sha256": candidate_artifact["candidate_set_sha256"],
+        "candidate_policy": candidate_artifact["policy"],
         "solver_config_hash": config_hash,
         "model_version": MODEL_VERSION,
         "precompute_code_commit": code_commit,
@@ -203,6 +209,8 @@ def build_store(generated: Path) -> dict:
         "scenario_sha256": scenario["scenario_sha256"],
         "solver_config_hash": config_hash,
         "strategy": STRATEGY,
+        "candidate_set_sha256": candidate_artifact["candidate_set_sha256"],
+        "candidate_policy": candidate_artifact["policy"],
         "precompute_code_commit": code_commit,
         "faults": runtime_faults,
     }
@@ -222,6 +230,14 @@ def validate_store(path: Path, scenario: dict, port_map: dict) -> dict:
         raise ProfileStoreError("unsupported ProfileStore/profile schema version")
     if store.get("strategy") != STRATEGY:
         raise ProfileStoreError("ProfileStore strategy is not per-failure")
+    artifact_path = path.parents[2] / "fault_analysis/candidate_faults.json"
+    if not artifact_path.exists():
+        raise ProfileStoreError("missing candidate fault artifact")
+    candidate_artifact = json.loads(artifact_path.read_text(encoding="utf-8"))
+    if store.get("candidate_set_sha256") != candidate_artifact.get("candidate_set_sha256"):
+        raise ProfileStoreError("stale ProfileStore candidate_set_sha256")
+    if store.get("candidate_policy") != candidate_artifact.get("policy"):
+        raise ProfileStoreError("stale ProfileStore candidate policy")
     if store.get("scenario_sha256") != scenario["scenario_sha256"]:
         raise ProfileStoreError("stale ProfileStore scenario_sha256")
     if store.get("port_map_sha256") != file_sha256(path.parents[2] / "port_map.json"):
@@ -229,7 +245,7 @@ def validate_store(path: Path, scenario: dict, port_map: dict) -> dict:
     expected_config = solver_config_hash(scenario, port_map)
     if store.get("solver_config_hash") != expected_config:
         raise ProfileStoreError("stale ProfileStore solver_config_hash")
-    if set(store.get("faults", {})) != set(scenario["fault_candidates"]):
+    if list(store.get("faults", {})) != scenario["fault_candidates"]:
         raise ProfileStoreError("ProfileStore candidate faults/order do not match scenario")
     for fault_id, entry in store["faults"].items():
         if entry["status"] not in VALID_STATUSES:
@@ -254,7 +270,9 @@ def validate_store(path: Path, scenario: dict, port_map: dict) -> dict:
     runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
     if runtime.get("scenario_sha256") != scenario["scenario_sha256"] or runtime.get("solver_config_hash") != expected_config:
         raise ProfileStoreError("stale runtime ProfileStore metadata")
-    if set(runtime.get("faults", {})) != set(store["faults"]):
+    if runtime.get("candidate_set_sha256") != store["candidate_set_sha256"] or runtime.get("candidate_policy") != store["candidate_policy"]:
+        raise ProfileStoreError("stale runtime ProfileStore candidate metadata")
+    if list(runtime.get("faults", {})) != list(store["faults"]):
         raise ProfileStoreError("runtime ProfileStore candidate faults do not match store.json")
     for fault_id, entry in store["faults"].items():
         runtime_entry = runtime["faults"][fault_id]
