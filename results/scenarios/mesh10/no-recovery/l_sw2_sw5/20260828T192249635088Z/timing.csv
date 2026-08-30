@@ -1,0 +1,2 @@
+scenario,mode,fault_id,failure_time_s,activation_time_s,route_solver_wall_us,smt_solver_wall_us,profile_compilation_wall_us,total_solver_wall_us,simulated_solver_delay_s,activation_wall_us,offline_precompute_wall_ms
+mesh10,no-recovery,l_sw2_sw5,0.008,,,,,,,,54.004029

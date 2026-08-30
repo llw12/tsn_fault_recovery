@@ -1,0 +1,2 @@
+fault_i,fault_j,jaccard,affected_set_jaccard,affected_count_i,affected_count_j,same_affected_set,same_affected_count,status_i,status_j,both_sat,same_semantic_profile,profile_hash_i,profile_hash_j,faults_share_endpoint,fault_edge_distance,primary_path_position_difference_mean,recovery_route_link_jaccard
+l_s1_s2,l_s2_s4,1.0,1.0,1,1,1,1,SAT,SAT,1,1,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,1,0,1.0,1.0

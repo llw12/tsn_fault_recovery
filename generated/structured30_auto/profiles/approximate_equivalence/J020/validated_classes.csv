@@ -1,0 +1,11 @@
+scenario,policy_id,class_id,class_type,members,member_count,profile_id,profile_semantic_hash,min_pairwise_jaccard,mean_pairwise_jaccard,max_edge_distance,source_candidate_group,split_depth,validation_pass
+structured30_auto,J020,C0001,SHARED,l_sw01_sw02;l_sw02_sw03,2,AP_C0001,123f63b465e18ec75859747ee6a8a1b3f4440880ae9f7c425a07e4a37c1409c6,0.5,0.5,0,G0001,0,True
+structured30_auto,J020,C0002,SHARED,l_sw01_sw07;l_sw01_sw09,2,AP_C0002,9fb723f46f741f85213c271c508d44b615ec69df933f2b5a2c5081124d902d1f,0.42857142857142855,0.42857142857142855,0,G0002,0,True
+structured30_auto,J020,C0003,SHARED,l_sw02_sw08;l_sw08_sw16;l_sw16_sw17,3,AP_C0003,b4ffbcd9f4ed1154691679b52af839fca9c16979fad1fe855a633543d55a5ef4,1.0,1.0,1,G0003,0,True
+structured30_auto,J020,C0004,SHARED,l_sw03_sw04;l_sw03_sw09;l_sw04_sw05,3,AP_C0004,84e70e40697ba8d8fba30170c21a6e04893027ab386d63c9afad75edde3e6111,0.25,0.5,1,G0004,0,True
+structured30_auto,J020,C0005,SHARED,l_sw05_sw07;l_sw07_sw13;l_sw13_sw19;l_sw19_sw25,4,AP_C0005,c1731da6999115b0310d37c5384ac39ce9b83fbeca95a5dd77c71b158cbe42a1,0.2,0.38518518518518513,2,G0005,0,True
+structured30_auto,J020,C0006,SHARED,l_sw05_sw11;l_sw11_sw17,2,AP_C0006,c7cb873cc7ffa6665bb17229ab729140ad32eceb496de0c23442b20b9c65c0e1,0.5,0.5,0,G0006,0,True
+structured30_auto,J020,C0007,SHARED,l_sw09_sw10;l_sw10_sw11;l_sw21_sw27,3,AP_C0007,bb5d1692d697457d3d5601558b82e764e5ebcab4e46ec0e6cd1d5ddaf3bc780c,0.25,0.5,3,G0007,0,True
+structured30_auto,J020,C0008,SHARED,l_sw09_sw15;l_sw15_sw21,2,AP_C0008,dd1bb4267f334d67d0de1d0719ed070aa2fada99c2c694f4a54ea72cf86cb726,0.5,0.5,0,G0008,0,True
+structured30_auto,J020,C0009,SHARED,l_sw13_sw14;l_sw14_sw15;l_sw15_sw23;l_sw23_sw29,4,AP_C0009,ac313dc03805365bea48a454e3dd1cc5e53f72263f7a852f24bdf19c42e37929,0.2,0.35555555555555557,2,G0009,0,True
+structured30_auto,J020,C0010,SINGLETON,l_sw17_sw23,1,PF_l_sw17_sw23,4a0d6f72bfb1dd35e5658c5e2671311f8f9db8a05c9844842d57d0de6bff6966,1.0,1.0,0,G0010,0,True

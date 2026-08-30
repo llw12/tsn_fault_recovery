@@ -1,0 +1,5 @@
+scenario,fault_id,status,affected_flow_count,route_solver_wall_us,smt_solver_wall_us,profile_compile_wall_us,serialization_wall_us,total_precompute_wall_us,objective,profile_bytes,semantic_profile_hash,diagnostic
+mesh10,l_sw2_sw5,SAT,3,39.127,53437.232,48.062000000000005,401.661,54651.607,234,14670,ad77ec1c3bb3bab9730edf9fc33a68f52bbbba8b751fb5a00ade6b2632bb41bc,lexicographic optimum found
+mesh10,l_sw3_sw6,NO_AFFECTED_TT,0,0,0,0,0,0,-1,0,,fault is not on any healthy TT route
+mesh10,l_sw6_sw8,SAT,2,28.628,59552.419,45.215,374.755,60343.46400000001,234,14168,181a9aad9c7ce5a8ad09fb461fc49366db375a0d615e97ed728cf54d55d52729,lexicographic optimum found
+mesh10,l_sw7_sw9,SAT,2,33.913,42296.479,44.405,337.095,42960.15,234,15684,42b0d968ab1b659895c97ccf446fefd2e45416ec94b0371a082895bf50d7db95,lexicographic optimum found

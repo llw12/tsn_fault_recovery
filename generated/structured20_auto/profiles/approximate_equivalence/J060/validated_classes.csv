@@ -1,0 +1,14 @@
+scenario,policy_id,class_id,class_type,members,member_count,profile_id,profile_semantic_hash,min_pairwise_jaccard,mean_pairwise_jaccard,max_edge_distance,source_candidate_group,split_depth,validation_pass
+structured20_auto,J060,C0001,SHARED,l_sw01_sw02;l_sw02_sw03,2,AP_C0001,96e0dce4e47ced117ca1cc6509917e38aa6a9c1ee8547839f63edea7204ee54d,0.875,0.875,0,G0001,0,True
+structured20_auto,J060,C0002,SHARED,l_sw01_sw06;l_sw04_sw05,2,AP_C0002,665632ba1cde5205ce583d2cbcccf6ee566f90d067f8f2f1ae5d6a5fd2bfb414,0.6,0.6,3,G0002,0,True
+structured20_auto,J060,C0003,SINGLETON,l_sw02_sw08,1,PF_l_sw02_sw08,123e5f32388462a89709a46cb38820fcff1ed4362895d6e81d40a7a0cd88c579,1.0,1.0,0,G0003,0,True
+structured20_auto,J060,C0004,SINGLETON,l_sw03_sw04,1,PF_l_sw03_sw04,5a6c248adaf085bc0c37051baec67c1c99b7deb1a9c690fee08f35fdf7cc6927,1.0,1.0,0,G0004,0,True
+structured20_auto,J060,C0005,SHARED,l_sw03_sw08;l_sw13_sw18,2,AP_C0005,668c06bfc17a9a64abdd43b2a971626f713f5af4ec030a91498a46f2f1cc8b08,1.0,1.0,1,G0005,0,True
+structured20_auto,J060,C0006,SHARED,l_sw04_sw10;l_sw10_sw15,2,AP_C0006,2d5dc361478e477c64b819ae314e3d05de8cec1f602d28aeceaeed6805efdf79,0.8,0.8,0,G0006,0,True
+structured20_auto,J060,C0007,SHARED,l_sw06_sw07;l_sw07_sw08;l_sw08_sw09;l_sw09_sw10,4,AP_C0007,69aba2c1b72b687284a4fd9a20a6d0478ac26a8c02f2b3cbc093e61d1f98a91c,0.75,0.8333333333333334,2,G0007,0,True
+structured20_auto,J060,C0008,SINGLETON,l_sw06_sw11,1,PF_l_sw06_sw11,615b435d4e79bba812afed0f75e646229fe2338900f443bae898c90d3c6ad991,1.0,1.0,0,G0008,0,True
+structured20_auto,J060,C0009,SINGLETON,l_sw08_sw13,1,PF_l_sw08_sw13,11051c14be4bf143e257323fd5c33f9cda97f9c1357bb4cfe52711987c28a033,1.0,1.0,0,G0009,0,True
+structured20_auto,J060,C0010,SINGLETON,l_sw11_sw16,1,PF_l_sw11_sw16,26a1ac111543159b2e679edb1ec02fc671b1b420d9938a52cf7f1df9a071ffd4,1.0,1.0,0,G0010,0,True
+structured20_auto,J060,C0011,SHARED,l_sw11_sw17;l_sw17_sw18,2,AP_C0011,1aa4bd75d1a837e124681ecec8b161851a635353f6079e01b4958c12a72613b4,1.0,1.0,0,G0011,0,True
+structured20_auto,J060,C0012,SHARED,l_sw13_sw19;l_sw19_sw20,2,AP_C0012,3100b5450052eb153143f756875ee717a7fa9e55c8471a7fc79602e59c3a3ebe,1.0,1.0,0,G0012,0,True
+structured20_auto,J060,C0013,SINGLETON,l_sw15_sw20,1,PF_l_sw15_sw20,a874ecd590d83b72d56bb94e7f59bdbf47b82c174d94f87a3842f7ebf4f9e64e,1.0,1.0,0,G0013,0,True

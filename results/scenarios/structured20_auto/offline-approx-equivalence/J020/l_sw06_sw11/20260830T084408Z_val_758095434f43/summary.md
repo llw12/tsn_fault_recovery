@@ -1,0 +1,7 @@
+# structured20_auto / offline-approx-equivalence / l_sw06_sw11
+
+TT delivery: 581/581; loss: 0; delivered deadline misses: 0.
+
+Affected TT flows: TT02, TT03, TT04, TT06, TT08, TT09, TT14, TT15, TT16, TT18.
+
+First successful TT reception after fault: 0.010058152 s; recovery duration: 5.8152e-05 s.

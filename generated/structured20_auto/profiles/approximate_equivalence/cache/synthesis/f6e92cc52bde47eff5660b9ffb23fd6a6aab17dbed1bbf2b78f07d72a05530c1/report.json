@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scenario_sha256": "33ca38e041d5a241ef6e5dba8a121f590635669540b74266692db6861274fec3",
+  "class_id": "SYN_f6e92cc52bde47ef",
+  "status": "NO_ROUTE",
+  "affected_flows": ["TT01", "TT02", "TT03", "TT05", "TT07", "TT08", "TT11", "TT12", "TT13", "TT16", "TT17"],
+  "union_disabled_links": ["l_sw01_sw02", "l_sw01_sw06", "l_sw02_sw03", "l_sw03_sw04", "l_sw04_sw05"],
+  "route_solver_wall_us": 39.879999999999995,
+  "smt_solver_wall_us": 0,
+  "profile_compile_wall_us": 0,
+  "serialization_wall_us": 0,
+  "total_class_synthesis_wall_us": 39.901000000000003,
+  "objective": -1,
+  "profile_bytes_raw": 0,
+  "diagnostic": "BFS found no route for flow TT01 from es01 to es10"
+}

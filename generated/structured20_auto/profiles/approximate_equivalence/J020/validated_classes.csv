@@ -1,0 +1,9 @@
+scenario,policy_id,class_id,class_type,members,member_count,profile_id,profile_semantic_hash,min_pairwise_jaccard,mean_pairwise_jaccard,max_edge_distance,source_candidate_group,split_depth,validation_pass
+structured20_auto,J020,C0001,SHARED,l_sw01_sw02;l_sw02_sw03;l_sw03_sw04,3,AP_C0001,e400c4211ecbbe788a511d3014b8051f6446c90a3d165e3a5627341b9b18ed66,0.5454545454545454,0.6734848484848485,1,G0001,1,True
+structured20_auto,J020,C0002,SHARED,l_sw01_sw06;l_sw04_sw05,2,AP_C0002,665632ba1cde5205ce583d2cbcccf6ee566f90d067f8f2f1ae5d6a5fd2bfb414,0.6,0.6,3,G0001,1,True
+structured20_auto,J020,C0003,SHARED,l_sw02_sw08;l_sw13_sw19;l_sw19_sw20,3,AP_C0003,3100b5450052eb153143f756875ee717a7fa9e55c8471a7fc79602e59c3a3ebe,0.5,0.6666666666666666,2,G0002,0,True
+structured20_auto,J020,C0004,SHARED,l_sw03_sw08;l_sw08_sw13;l_sw13_sw18,3,AP_C0004,19b289f7b51cd7cf9d27677e31e6fe2d93857fd90b84855086e32e66309794dd,0.5,0.6666666666666666,1,G0003,0,True
+structured20_auto,J020,C0005,SHARED,l_sw04_sw10;l_sw10_sw15,2,AP_C0005,2d5dc361478e477c64b819ae314e3d05de8cec1f602d28aeceaeed6805efdf79,0.8,0.8,0,G0004,0,True
+structured20_auto,J020,C0006,SHARED,l_sw06_sw07;l_sw06_sw11;l_sw07_sw08;l_sw08_sw09;l_sw09_sw10;l_sw11_sw16,6,AP_C0006,01e7faaa1e9c52581a6e4f5c6b2927f688f080c1817702a002fd1f5cdb830211,0.2727272727272727,0.5341414141414141,4,G0005,0,True
+structured20_auto,J020,C0007,SHARED,l_sw11_sw17;l_sw17_sw18,2,AP_C0007,1aa4bd75d1a837e124681ecec8b161851a635353f6079e01b4958c12a72613b4,1.0,1.0,0,G0006,0,True
+structured20_auto,J020,C0008,SINGLETON,l_sw15_sw20,1,PF_l_sw15_sw20,a874ecd590d83b72d56bb94e7f59bdbf47b82c174d94f87a3842f7ebf4f9e64e,1.0,1.0,0,G0007,0,True

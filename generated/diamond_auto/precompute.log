@@ -1,0 +1,28 @@
+OMNeT++ Discrete Event Simulation  (C) 1992-2025 Andras Varga, OpenSim Ltd.
+Version: 6.4.0, build: 260506-2cf25223fe, edition: Academic Public License -- NOT FOR COMMERCIAL USE
+See the license for distribution terms and warranty disclaimer
+
+Setting up Cmdenv...
+
+Loading NED files from /home/opp_env/tsn_fault_recovery/generated:  8
+Loading NED files from /home/opp_env/tsn_fault_recovery/src:  10
+Loading NED files from /home/opp_env/inet-4.7.0/src:  1262
+
+Preparing for running configuration ScenarioPrecompute, run #0...
+Assigned runID=ScenarioPrecompute-0-20260830-21:36:16-4597
+Setting up network "diamond_auto.ScenarioNetwork"...
+Initializing...
+
+Running simulation...
+** Event #0   t=0   Elapsed: 1e-05s (0m 00s)  0% completed  (0% total)
+     Speed:     ev/sec=0   simsec/sec=0   ev/simsec=0
+     Messages:  created: 178   present: 178   in FES: 42   Memory (RSS): 123.438MiB
+** Event #1   t=0   Elapsed: 0.009598s (0m 00s)  0% completed  (0% total)
+     Speed:     ev/sec=0   simsec/sec=0   ev/simsec=0
+     Messages:  created: 178   present: 178   in FES: 41   Memory (RSS): 150.156MiB
+
+<!> Simulation stopped with endSimulation() -- in module (tsn_fault_recovery::ScenarioRecoveryController) ScenarioNetwork.scenarioRecoveryController (id=13), at t=0s, event #1
+
+Calling finish() at end of Run #0...
+
+End.

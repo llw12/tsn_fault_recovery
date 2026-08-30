@@ -1,0 +1,90 @@
+{
+  "links": {
+    "l_s1_s2": {
+      "a": {
+        "egress_path": "s1.eth[0]",
+        "interface": "eth0",
+        "node": "s1",
+        "peer": "s2"
+      },
+      "b": {
+        "egress_path": "s2.eth[0]",
+        "interface": "eth0",
+        "node": "s2",
+        "peer": "s1"
+      }
+    },
+    "l_s1_s3": {
+      "a": {
+        "egress_path": "s1.eth[1]",
+        "interface": "eth1",
+        "node": "s1",
+        "peer": "s3"
+      },
+      "b": {
+        "egress_path": "s3.eth[0]",
+        "interface": "eth0",
+        "node": "s3",
+        "peer": "s1"
+      }
+    },
+    "l_s2_s4": {
+      "a": {
+        "egress_path": "s2.eth[1]",
+        "interface": "eth1",
+        "node": "s2",
+        "peer": "s4"
+      },
+      "b": {
+        "egress_path": "s4.eth[0]",
+        "interface": "eth0",
+        "node": "s4",
+        "peer": "s2"
+      }
+    },
+    "l_s3_s4": {
+      "a": {
+        "egress_path": "s3.eth[1]",
+        "interface": "eth1",
+        "node": "s3",
+        "peer": "s4"
+      },
+      "b": {
+        "egress_path": "s4.eth[1]",
+        "interface": "eth1",
+        "node": "s4",
+        "peer": "s3"
+      }
+    },
+    "l_s4_destination": {
+      "a": {
+        "egress_path": "s4.eth[2]",
+        "interface": "eth2",
+        "node": "s4",
+        "peer": "destination"
+      },
+      "b": {
+        "egress_path": "destination.eth[0]",
+        "interface": "eth0",
+        "node": "destination",
+        "peer": "s4"
+      }
+    },
+    "l_source_s1": {
+      "a": {
+        "egress_path": "source.eth[0]",
+        "interface": "eth0",
+        "node": "source",
+        "peer": "s1"
+      },
+      "b": {
+        "egress_path": "s1.eth[2]",
+        "interface": "eth2",
+        "node": "s1",
+        "peer": "source"
+      }
+    }
+  },
+  "scenario_name": "diamond",
+  "schema_version": 1
+}

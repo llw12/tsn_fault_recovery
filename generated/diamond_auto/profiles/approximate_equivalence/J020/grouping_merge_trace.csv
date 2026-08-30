@@ -1,0 +1,2 @@
+scenario,policy_id,step,left_cluster,right_cluster,merged_members,min_pairwise_jaccard,max_edge_distance,merge_priority,result_candidate_group_id
+diamond_auto,J020,1,l_s1_s2,l_s2_s4,l_s1_s2;l_s2_s4,1.0,0,"[-1.0,0,-2,[""l_s1_s2"",""l_s2_s4""]]",G0001

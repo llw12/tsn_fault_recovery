@@ -1,0 +1,7 @@
+scenario,policy_id,step,left_cluster,right_cluster,merged_members,min_pairwise_jaccard,max_edge_distance,merge_priority,result_candidate_group_id
+structured30_auto,J060,1,l_sw02_sw08,l_sw08_sw16,l_sw02_sw08;l_sw08_sw16,1.0,0,"[-1.0,0,-2,[""l_sw02_sw08"",""l_sw08_sw16""]]",G0005
+structured30_auto,J060,2,l_sw03_sw04,l_sw04_sw05,l_sw03_sw04;l_sw04_sw05,1.0,0,"[-1.0,0,-2,[""l_sw03_sw04"",""l_sw04_sw05""]]",G0006
+structured30_auto,J060,3,l_sw09_sw10,l_sw10_sw11,l_sw09_sw10;l_sw10_sw11,1.0,0,"[-1.0,0,-2,[""l_sw09_sw10"",""l_sw10_sw11""]]",G0011
+structured30_auto,J060,4,l_sw13_sw14,l_sw14_sw15,l_sw13_sw14;l_sw14_sw15,1.0,0,"[-1.0,0,-2,[""l_sw13_sw14"",""l_sw14_sw15""]]",G0014
+structured30_auto,J060,5,l_sw02_sw08;l_sw08_sw16,l_sw16_sw17,l_sw02_sw08;l_sw08_sw16;l_sw16_sw17,1.0,1,"[-1.0,1,-3,[""l_sw02_sw08"",""l_sw08_sw16"",""l_sw16_sw17""]]",G0005
+structured30_auto,J060,6,l_sw07_sw13,l_sw13_sw19,l_sw07_sw13;l_sw13_sw19,0.7777777777777778,0,"[-0.7777777777777778,0,-2,[""l_sw07_sw13"",""l_sw13_sw19""]]",G0010

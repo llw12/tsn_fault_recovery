@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scenario_sha256": "6a841a2381143ee29d13ad1c5fce8957f661dba40fb4a0c658cd7146233efb5b",
+  "class_id": "SYN_2527181bef283066",
+  "status": "SAT",
+  "affected_flows": ["TT10", "TT23", "TT34", "TT47", "TT48"],
+  "union_disabled_links": ["l_sw21_sw22", "l_sw35_sw45"],
+  "route_solver_wall_us": 459.99299999999999,
+  "smt_solver_wall_us": 1799737.9269999999,
+  "profile_compile_wall_us": 258.80799999999999,
+  "serialization_wall_us": 442.74299999999999,
+  "total_class_synthesis_wall_us": 1804650.9920000001,
+  "objective": 424,
+  "profile_bytes_raw": 109183,
+  "diagnostic": "lexicographic optimum found"
+}

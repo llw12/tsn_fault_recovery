@@ -1,0 +1,7 @@
+scenario,link_id,endpoint_a,endpoint_a_type,endpoint_b,endpoint_b_type,in_protection_scope,used_by_tt_primary_route,candidate_fault,affected_flow_count,affected_flow_ids,affected_tt_payload_rate_bps,min_affected_deadline_us,mean_affected_deadline_us,max_affected_deadline_us,primary_route_usage_count,classification
+diamond,l_s1_s2,s1,switch,s2,switch,1,1,1,1,TT,1600000.0,1000.0,1000.0,1000.0,1,TT_RELEVANT_CANDIDATE
+diamond,l_s1_s3,s1,switch,s3,switch,1,0,1,0,,0,,,,0,UNUSED_BY_TT
+diamond,l_s2_s4,s2,switch,s4,switch,1,1,1,1,TT,1600000.0,1000.0,1000.0,1000.0,1,TT_RELEVANT_CANDIDATE
+diamond,l_s3_s4,s3,switch,s4,switch,1,0,1,0,,0,,,,0,UNUSED_BY_TT
+diamond,l_s4_destination,s4,switch,destination,end_system,0,1,0,1,TT,1600000.0,1000.0,1000.0,1000.0,1,OUT_OF_SCOPE
+diamond,l_source_s1,source,end_system,s1,switch,0,1,0,1,TT,1600000.0,1000.0,1000.0,1000.0,1,OUT_OF_SCOPE

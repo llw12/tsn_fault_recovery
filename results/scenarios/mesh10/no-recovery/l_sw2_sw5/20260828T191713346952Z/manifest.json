@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "port_map": "port_map.json",
+    "profile0": "profile0.json",
+    "recovery_profile": null,
+    "scenario": "scenario.json"
+  },
+  "cycle_time_s": 0.001,
+  "deterministic": true,
+  "fault_id": "l_sw2_sw5",
+  "generated_ini_sha256": "bfaf6d9659750f6a2ab9291a8254ca1ed39db639cb616c49d6b634fe5310faa0",
+  "generated_ned_sha256": "933a7cf730bcd698434bf468754d734f1dca08291e931a3d72262c7a766bddb0",
+  "git_commit": "9f793dfc42fdb65ac28420e4822a9fb31ddeab73",
+  "inet_version": "4.7.0",
+  "mode": "no-recovery",
+  "omnetpp_version": "6.4.0",
+  "profile0_id": "P0",
+  "random_seed": 0,
+  "recovery_profile_id": null,
+  "scenario_name": "mesh10",
+  "scenario_sha256": "f25d42b46271b5addcad76c7a99cf69804c7debe7833c9e8aed0b3cf47038002",
+  "schema_version": 1,
+  "simulation_duration_s": 0.025,
+  "timestamp": "2026-08-28T19:17:13.840117+00:00",
+  "z3_version": "Z3 version 4.16.0 - 64 bit"
+}

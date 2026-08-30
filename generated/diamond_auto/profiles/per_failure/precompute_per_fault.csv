@@ -1,0 +1,3 @@
+scenario,fault_id,status,affected_flow_count,route_solver_wall_us,smt_solver_wall_us,profile_compile_wall_us,serialization_wall_us,total_precompute_wall_us,objective,profile_bytes,semantic_profile_hash,diagnostic
+diamond_auto,l_s1_s2,SAT,1,7.198,8337.478000000001,11.727,169.332,9246.149,226,2009,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,lexicographic optimum found
+diamond_auto,l_s2_s4,SAT,1,7.278,7045.275000000001,6.936999999999999,152.132,7276.596,226,2020,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,lexicographic optimum found

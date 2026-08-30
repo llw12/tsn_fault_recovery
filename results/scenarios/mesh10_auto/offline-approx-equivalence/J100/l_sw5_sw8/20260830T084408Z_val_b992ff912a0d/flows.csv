@@ -1,0 +1,13 @@
+scenario,mode,fault_id,flow_id,source,destination,period_s,deadline_e2e_s,route_before,route_after,sent,received,lost,deadline_miss_count,deadline_miss_ratio,mean_delay_us,p50_delay_us,p95_delay_us,max_delay_us,affected_by_fault
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT1,es1,es5,0.001,0.0009,es1->sw1->sw2->sw5->sw8->sw9->es5,es1->sw1->sw3->sw4->sw7->sw9->es5,25,25,0,0,0,54.8256,54.912,54.912,54.912,True
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT10,es4,es1,0.001,0.00095,es4->sw7->sw4->sw3->sw1->es1,es4->sw7->sw4->sw3->sw1->es1,24,24,0,0,0,41.328,41.328,41.328,41.328,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT2,es2,es6,0.001,0.0009,es2->sw2->sw5->sw8->sw10->es6,es2->sw2->sw3->sw6->sw8->sw10->es6,24,24,0,0,0,38.8826666667,44.16,44.16,44.16,True
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT3,es3,es5,0.001,0.0009,es3->sw4->sw7->sw9->es5,es3->sw4->sw7->sw9->es5,24,24,0,0,0,40.896,40.896,40.896,40.896,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT4,es4,es2,0.001,0.00095,es4->sw7->sw4->sw3->sw2->es2,es4->sw7->sw4->sw3->sw2->es2,24,24,0,0,0,47.728,47.728,47.728,47.728,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT5,es5,es1,0.001,0.0009,es5->sw9->sw7->sw4->sw3->sw1->es1,es5->sw9->sw7->sw4->sw3->sw1->es1,24,24,0,0,0,66.256,66.256,66.256,66.256,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT6,es6,es3,0.001,0.0009,es6->sw10->sw8->sw6->sw4->es3,es6->sw10->sw8->sw6->sw4->es3,24,24,0,0,0,41.328,41.328,41.328,41.328,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT7,es1,es6,0.001,0.00095,es1->sw1->sw2->sw5->sw8->sw10->es6,es1->sw1->sw3->sw6->sw8->sw10->es6,24,24,0,0,0,48.16,48.16,48.16,48.16,True
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT8,es2,es4,0.001,0.00095,es2->sw2->sw3->sw4->sw7->es4,es2->sw2->sw3->sw4->sw7->es4,24,24,0,0,0,47.728,47.728,47.728,47.728,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,TT9,es3,es6,0.001,0.0009,es3->sw4->sw6->sw8->sw10->es6,es3->sw4->sw6->sw8->sw10->es6,24,24,0,0,0,38.128,38.128,38.128,38.128,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,BE1,es1,es5,0.0005,,,,50,50,0,0,,51.6608,50.624,52.784,52.784,False
+mesh10_auto,offline-approx-equivalence,l_sw5_sw8,BE2,es4,es2,0.0005,,,,49,49,0,0,,55.2613877551,60.128,60.128,60.128,False

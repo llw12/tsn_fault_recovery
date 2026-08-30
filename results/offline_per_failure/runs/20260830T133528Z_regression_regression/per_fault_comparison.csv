@@ -1,0 +1,9 @@
+scenario,fault_id,affected_flow_count,offline_status,online_recovery_status,no_recovery_tt_lost,online_tt_lost,offline_tt_lost,online_recovery_us,offline_recovery_us,online_deadline_miss,offline_deadline_miss,online_runtime_solver_delay_us,offline_lookup_delay_us,online_route_wall_us,online_z3_wall_us,offline_lookup_wall_us,profile_bytes
+diamond,l_s1_s2,1,SAT,RECOVERED,15,1,0,1246.32,363.6,0,0,1000.0,0.0,8.286,7936.801,0.135,2009
+diamond,l_s1_s3,0,NO_AFFECTED_TT,NO_ACTION,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.125,0
+diamond,l_s2_s4,1,SAT,RECOVERED,15,1,0,1246.32,246.32000000000002,0,0,1000.0,0.0,8.248,11110.139,0.129,1999
+diamond,l_s3_s4,0,NO_AFFECTED_TT,NO_ACTION,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.287,0
+mesh10,l_sw2_sw5,3,SAT,RECOVERED,49,3,0,1054.912,54.912,0,0,1000.0,0.0,42.196,54519.269,0.313,14667
+mesh10,l_sw3_sw6,0,NO_AFFECTED_TT,NO_ACTION,0,0,0,0,0,0,0,0.0,0.0,0.0,0.0,0.713,0
+mesh10,l_sw6_sw8,2,SAT,RECOVERED,32,2,0,1141.328,141.328,0,0,1000.0,0.0,33.719,63163.74,0.289,14177
+mesh10,l_sw7_sw9,2,SAT,RECOVERED,32,2,0,1084.528,84.528,0,0,1000.0,0.0,32.587,56232.454,0.306,15708

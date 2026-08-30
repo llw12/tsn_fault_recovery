@@ -1,0 +1,14 @@
+scenario,policy_id,step,left_cluster,right_cluster,merged_members,min_pairwise_jaccard,max_edge_distance,merge_priority,result_candidate_group_id
+structured20_auto,J040,1,l_sw06_sw07,l_sw07_sw08,l_sw06_sw07;l_sw07_sw08,1.0,0,"[-1.0,0,-2,[""l_sw06_sw07"",""l_sw07_sw08""]]",G0006
+structured20_auto,J040,2,l_sw08_sw09,l_sw09_sw10,l_sw08_sw09;l_sw09_sw10,1.0,0,"[-1.0,0,-2,[""l_sw08_sw09"",""l_sw09_sw10""]]",G0006
+structured20_auto,J040,3,l_sw11_sw17,l_sw17_sw18,l_sw11_sw17;l_sw17_sw18,1.0,0,"[-1.0,0,-2,[""l_sw11_sw17"",""l_sw17_sw18""]]",G0008
+structured20_auto,J040,4,l_sw13_sw19,l_sw19_sw20,l_sw13_sw19;l_sw19_sw20,1.0,0,"[-1.0,0,-2,[""l_sw13_sw19"",""l_sw19_sw20""]]",G0003
+structured20_auto,J040,5,l_sw03_sw08,l_sw13_sw18,l_sw03_sw08;l_sw13_sw18,1.0,1,"[-1.0,1,-2,[""l_sw03_sw08"",""l_sw13_sw18""]]",G0004
+structured20_auto,J040,6,l_sw01_sw02,l_sw02_sw03,l_sw01_sw02;l_sw02_sw03,0.875,0,"[-0.875,0,-2,[""l_sw01_sw02"",""l_sw02_sw03""]]",G0001
+structured20_auto,J040,7,l_sw04_sw10,l_sw10_sw15,l_sw04_sw10;l_sw10_sw15,0.8,0,"[-0.8,0,-2,[""l_sw04_sw10"",""l_sw10_sw15""]]",G0005
+structured20_auto,J040,8,l_sw06_sw07;l_sw07_sw08,l_sw08_sw09;l_sw09_sw10,l_sw06_sw07;l_sw07_sw08;l_sw08_sw09;l_sw09_sw10,0.75,2,"[-0.75,2,-4,[""l_sw06_sw07"",""l_sw07_sw08"",""l_sw08_sw09"",""l_sw09_sw10""]]",G0006
+structured20_auto,J040,9,l_sw01_sw06,l_sw04_sw05,l_sw01_sw06;l_sw04_sw05,0.6,3,"[-0.6,3,-2,[""l_sw01_sw06"",""l_sw04_sw05""]]",G0002
+structured20_auto,J040,10,l_sw01_sw02;l_sw02_sw03,l_sw03_sw04,l_sw01_sw02;l_sw02_sw03;l_sw03_sw04,0.5454545454545454,1,"[-0.5454545454545454,1,-3,[""l_sw01_sw02"",""l_sw02_sw03"",""l_sw03_sw04""]]",G0001
+structured20_auto,J040,11,l_sw03_sw08;l_sw13_sw18,l_sw08_sw13,l_sw03_sw08;l_sw08_sw13;l_sw13_sw18,0.5,1,"[-0.5,1,-3,[""l_sw03_sw08"",""l_sw08_sw13"",""l_sw13_sw18""]]",G0004
+structured20_auto,J040,12,l_sw02_sw08,l_sw13_sw19;l_sw19_sw20,l_sw02_sw08;l_sw13_sw19;l_sw19_sw20,0.5,2,"[-0.5,2,-3,[""l_sw02_sw08"",""l_sw13_sw19"",""l_sw19_sw20""]]",G0003
+structured20_auto,J040,13,l_sw06_sw11,l_sw11_sw16,l_sw06_sw11;l_sw11_sw16,0.4,0,"[-0.4,0,-2,[""l_sw06_sw11"",""l_sw11_sw16""]]",G0007

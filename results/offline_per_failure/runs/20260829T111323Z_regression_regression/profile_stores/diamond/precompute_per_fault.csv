@@ -1,0 +1,5 @@
+scenario,fault_id,status,affected_flow_count,route_solver_wall_us,smt_solver_wall_us,profile_compile_wall_us,serialization_wall_us,total_precompute_wall_us,objective,profile_bytes,semantic_profile_hash,diagnostic
+diamond,l_s1_s2,SAT,1,8.069,8190.9619999999995,12.228,171.108,9118.795,226,2010,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,lexicographic optimum found
+diamond,l_s1_s3,NO_AFFECTED_TT,0,0,0,0,0,0,-1,0,,fault is not on any healthy TT route
+diamond,l_s2_s4,SAT,1,6.195,7089.071,6.931,144.64499999999998,7313.396,226,1999,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,lexicographic optimum found
+diamond,l_s3_s4,NO_AFFECTED_TT,0,0,0,0,0,0,-1,0,,fault is not on any healthy TT route

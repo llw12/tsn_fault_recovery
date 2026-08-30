@@ -1,0 +1,37 @@
+{
+  "artifacts": {
+    "port_map": "port_map.json",
+    "profile0": "profile0.json",
+    "recovery_profile": "recovery_profile.json",
+    "scenario": "scenario.json"
+  },
+  "cycle_time_s": 0.001,
+  "deterministic": true,
+  "fault_id": "l_sw7_sw9",
+  "generated_ini_sha256": "714281ccbe4f9e34f12391bb4b3d79d26e47f2a131b4b8a37d55c68937b60ba5",
+  "generated_ned_sha256": "933a7cf730bcd698434bf468754d734f1dca08291e931a3d72262c7a766bddb0",
+  "git_commit": "f73982a3697d56606f04f0bf3bd1f1dbe1a2a08c",
+  "inet_version": "4.7.0",
+  "mode": "offline-per-failure",
+  "offline_lookup_delay_s": 0.0,
+  "offline_precompute_code_commit": "f73982a3697d56606f04f0bf3bd1f1dbe1a2a08c",
+  "omnetpp_version": "6.4.0",
+  "profile0_id": "P0",
+  "profile_store_scenario_sha256": "f25d42b46271b5addcad76c7a99cf69804c7debe7833c9e8aed0b3cf47038002",
+  "profile_store_sha256": "27c9511c684341ba73458f1bde2601162f43c7b395f4a3f285ce9db8e4bd403e",
+  "profile_strategy": "per-failure",
+  "random_seed": 0,
+  "recovery_profile_id": "PF_l_sw7_sw9",
+  "recovery_profile_sha256": "c41aeed600263c87fbd2a6ac296797045b0dbfdd2e7b3001758564f468c0954a",
+  "runtime_code_commit": "f73982a3697d56606f04f0bf3bd1f1dbe1a2a08c",
+  "runtime_solver_invocations": {
+    "route": 0,
+    "z3": 0
+  },
+  "scenario_name": "mesh10",
+  "scenario_sha256": "f25d42b46271b5addcad76c7a99cf69804c7debe7833c9e8aed0b3cf47038002",
+  "schema_version": 1,
+  "simulation_duration_s": 0.025,
+  "timestamp": "2026-08-29T02:41:34.537432+00:00",
+  "z3_version": "Z3 version 4.16.0 - 64 bit"
+}

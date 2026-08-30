@@ -1,0 +1,986 @@
+{
+  "links": {
+    "l_es01_sw01": {
+      "a": {
+        "egress_path": "es01.eth[0]",
+        "interface": "eth0",
+        "node": "es01",
+        "peer": "sw01"
+      },
+      "b": {
+        "egress_path": "sw01.eth[0]",
+        "interface": "eth0",
+        "node": "sw01",
+        "peer": "es01"
+      }
+    },
+    "l_es02_sw03": {
+      "a": {
+        "egress_path": "es02.eth[0]",
+        "interface": "eth0",
+        "node": "es02",
+        "peer": "sw03"
+      },
+      "b": {
+        "egress_path": "sw03.eth[0]",
+        "interface": "eth0",
+        "node": "sw03",
+        "peer": "es02"
+      }
+    },
+    "l_es03_sw05": {
+      "a": {
+        "egress_path": "es03.eth[0]",
+        "interface": "eth0",
+        "node": "es03",
+        "peer": "sw05"
+      },
+      "b": {
+        "egress_path": "sw05.eth[0]",
+        "interface": "eth0",
+        "node": "sw05",
+        "peer": "es03"
+      }
+    },
+    "l_es04_sw07": {
+      "a": {
+        "egress_path": "es04.eth[0]",
+        "interface": "eth0",
+        "node": "es04",
+        "peer": "sw07"
+      },
+      "b": {
+        "egress_path": "sw07.eth[0]",
+        "interface": "eth0",
+        "node": "sw07",
+        "peer": "es04"
+      }
+    },
+    "l_es05_sw09": {
+      "a": {
+        "egress_path": "es05.eth[0]",
+        "interface": "eth0",
+        "node": "es05",
+        "peer": "sw09"
+      },
+      "b": {
+        "egress_path": "sw09.eth[0]",
+        "interface": "eth0",
+        "node": "sw09",
+        "peer": "es05"
+      }
+    },
+    "l_es06_sw11": {
+      "a": {
+        "egress_path": "es06.eth[0]",
+        "interface": "eth0",
+        "node": "es06",
+        "peer": "sw11"
+      },
+      "b": {
+        "egress_path": "sw11.eth[0]",
+        "interface": "eth0",
+        "node": "sw11",
+        "peer": "es06"
+      }
+    },
+    "l_es07_sw13": {
+      "a": {
+        "egress_path": "es07.eth[0]",
+        "interface": "eth0",
+        "node": "es07",
+        "peer": "sw13"
+      },
+      "b": {
+        "egress_path": "sw13.eth[0]",
+        "interface": "eth0",
+        "node": "sw13",
+        "peer": "es07"
+      }
+    },
+    "l_es08_sw15": {
+      "a": {
+        "egress_path": "es08.eth[0]",
+        "interface": "eth0",
+        "node": "es08",
+        "peer": "sw15"
+      },
+      "b": {
+        "egress_path": "sw15.eth[0]",
+        "interface": "eth0",
+        "node": "sw15",
+        "peer": "es08"
+      }
+    },
+    "l_es09_sw17": {
+      "a": {
+        "egress_path": "es09.eth[0]",
+        "interface": "eth0",
+        "node": "es09",
+        "peer": "sw17"
+      },
+      "b": {
+        "egress_path": "sw17.eth[0]",
+        "interface": "eth0",
+        "node": "sw17",
+        "peer": "es09"
+      }
+    },
+    "l_es10_sw19": {
+      "a": {
+        "egress_path": "es10.eth[0]",
+        "interface": "eth0",
+        "node": "es10",
+        "peer": "sw19"
+      },
+      "b": {
+        "egress_path": "sw19.eth[0]",
+        "interface": "eth0",
+        "node": "sw19",
+        "peer": "es10"
+      }
+    },
+    "l_es11_sw21": {
+      "a": {
+        "egress_path": "es11.eth[0]",
+        "interface": "eth0",
+        "node": "es11",
+        "peer": "sw21"
+      },
+      "b": {
+        "egress_path": "sw21.eth[0]",
+        "interface": "eth0",
+        "node": "sw21",
+        "peer": "es11"
+      }
+    },
+    "l_es12_sw23": {
+      "a": {
+        "egress_path": "es12.eth[0]",
+        "interface": "eth0",
+        "node": "es12",
+        "peer": "sw23"
+      },
+      "b": {
+        "egress_path": "sw23.eth[0]",
+        "interface": "eth0",
+        "node": "sw23",
+        "peer": "es12"
+      }
+    },
+    "l_es13_sw25": {
+      "a": {
+        "egress_path": "es13.eth[0]",
+        "interface": "eth0",
+        "node": "es13",
+        "peer": "sw25"
+      },
+      "b": {
+        "egress_path": "sw25.eth[0]",
+        "interface": "eth0",
+        "node": "sw25",
+        "peer": "es13"
+      }
+    },
+    "l_es14_sw27": {
+      "a": {
+        "egress_path": "es14.eth[0]",
+        "interface": "eth0",
+        "node": "es14",
+        "peer": "sw27"
+      },
+      "b": {
+        "egress_path": "sw27.eth[0]",
+        "interface": "eth0",
+        "node": "sw27",
+        "peer": "es14"
+      }
+    },
+    "l_es15_sw29": {
+      "a": {
+        "egress_path": "es15.eth[0]",
+        "interface": "eth0",
+        "node": "es15",
+        "peer": "sw29"
+      },
+      "b": {
+        "egress_path": "sw29.eth[0]",
+        "interface": "eth0",
+        "node": "sw29",
+        "peer": "es15"
+      }
+    },
+    "l_sw01_sw02": {
+      "a": {
+        "egress_path": "sw01.eth[1]",
+        "interface": "eth1",
+        "node": "sw01",
+        "peer": "sw02"
+      },
+      "b": {
+        "egress_path": "sw02.eth[0]",
+        "interface": "eth0",
+        "node": "sw02",
+        "peer": "sw01"
+      }
+    },
+    "l_sw01_sw07": {
+      "a": {
+        "egress_path": "sw01.eth[2]",
+        "interface": "eth2",
+        "node": "sw01",
+        "peer": "sw07"
+      },
+      "b": {
+        "egress_path": "sw07.eth[1]",
+        "interface": "eth1",
+        "node": "sw07",
+        "peer": "sw01"
+      }
+    },
+    "l_sw01_sw09": {
+      "a": {
+        "egress_path": "sw01.eth[3]",
+        "interface": "eth3",
+        "node": "sw01",
+        "peer": "sw09"
+      },
+      "b": {
+        "egress_path": "sw09.eth[1]",
+        "interface": "eth1",
+        "node": "sw09",
+        "peer": "sw01"
+      }
+    },
+    "l_sw02_sw03": {
+      "a": {
+        "egress_path": "sw02.eth[1]",
+        "interface": "eth1",
+        "node": "sw02",
+        "peer": "sw03"
+      },
+      "b": {
+        "egress_path": "sw03.eth[1]",
+        "interface": "eth1",
+        "node": "sw03",
+        "peer": "sw02"
+      }
+    },
+    "l_sw02_sw08": {
+      "a": {
+        "egress_path": "sw02.eth[2]",
+        "interface": "eth2",
+        "node": "sw02",
+        "peer": "sw08"
+      },
+      "b": {
+        "egress_path": "sw08.eth[0]",
+        "interface": "eth0",
+        "node": "sw08",
+        "peer": "sw02"
+      }
+    },
+    "l_sw03_sw04": {
+      "a": {
+        "egress_path": "sw03.eth[2]",
+        "interface": "eth2",
+        "node": "sw03",
+        "peer": "sw04"
+      },
+      "b": {
+        "egress_path": "sw04.eth[0]",
+        "interface": "eth0",
+        "node": "sw04",
+        "peer": "sw03"
+      }
+    },
+    "l_sw03_sw09": {
+      "a": {
+        "egress_path": "sw03.eth[3]",
+        "interface": "eth3",
+        "node": "sw03",
+        "peer": "sw09"
+      },
+      "b": {
+        "egress_path": "sw09.eth[2]",
+        "interface": "eth2",
+        "node": "sw09",
+        "peer": "sw03"
+      }
+    },
+    "l_sw04_sw05": {
+      "a": {
+        "egress_path": "sw04.eth[1]",
+        "interface": "eth1",
+        "node": "sw04",
+        "peer": "sw05"
+      },
+      "b": {
+        "egress_path": "sw05.eth[1]",
+        "interface": "eth1",
+        "node": "sw05",
+        "peer": "sw04"
+      }
+    },
+    "l_sw04_sw10": {
+      "a": {
+        "egress_path": "sw04.eth[2]",
+        "interface": "eth2",
+        "node": "sw04",
+        "peer": "sw10"
+      },
+      "b": {
+        "egress_path": "sw10.eth[0]",
+        "interface": "eth0",
+        "node": "sw10",
+        "peer": "sw04"
+      }
+    },
+    "l_sw05_sw06": {
+      "a": {
+        "egress_path": "sw05.eth[2]",
+        "interface": "eth2",
+        "node": "sw05",
+        "peer": "sw06"
+      },
+      "b": {
+        "egress_path": "sw06.eth[0]",
+        "interface": "eth0",
+        "node": "sw06",
+        "peer": "sw05"
+      }
+    },
+    "l_sw05_sw07": {
+      "a": {
+        "egress_path": "sw05.eth[3]",
+        "interface": "eth3",
+        "node": "sw05",
+        "peer": "sw07"
+      },
+      "b": {
+        "egress_path": "sw07.eth[2]",
+        "interface": "eth2",
+        "node": "sw07",
+        "peer": "sw05"
+      }
+    },
+    "l_sw05_sw11": {
+      "a": {
+        "egress_path": "sw05.eth[4]",
+        "interface": "eth4",
+        "node": "sw05",
+        "peer": "sw11"
+      },
+      "b": {
+        "egress_path": "sw11.eth[1]",
+        "interface": "eth1",
+        "node": "sw11",
+        "peer": "sw05"
+      }
+    },
+    "l_sw06_sw12": {
+      "a": {
+        "egress_path": "sw06.eth[1]",
+        "interface": "eth1",
+        "node": "sw06",
+        "peer": "sw12"
+      },
+      "b": {
+        "egress_path": "sw12.eth[0]",
+        "interface": "eth0",
+        "node": "sw12",
+        "peer": "sw06"
+      }
+    },
+    "l_sw07_sw08": {
+      "a": {
+        "egress_path": "sw07.eth[3]",
+        "interface": "eth3",
+        "node": "sw07",
+        "peer": "sw08"
+      },
+      "b": {
+        "egress_path": "sw08.eth[1]",
+        "interface": "eth1",
+        "node": "sw08",
+        "peer": "sw07"
+      }
+    },
+    "l_sw07_sw13": {
+      "a": {
+        "egress_path": "sw07.eth[4]",
+        "interface": "eth4",
+        "node": "sw07",
+        "peer": "sw13"
+      },
+      "b": {
+        "egress_path": "sw13.eth[1]",
+        "interface": "eth1",
+        "node": "sw13",
+        "peer": "sw07"
+      }
+    },
+    "l_sw08_sw09": {
+      "a": {
+        "egress_path": "sw08.eth[2]",
+        "interface": "eth2",
+        "node": "sw08",
+        "peer": "sw09"
+      },
+      "b": {
+        "egress_path": "sw09.eth[3]",
+        "interface": "eth3",
+        "node": "sw09",
+        "peer": "sw08"
+      }
+    },
+    "l_sw08_sw14": {
+      "a": {
+        "egress_path": "sw08.eth[3]",
+        "interface": "eth3",
+        "node": "sw08",
+        "peer": "sw14"
+      },
+      "b": {
+        "egress_path": "sw14.eth[0]",
+        "interface": "eth0",
+        "node": "sw14",
+        "peer": "sw08"
+      }
+    },
+    "l_sw08_sw16": {
+      "a": {
+        "egress_path": "sw08.eth[4]",
+        "interface": "eth4",
+        "node": "sw08",
+        "peer": "sw16"
+      },
+      "b": {
+        "egress_path": "sw16.eth[0]",
+        "interface": "eth0",
+        "node": "sw16",
+        "peer": "sw08"
+      }
+    },
+    "l_sw09_sw10": {
+      "a": {
+        "egress_path": "sw09.eth[4]",
+        "interface": "eth4",
+        "node": "sw09",
+        "peer": "sw10"
+      },
+      "b": {
+        "egress_path": "sw10.eth[1]",
+        "interface": "eth1",
+        "node": "sw10",
+        "peer": "sw09"
+      }
+    },
+    "l_sw09_sw15": {
+      "a": {
+        "egress_path": "sw09.eth[5]",
+        "interface": "eth5",
+        "node": "sw09",
+        "peer": "sw15"
+      },
+      "b": {
+        "egress_path": "sw15.eth[1]",
+        "interface": "eth1",
+        "node": "sw15",
+        "peer": "sw09"
+      }
+    },
+    "l_sw10_sw11": {
+      "a": {
+        "egress_path": "sw10.eth[2]",
+        "interface": "eth2",
+        "node": "sw10",
+        "peer": "sw11"
+      },
+      "b": {
+        "egress_path": "sw11.eth[2]",
+        "interface": "eth2",
+        "node": "sw11",
+        "peer": "sw10"
+      }
+    },
+    "l_sw10_sw16": {
+      "a": {
+        "egress_path": "sw10.eth[3]",
+        "interface": "eth3",
+        "node": "sw10",
+        "peer": "sw16"
+      },
+      "b": {
+        "egress_path": "sw16.eth[1]",
+        "interface": "eth1",
+        "node": "sw16",
+        "peer": "sw10"
+      }
+    },
+    "l_sw11_sw12": {
+      "a": {
+        "egress_path": "sw11.eth[3]",
+        "interface": "eth3",
+        "node": "sw11",
+        "peer": "sw12"
+      },
+      "b": {
+        "egress_path": "sw12.eth[1]",
+        "interface": "eth1",
+        "node": "sw12",
+        "peer": "sw11"
+      }
+    },
+    "l_sw11_sw17": {
+      "a": {
+        "egress_path": "sw11.eth[4]",
+        "interface": "eth4",
+        "node": "sw11",
+        "peer": "sw17"
+      },
+      "b": {
+        "egress_path": "sw17.eth[1]",
+        "interface": "eth1",
+        "node": "sw17",
+        "peer": "sw11"
+      }
+    },
+    "l_sw12_sw14": {
+      "a": {
+        "egress_path": "sw12.eth[2]",
+        "interface": "eth2",
+        "node": "sw12",
+        "peer": "sw14"
+      },
+      "b": {
+        "egress_path": "sw14.eth[1]",
+        "interface": "eth1",
+        "node": "sw14",
+        "peer": "sw12"
+      }
+    },
+    "l_sw12_sw18": {
+      "a": {
+        "egress_path": "sw12.eth[3]",
+        "interface": "eth3",
+        "node": "sw12",
+        "peer": "sw18"
+      },
+      "b": {
+        "egress_path": "sw18.eth[0]",
+        "interface": "eth0",
+        "node": "sw18",
+        "peer": "sw12"
+      }
+    },
+    "l_sw13_sw14": {
+      "a": {
+        "egress_path": "sw13.eth[2]",
+        "interface": "eth2",
+        "node": "sw13",
+        "peer": "sw14"
+      },
+      "b": {
+        "egress_path": "sw14.eth[2]",
+        "interface": "eth2",
+        "node": "sw14",
+        "peer": "sw13"
+      }
+    },
+    "l_sw13_sw19": {
+      "a": {
+        "egress_path": "sw13.eth[3]",
+        "interface": "eth3",
+        "node": "sw13",
+        "peer": "sw19"
+      },
+      "b": {
+        "egress_path": "sw19.eth[1]",
+        "interface": "eth1",
+        "node": "sw19",
+        "peer": "sw13"
+      }
+    },
+    "l_sw14_sw15": {
+      "a": {
+        "egress_path": "sw14.eth[3]",
+        "interface": "eth3",
+        "node": "sw14",
+        "peer": "sw15"
+      },
+      "b": {
+        "egress_path": "sw15.eth[2]",
+        "interface": "eth2",
+        "node": "sw15",
+        "peer": "sw14"
+      }
+    },
+    "l_sw14_sw20": {
+      "a": {
+        "egress_path": "sw14.eth[4]",
+        "interface": "eth4",
+        "node": "sw14",
+        "peer": "sw20"
+      },
+      "b": {
+        "egress_path": "sw20.eth[0]",
+        "interface": "eth0",
+        "node": "sw20",
+        "peer": "sw14"
+      }
+    },
+    "l_sw15_sw16": {
+      "a": {
+        "egress_path": "sw15.eth[3]",
+        "interface": "eth3",
+        "node": "sw15",
+        "peer": "sw16"
+      },
+      "b": {
+        "egress_path": "sw16.eth[2]",
+        "interface": "eth2",
+        "node": "sw16",
+        "peer": "sw15"
+      }
+    },
+    "l_sw15_sw21": {
+      "a": {
+        "egress_path": "sw15.eth[4]",
+        "interface": "eth4",
+        "node": "sw15",
+        "peer": "sw21"
+      },
+      "b": {
+        "egress_path": "sw21.eth[1]",
+        "interface": "eth1",
+        "node": "sw21",
+        "peer": "sw15"
+      }
+    },
+    "l_sw15_sw23": {
+      "a": {
+        "egress_path": "sw15.eth[5]",
+        "interface": "eth5",
+        "node": "sw15",
+        "peer": "sw23"
+      },
+      "b": {
+        "egress_path": "sw23.eth[1]",
+        "interface": "eth1",
+        "node": "sw23",
+        "peer": "sw15"
+      }
+    },
+    "l_sw16_sw17": {
+      "a": {
+        "egress_path": "sw16.eth[3]",
+        "interface": "eth3",
+        "node": "sw16",
+        "peer": "sw17"
+      },
+      "b": {
+        "egress_path": "sw17.eth[2]",
+        "interface": "eth2",
+        "node": "sw17",
+        "peer": "sw16"
+      }
+    },
+    "l_sw16_sw22": {
+      "a": {
+        "egress_path": "sw16.eth[4]",
+        "interface": "eth4",
+        "node": "sw16",
+        "peer": "sw22"
+      },
+      "b": {
+        "egress_path": "sw22.eth[0]",
+        "interface": "eth0",
+        "node": "sw22",
+        "peer": "sw16"
+      }
+    },
+    "l_sw17_sw18": {
+      "a": {
+        "egress_path": "sw17.eth[3]",
+        "interface": "eth3",
+        "node": "sw17",
+        "peer": "sw18"
+      },
+      "b": {
+        "egress_path": "sw18.eth[1]",
+        "interface": "eth1",
+        "node": "sw18",
+        "peer": "sw17"
+      }
+    },
+    "l_sw17_sw23": {
+      "a": {
+        "egress_path": "sw17.eth[4]",
+        "interface": "eth4",
+        "node": "sw17",
+        "peer": "sw23"
+      },
+      "b": {
+        "egress_path": "sw23.eth[2]",
+        "interface": "eth2",
+        "node": "sw23",
+        "peer": "sw17"
+      }
+    },
+    "l_sw18_sw24": {
+      "a": {
+        "egress_path": "sw18.eth[2]",
+        "interface": "eth2",
+        "node": "sw18",
+        "peer": "sw24"
+      },
+      "b": {
+        "egress_path": "sw24.eth[0]",
+        "interface": "eth0",
+        "node": "sw24",
+        "peer": "sw18"
+      }
+    },
+    "l_sw19_sw20": {
+      "a": {
+        "egress_path": "sw19.eth[2]",
+        "interface": "eth2",
+        "node": "sw19",
+        "peer": "sw20"
+      },
+      "b": {
+        "egress_path": "sw20.eth[1]",
+        "interface": "eth1",
+        "node": "sw20",
+        "peer": "sw19"
+      }
+    },
+    "l_sw19_sw25": {
+      "a": {
+        "egress_path": "sw19.eth[3]",
+        "interface": "eth3",
+        "node": "sw19",
+        "peer": "sw25"
+      },
+      "b": {
+        "egress_path": "sw25.eth[1]",
+        "interface": "eth1",
+        "node": "sw25",
+        "peer": "sw19"
+      }
+    },
+    "l_sw20_sw21": {
+      "a": {
+        "egress_path": "sw20.eth[2]",
+        "interface": "eth2",
+        "node": "sw20",
+        "peer": "sw21"
+      },
+      "b": {
+        "egress_path": "sw21.eth[2]",
+        "interface": "eth2",
+        "node": "sw21",
+        "peer": "sw20"
+      }
+    },
+    "l_sw20_sw26": {
+      "a": {
+        "egress_path": "sw20.eth[3]",
+        "interface": "eth3",
+        "node": "sw20",
+        "peer": "sw26"
+      },
+      "b": {
+        "egress_path": "sw26.eth[0]",
+        "interface": "eth0",
+        "node": "sw26",
+        "peer": "sw20"
+      }
+    },
+    "l_sw21_sw22": {
+      "a": {
+        "egress_path": "sw21.eth[3]",
+        "interface": "eth3",
+        "node": "sw21",
+        "peer": "sw22"
+      },
+      "b": {
+        "egress_path": "sw22.eth[1]",
+        "interface": "eth1",
+        "node": "sw22",
+        "peer": "sw21"
+      }
+    },
+    "l_sw21_sw27": {
+      "a": {
+        "egress_path": "sw21.eth[4]",
+        "interface": "eth4",
+        "node": "sw21",
+        "peer": "sw27"
+      },
+      "b": {
+        "egress_path": "sw27.eth[1]",
+        "interface": "eth1",
+        "node": "sw27",
+        "peer": "sw21"
+      }
+    },
+    "l_sw22_sw23": {
+      "a": {
+        "egress_path": "sw22.eth[2]",
+        "interface": "eth2",
+        "node": "sw22",
+        "peer": "sw23"
+      },
+      "b": {
+        "egress_path": "sw23.eth[3]",
+        "interface": "eth3",
+        "node": "sw23",
+        "peer": "sw22"
+      }
+    },
+    "l_sw22_sw28": {
+      "a": {
+        "egress_path": "sw22.eth[3]",
+        "interface": "eth3",
+        "node": "sw22",
+        "peer": "sw28"
+      },
+      "b": {
+        "egress_path": "sw28.eth[0]",
+        "interface": "eth0",
+        "node": "sw28",
+        "peer": "sw22"
+      }
+    },
+    "l_sw22_sw30": {
+      "a": {
+        "egress_path": "sw22.eth[4]",
+        "interface": "eth4",
+        "node": "sw22",
+        "peer": "sw30"
+      },
+      "b": {
+        "egress_path": "sw30.eth[0]",
+        "interface": "eth0",
+        "node": "sw30",
+        "peer": "sw22"
+      }
+    },
+    "l_sw23_sw24": {
+      "a": {
+        "egress_path": "sw23.eth[4]",
+        "interface": "eth4",
+        "node": "sw23",
+        "peer": "sw24"
+      },
+      "b": {
+        "egress_path": "sw24.eth[1]",
+        "interface": "eth1",
+        "node": "sw24",
+        "peer": "sw23"
+      }
+    },
+    "l_sw23_sw29": {
+      "a": {
+        "egress_path": "sw23.eth[5]",
+        "interface": "eth5",
+        "node": "sw23",
+        "peer": "sw29"
+      },
+      "b": {
+        "egress_path": "sw29.eth[1]",
+        "interface": "eth1",
+        "node": "sw29",
+        "peer": "sw23"
+      }
+    },
+    "l_sw24_sw30": {
+      "a": {
+        "egress_path": "sw24.eth[2]",
+        "interface": "eth2",
+        "node": "sw24",
+        "peer": "sw30"
+      },
+      "b": {
+        "egress_path": "sw30.eth[1]",
+        "interface": "eth1",
+        "node": "sw30",
+        "peer": "sw24"
+      }
+    },
+    "l_sw25_sw26": {
+      "a": {
+        "egress_path": "sw25.eth[2]",
+        "interface": "eth2",
+        "node": "sw25",
+        "peer": "sw26"
+      },
+      "b": {
+        "egress_path": "sw26.eth[1]",
+        "interface": "eth1",
+        "node": "sw26",
+        "peer": "sw25"
+      }
+    },
+    "l_sw26_sw27": {
+      "a": {
+        "egress_path": "sw26.eth[2]",
+        "interface": "eth2",
+        "node": "sw26",
+        "peer": "sw27"
+      },
+      "b": {
+        "egress_path": "sw27.eth[2]",
+        "interface": "eth2",
+        "node": "sw27",
+        "peer": "sw26"
+      }
+    },
+    "l_sw27_sw28": {
+      "a": {
+        "egress_path": "sw27.eth[3]",
+        "interface": "eth3",
+        "node": "sw27",
+        "peer": "sw28"
+      },
+      "b": {
+        "egress_path": "sw28.eth[1]",
+        "interface": "eth1",
+        "node": "sw28",
+        "peer": "sw27"
+      }
+    },
+    "l_sw28_sw29": {
+      "a": {
+        "egress_path": "sw28.eth[2]",
+        "interface": "eth2",
+        "node": "sw28",
+        "peer": "sw29"
+      },
+      "b": {
+        "egress_path": "sw29.eth[2]",
+        "interface": "eth2",
+        "node": "sw29",
+        "peer": "sw28"
+      }
+    },
+    "l_sw29_sw30": {
+      "a": {
+        "egress_path": "sw29.eth[3]",
+        "interface": "eth3",
+        "node": "sw29",
+        "peer": "sw30"
+      },
+      "b": {
+        "egress_path": "sw30.eth[2]",
+        "interface": "eth2",
+        "node": "sw30",
+        "peer": "sw29"
+      }
+    }
+  },
+  "scenario_name": "structured30_auto",
+  "schema_version": 1
+}

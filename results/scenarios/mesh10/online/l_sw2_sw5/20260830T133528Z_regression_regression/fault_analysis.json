@@ -1,0 +1,19 @@
+{
+  "faults": {
+    "l_sw2_sw5": [
+      "TT1",
+      "TT2",
+      "TT7"
+    ],
+    "l_sw3_sw6": [],
+    "l_sw6_sw8": [
+      "TT6",
+      "TT9"
+    ],
+    "l_sw7_sw9": [
+      "TT3",
+      "TT5"
+    ]
+  },
+  "scenario_sha256": "9b0985435c524422c178aa6f58f5b51ec9d9dfeb4b336ff5e1fb5750560975d4"
+}

@@ -1,0 +1,9 @@
+{
+  "scenario_sha256": "39cb96a07715c0c635b73beb34c7b08adb2388e469ede5f20b0e6755879dcca1",
+  "faults": {
+    "l_s1_s2": ["TT"],
+    "l_s1_s3": [],
+    "l_s2_s4": ["TT"],
+    "l_s3_s4": []
+  }
+}

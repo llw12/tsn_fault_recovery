@@ -1,0 +1,2 @@
+scenario,mode,fault_id,failure_time_s,activation_time_s,route_solver_wall_us,smt_solver_wall_us,profile_compilation_wall_us,total_solver_wall_us,simulated_solver_delay_s,activation_wall_us,offline_precompute_wall_ms
+diamond,no-recovery,l_s1_s2,0.005,,,,,,,,35.92173

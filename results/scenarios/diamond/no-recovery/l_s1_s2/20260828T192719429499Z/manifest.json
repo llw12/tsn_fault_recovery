@@ -1,0 +1,26 @@
+{
+  "artifacts": {
+    "port_map": "port_map.json",
+    "profile0": "profile0.json",
+    "recovery_profile": null,
+    "scenario": "scenario.json"
+  },
+  "cycle_time_s": 0.001,
+  "deterministic": true,
+  "fault_id": "l_s1_s2",
+  "generated_ini_sha256": "87ea50663fa94fad3cca8636f49c96306d0d7155560939f88c1c178416496f42",
+  "generated_ned_sha256": "4f994169ea48d355cd1a225a967053eb577de6d44db4366d9f01a2d631701acb",
+  "git_commit": "9f793dfc42fdb65ac28420e4822a9fb31ddeab73",
+  "inet_version": "4.7.0",
+  "mode": "no-recovery",
+  "omnetpp_version": "6.4.0",
+  "profile0_id": "P0",
+  "random_seed": 0,
+  "recovery_profile_id": null,
+  "scenario_name": "diamond",
+  "scenario_sha256": "e73c98c41edd37c766c24b78b8be96b6048c64d38d30b71f99b6a9473fa67a1b",
+  "schema_version": 1,
+  "simulation_duration_s": 0.02,
+  "timestamp": "2026-08-28T19:27:19.659520+00:00",
+  "z3_version": "Z3 version 4.16.0 - 64 bit"
+}

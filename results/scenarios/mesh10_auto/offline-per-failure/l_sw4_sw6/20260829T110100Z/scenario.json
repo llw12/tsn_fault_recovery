@@ -1,0 +1,410 @@
+{
+  "be_flows": [
+    {
+      "destination": "es5",
+      "id": "BE1",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1000,
+      "pcp": 0,
+      "release_offset_s": 0.0,
+      "source": "es1",
+      "traffic_class": 0
+    },
+    {
+      "destination": "es2",
+      "id": "BE2",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1200,
+      "pcp": 0,
+      "release_offset_s": 9.999999999999999e-05,
+      "source": "es4",
+      "traffic_class": 0
+    }
+  ],
+  "fault_candidate_policy": {
+    "criterion": "tt-primary-route-used",
+    "exclude": [],
+    "mode": "auto",
+    "scope": "switch-switch"
+  },
+  "fault_candidates": [
+    "l_sw1_sw2",
+    "l_sw1_sw3",
+    "l_sw2_sw3",
+    "l_sw2_sw5",
+    "l_sw3_sw4",
+    "l_sw4_sw6",
+    "l_sw4_sw7",
+    "l_sw5_sw8",
+    "l_sw6_sw8",
+    "l_sw7_sw9",
+    "l_sw8_sw10",
+    "l_sw8_sw9"
+  ],
+  "links": [
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es1",
+      "endpoint_b": "sw1",
+      "id": "l_es1_sw1",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es2",
+      "endpoint_b": "sw2",
+      "id": "l_es2_sw2",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es3",
+      "endpoint_b": "sw4",
+      "id": "l_es3_sw4",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es4",
+      "endpoint_b": "sw7",
+      "id": "l_es4_sw7",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es5",
+      "endpoint_b": "sw9",
+      "id": "l_es5_sw9",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es6",
+      "endpoint_b": "sw10",
+      "id": "l_es6_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw1",
+      "endpoint_b": "sw2",
+      "id": "l_sw1_sw2",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw1",
+      "endpoint_b": "sw3",
+      "id": "l_sw1_sw3",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw2",
+      "endpoint_b": "sw3",
+      "id": "l_sw2_sw3",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw2",
+      "endpoint_b": "sw5",
+      "id": "l_sw2_sw5",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw3",
+      "endpoint_b": "sw4",
+      "id": "l_sw3_sw4",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw3",
+      "endpoint_b": "sw6",
+      "id": "l_sw3_sw6",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw4",
+      "endpoint_b": "sw6",
+      "id": "l_sw4_sw6",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw4",
+      "endpoint_b": "sw7",
+      "id": "l_sw4_sw7",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw5",
+      "endpoint_b": "sw6",
+      "id": "l_sw5_sw6",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw5",
+      "endpoint_b": "sw8",
+      "id": "l_sw5_sw8",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw6",
+      "endpoint_b": "sw7",
+      "id": "l_sw6_sw7",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw6",
+      "endpoint_b": "sw8",
+      "id": "l_sw6_sw8",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw7",
+      "endpoint_b": "sw9",
+      "id": "l_sw7_sw9",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw8",
+      "endpoint_b": "sw10",
+      "id": "l_sw8_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw8",
+      "endpoint_b": "sw9",
+      "id": "l_sw8_sw9",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw9",
+      "endpoint_b": "sw10",
+      "id": "l_sw9_sw10",
+      "propagation_delay_s": 0.0
+    }
+  ],
+  "network": {
+    "default_bitrate_bps": 1000000000.0,
+    "default_propagation_delay_s": 0.0
+  },
+  "nodes": [
+    {
+      "id": "es1",
+      "type": "end_system"
+    },
+    {
+      "id": "es2",
+      "type": "end_system"
+    },
+    {
+      "id": "es3",
+      "type": "end_system"
+    },
+    {
+      "id": "es4",
+      "type": "end_system"
+    },
+    {
+      "id": "es5",
+      "type": "end_system"
+    },
+    {
+      "id": "es6",
+      "type": "end_system"
+    },
+    {
+      "id": "sw1",
+      "type": "switch"
+    },
+    {
+      "id": "sw10",
+      "type": "switch"
+    },
+    {
+      "id": "sw2",
+      "type": "switch"
+    },
+    {
+      "id": "sw3",
+      "type": "switch"
+    },
+    {
+      "id": "sw4",
+      "type": "switch"
+    },
+    {
+      "id": "sw5",
+      "type": "switch"
+    },
+    {
+      "id": "sw6",
+      "type": "switch"
+    },
+    {
+      "id": "sw7",
+      "type": "switch"
+    },
+    {
+      "id": "sw8",
+      "type": "switch"
+    },
+    {
+      "id": "sw9",
+      "type": "switch"
+    }
+  ],
+  "scenario_name": "mesh10_auto",
+  "scenario_sha256": "374a54e7be324ca907812cd663bb64fcb4ef492ed1699239d6881cd0d4f2ff94",
+  "scheduling": {
+    "be_traffic_class": 0,
+    "endpoint_budget_s": 0.00035,
+    "frame_overhead_bytes": 64,
+    "hop_margin_s": 4e-06,
+    "ingress_margin_s": 2.9999999999999997e-05
+  },
+  "schema_version": 1,
+  "simulation": {
+    "cycle_time_s": 0.001,
+    "duration_s": 0.025,
+    "failure_time_s": 0.008,
+    "random_seed": 0,
+    "solver_delay_s": 0.001,
+    "time_quantum_s": 1e-06
+  },
+  "tt_flows": [
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es5",
+      "id": "TT1",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.0,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es1",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es1",
+      "id": "TT10",
+      "packet_size_bytes": 300,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00017999999999999998,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es4",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es6",
+      "id": "TT2",
+      "packet_size_bytes": 300,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 1.9999999999999998e-05,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es2",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es5",
+      "id": "TT3",
+      "packet_size_bytes": 400,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 3.9999999999999996e-05,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es3",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es2",
+      "id": "TT4",
+      "packet_size_bytes": 500,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 5.9999999999999995e-05,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es4",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es1",
+      "id": "TT5",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 7.999999999999999e-05,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es5",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es3",
+      "id": "TT6",
+      "packet_size_bytes": 300,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 9.999999999999999e-05,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es6",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es6",
+      "id": "TT7",
+      "packet_size_bytes": 400,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00011999999999999999,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es1",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es4",
+      "id": "TT8",
+      "packet_size_bytes": 500,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00014,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es2",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es6",
+      "id": "TT9",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00015999999999999999,
+      "schedule_deadline_budget_s": 0.0005499999999999999,
+      "source": "es3",
+      "traffic_class": 1
+    }
+  ]
+}

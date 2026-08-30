@@ -1,0 +1,17 @@
+{
+  "completed": [
+    "P0_AND_CANDIDATES",
+    "PF",
+    "J100_REFERENCE",
+    "J100",
+    "J060",
+    "J040",
+    "J020"
+  ],
+  "identity": {
+    "implementation_commit": "ea9199ab784e457f20f7e774e5ca7a9d4368a4c1",
+    "policy_hash": "5fad2c8fb8dc146c94125c273282fd93178b897044f43c3affd2c74218aea2bb",
+    "scenario_sha256": "21f7832dab978a252a1524e5abdb1b3f2dcbc4d89d9dc3efcac711f4500dc43b",
+    "solver_config_hash": "891937cb335016e9c7074c3781dcb1364e0c660733a8889bbeae83e6aa759be6"
+  }
+}

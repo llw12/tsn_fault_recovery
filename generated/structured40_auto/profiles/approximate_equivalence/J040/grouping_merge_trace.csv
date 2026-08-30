@@ -1,0 +1,12 @@
+scenario,policy_id,step,left_cluster,right_cluster,merged_members,min_pairwise_jaccard,max_edge_distance,merge_priority,result_candidate_group_id
+structured40_auto,J040,1,l_sw01_sw02,l_sw02_sw03,l_sw01_sw02;l_sw02_sw03,1.0,0,"[-1.0,0,-2,[""l_sw01_sw02"",""l_sw02_sw03""]]",G0001
+structured40_auto,J040,2,l_sw03_sw04,l_sw04_sw05,l_sw03_sw04;l_sw04_sw05,1.0,0,"[-1.0,0,-2,[""l_sw03_sw04"",""l_sw04_sw05""]]",G0004
+structured40_auto,J040,3,l_sw05_sw06,l_sw06_sw07,l_sw05_sw06;l_sw06_sw07,1.0,0,"[-1.0,0,-2,[""l_sw05_sw06"",""l_sw06_sw07""]]",G0006
+structured40_auto,J040,4,l_sw11_sw12,l_sw12_sw13,l_sw11_sw12;l_sw12_sw13,1.0,0,"[-1.0,0,-2,[""l_sw11_sw12"",""l_sw12_sw13""]]",G0011
+structured40_auto,J040,5,l_sw17_sw18,l_sw18_sw19,l_sw17_sw18;l_sw18_sw19,1.0,0,"[-1.0,0,-2,[""l_sw17_sw18"",""l_sw18_sw19""]]",G0014
+structured40_auto,J040,6,l_sw21_sw22,l_sw22_sw23,l_sw21_sw22;l_sw22_sw23,1.0,0,"[-1.0,0,-2,[""l_sw21_sw22"",""l_sw22_sw23""]]",G0016
+structured40_auto,J040,7,l_sw09_sw17,l_sw17_sw25,l_sw09_sw17;l_sw17_sw25,0.7,0,"[-0.7,0,-2,[""l_sw09_sw17"",""l_sw17_sw25""]]",G0010
+structured40_auto,J040,8,l_sw05_sw13,l_sw13_sw21,l_sw05_sw13;l_sw13_sw21,0.625,0,"[-0.625,0,-2,[""l_sw05_sw13"",""l_sw13_sw21""]]",G0007
+structured40_auto,J040,9,l_sw11_sw19,l_sw19_sw27,l_sw11_sw19;l_sw19_sw27,0.5454545454545454,0,"[-0.5454545454545454,0,-2,[""l_sw11_sw19"",""l_sw19_sw27""]]",G0012
+structured40_auto,J040,10,l_sw23_sw31,l_sw31_sw39,l_sw23_sw31;l_sw31_sw39,0.5,0,"[-0.5,0,-2,[""l_sw23_sw31"",""l_sw31_sw39""]]",G0019
+structured40_auto,J040,11,l_sw21_sw29,l_sw29_sw37,l_sw21_sw29;l_sw29_sw37,0.42857142857142855,0,"[-0.42857142857142855,0,-2,[""l_sw21_sw29"",""l_sw29_sw37""]]",G0017

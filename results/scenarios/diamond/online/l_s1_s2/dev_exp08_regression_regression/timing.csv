@@ -1,0 +1,2 @@
+scenario,mode,fault_id,failure_time_s,decision_ready_time_s,activation_time_s,route_solver_wall_us_runtime,smt_solver_wall_us_runtime,profile_compilation_wall_us,simulated_decision_delay_s,runtime_lookup_wall_us,activation_wall_us,initial_profile_precompute_wall_ms,recovery_precompute_wall_ms
+diamond,online,l_s1_s2,0.005,0.006,0.006,7.987,7875.216,8.827,0.001,,25.593,8.9774,

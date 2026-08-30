@@ -1,0 +1,777 @@
+{
+  "be_flows": [
+    {
+      "destination": "es10",
+      "id": "BE01",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1000,
+      "pcp": 0,
+      "release_offset_s": 0.0,
+      "source": "es01",
+      "traffic_class": 0
+    },
+    {
+      "destination": "es08",
+      "id": "BE02",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1100,
+      "pcp": 0,
+      "release_offset_s": 7.999999999999999e-05,
+      "source": "es03",
+      "traffic_class": 0
+    },
+    {
+      "destination": "es05",
+      "id": "BE03",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1200,
+      "pcp": 0,
+      "release_offset_s": 0.00015999999999999999,
+      "source": "es06",
+      "traffic_class": 0
+    },
+    {
+      "destination": "es02",
+      "id": "BE04",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 1300,
+      "pcp": 0,
+      "release_offset_s": 0.00023999999999999998,
+      "source": "es09",
+      "traffic_class": 0
+    }
+  ],
+  "fault_candidate_policy": {
+    "criterion": "tt-primary-route-used",
+    "exclude": [],
+    "mode": "auto",
+    "scope": "switch-switch"
+  },
+  "fault_candidates": [
+    "l_sw01_sw02",
+    "l_sw01_sw06",
+    "l_sw02_sw03",
+    "l_sw02_sw08",
+    "l_sw03_sw04",
+    "l_sw03_sw08",
+    "l_sw04_sw05",
+    "l_sw04_sw10",
+    "l_sw06_sw07",
+    "l_sw06_sw11",
+    "l_sw07_sw08",
+    "l_sw08_sw09",
+    "l_sw08_sw13",
+    "l_sw09_sw10",
+    "l_sw10_sw15",
+    "l_sw11_sw16",
+    "l_sw11_sw17",
+    "l_sw13_sw18",
+    "l_sw13_sw19",
+    "l_sw15_sw20",
+    "l_sw17_sw18",
+    "l_sw19_sw20"
+  ],
+  "links": [
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es01",
+      "endpoint_b": "sw01",
+      "id": "l_es01_sw01",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es02",
+      "endpoint_b": "sw03",
+      "id": "l_es02_sw03",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es03",
+      "endpoint_b": "sw05",
+      "id": "l_es03_sw05",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es04",
+      "endpoint_b": "sw06",
+      "id": "l_es04_sw06",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es05",
+      "endpoint_b": "sw10",
+      "id": "l_es05_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es06",
+      "endpoint_b": "sw11",
+      "id": "l_es06_sw11",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es07",
+      "endpoint_b": "sw15",
+      "id": "l_es07_sw15",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es08",
+      "endpoint_b": "sw16",
+      "id": "l_es08_sw16",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es09",
+      "endpoint_b": "sw18",
+      "id": "l_es09_sw18",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "es10",
+      "endpoint_b": "sw20",
+      "id": "l_es10_sw20",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw01",
+      "endpoint_b": "sw02",
+      "id": "l_sw01_sw02",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw01",
+      "endpoint_b": "sw06",
+      "id": "l_sw01_sw06",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw02",
+      "endpoint_b": "sw03",
+      "id": "l_sw02_sw03",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw02",
+      "endpoint_b": "sw07",
+      "id": "l_sw02_sw07",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw02",
+      "endpoint_b": "sw08",
+      "id": "l_sw02_sw08",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw03",
+      "endpoint_b": "sw04",
+      "id": "l_sw03_sw04",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw03",
+      "endpoint_b": "sw08",
+      "id": "l_sw03_sw08",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw04",
+      "endpoint_b": "sw05",
+      "id": "l_sw04_sw05",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw04",
+      "endpoint_b": "sw09",
+      "id": "l_sw04_sw09",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw04",
+      "endpoint_b": "sw10",
+      "id": "l_sw04_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw05",
+      "endpoint_b": "sw10",
+      "id": "l_sw05_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw06",
+      "endpoint_b": "sw07",
+      "id": "l_sw06_sw07",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw06",
+      "endpoint_b": "sw11",
+      "id": "l_sw06_sw11",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw07",
+      "endpoint_b": "sw08",
+      "id": "l_sw07_sw08",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw07",
+      "endpoint_b": "sw12",
+      "id": "l_sw07_sw12",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw08",
+      "endpoint_b": "sw09",
+      "id": "l_sw08_sw09",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw08",
+      "endpoint_b": "sw13",
+      "id": "l_sw08_sw13",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw09",
+      "endpoint_b": "sw10",
+      "id": "l_sw09_sw10",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw09",
+      "endpoint_b": "sw14",
+      "id": "l_sw09_sw14",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw10",
+      "endpoint_b": "sw15",
+      "id": "l_sw10_sw15",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw11",
+      "endpoint_b": "sw12",
+      "id": "l_sw11_sw12",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw11",
+      "endpoint_b": "sw16",
+      "id": "l_sw11_sw16",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw11",
+      "endpoint_b": "sw17",
+      "id": "l_sw11_sw17",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw12",
+      "endpoint_b": "sw13",
+      "id": "l_sw12_sw13",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw12",
+      "endpoint_b": "sw17",
+      "id": "l_sw12_sw17",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw13",
+      "endpoint_b": "sw14",
+      "id": "l_sw13_sw14",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw13",
+      "endpoint_b": "sw18",
+      "id": "l_sw13_sw18",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw13",
+      "endpoint_b": "sw19",
+      "id": "l_sw13_sw19",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw14",
+      "endpoint_b": "sw15",
+      "id": "l_sw14_sw15",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw14",
+      "endpoint_b": "sw19",
+      "id": "l_sw14_sw19",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw15",
+      "endpoint_b": "sw20",
+      "id": "l_sw15_sw20",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw16",
+      "endpoint_b": "sw17",
+      "id": "l_sw16_sw17",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw17",
+      "endpoint_b": "sw18",
+      "id": "l_sw17_sw18",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw18",
+      "endpoint_b": "sw19",
+      "id": "l_sw18_sw19",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sw19",
+      "endpoint_b": "sw20",
+      "id": "l_sw19_sw20",
+      "propagation_delay_s": 0.0
+    }
+  ],
+  "network": {
+    "default_bitrate_bps": 1000000000.0,
+    "default_propagation_delay_s": 0.0
+  },
+  "nodes": [
+    {
+      "id": "es01",
+      "type": "end_system"
+    },
+    {
+      "id": "es02",
+      "type": "end_system"
+    },
+    {
+      "id": "es03",
+      "type": "end_system"
+    },
+    {
+      "id": "es04",
+      "type": "end_system"
+    },
+    {
+      "id": "es05",
+      "type": "end_system"
+    },
+    {
+      "id": "es06",
+      "type": "end_system"
+    },
+    {
+      "id": "es07",
+      "type": "end_system"
+    },
+    {
+      "id": "es08",
+      "type": "end_system"
+    },
+    {
+      "id": "es09",
+      "type": "end_system"
+    },
+    {
+      "id": "es10",
+      "type": "end_system"
+    },
+    {
+      "id": "sw01",
+      "type": "switch"
+    },
+    {
+      "id": "sw02",
+      "type": "switch"
+    },
+    {
+      "id": "sw03",
+      "type": "switch"
+    },
+    {
+      "id": "sw04",
+      "type": "switch"
+    },
+    {
+      "id": "sw05",
+      "type": "switch"
+    },
+    {
+      "id": "sw06",
+      "type": "switch"
+    },
+    {
+      "id": "sw07",
+      "type": "switch"
+    },
+    {
+      "id": "sw08",
+      "type": "switch"
+    },
+    {
+      "id": "sw09",
+      "type": "switch"
+    },
+    {
+      "id": "sw10",
+      "type": "switch"
+    },
+    {
+      "id": "sw11",
+      "type": "switch"
+    },
+    {
+      "id": "sw12",
+      "type": "switch"
+    },
+    {
+      "id": "sw13",
+      "type": "switch"
+    },
+    {
+      "id": "sw14",
+      "type": "switch"
+    },
+    {
+      "id": "sw15",
+      "type": "switch"
+    },
+    {
+      "id": "sw16",
+      "type": "switch"
+    },
+    {
+      "id": "sw17",
+      "type": "switch"
+    },
+    {
+      "id": "sw18",
+      "type": "switch"
+    },
+    {
+      "id": "sw19",
+      "type": "switch"
+    },
+    {
+      "id": "sw20",
+      "type": "switch"
+    }
+  ],
+  "scenario_name": "structured20_auto",
+  "scenario_sha256": "33ca38e041d5a241ef6e5dba8a121f590635669540b74266692db6861274fec3",
+  "scheduling": {
+    "be_traffic_class": 0,
+    "endpoint_budget_s": 0.0003,
+    "frame_overhead_bytes": 64,
+    "hop_margin_s": 3e-06,
+    "ingress_margin_s": 2.4999999999999998e-05
+  },
+  "schema_version": 1,
+  "simulation": {
+    "cycle_time_s": 0.001,
+    "duration_s": 0.03,
+    "failure_time_s": 0.01,
+    "random_seed": 0,
+    "solver_delay_s": 0.001,
+    "time_quantum_s": 1e-06
+  },
+  "tt_flows": [
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es10",
+      "id": "TT01",
+      "packet_size_bytes": 180,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.0,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es01",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es08",
+      "id": "TT02",
+      "packet_size_bytes": 220,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 1.9999999999999998e-05,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es02",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009199999999999999,
+      "destination": "es06",
+      "id": "TT03",
+      "packet_size_bytes": 260,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 3.9999999999999996e-05,
+      "schedule_deadline_budget_s": 0.0006199999999999999,
+      "source": "es03",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00094,
+      "destination": "es09",
+      "id": "TT04",
+      "packet_size_bytes": 300,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 5.9999999999999995e-05,
+      "schedule_deadline_budget_s": 0.0006399999999999999,
+      "source": "es04",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es01",
+      "id": "TT05",
+      "packet_size_bytes": 340,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 7.999999999999999e-05,
+      "schedule_deadline_budget_s": 0.00065,
+      "source": "es05",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es05",
+      "id": "TT06",
+      "packet_size_bytes": 180,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 9.999999999999999e-05,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es06",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009199999999999999,
+      "destination": "es02",
+      "id": "TT07",
+      "packet_size_bytes": 220,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00011999999999999999,
+      "schedule_deadline_budget_s": 0.0006199999999999999,
+      "source": "es07",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009199999999999999,
+      "destination": "es03",
+      "id": "TT08",
+      "packet_size_bytes": 260,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00014,
+      "schedule_deadline_budget_s": 0.0006199999999999999,
+      "source": "es08",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00094,
+      "destination": "es04",
+      "id": "TT09",
+      "packet_size_bytes": 300,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00015999999999999999,
+      "schedule_deadline_budget_s": 0.0006399999999999999,
+      "source": "es09",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es07",
+      "id": "TT10",
+      "packet_size_bytes": 340,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00017999999999999998,
+      "schedule_deadline_budget_s": 0.00065,
+      "source": "es10",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es07",
+      "id": "TT11",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00019999999999999998,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es01",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009299999999999999,
+      "destination": "es10",
+      "id": "TT12",
+      "packet_size_bytes": 240,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00021999999999999998,
+      "schedule_deadline_budget_s": 0.0006299999999999999,
+      "source": "es02",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009299999999999999,
+      "destination": "es09",
+      "id": "TT13",
+      "packet_size_bytes": 280,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00023999999999999998,
+      "schedule_deadline_budget_s": 0.0006299999999999999,
+      "source": "es03",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00094,
+      "destination": "es06",
+      "id": "TT14",
+      "packet_size_bytes": 320,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00026,
+      "schedule_deadline_budget_s": 0.0006399999999999999,
+      "source": "es04",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es08",
+      "id": "TT15",
+      "packet_size_bytes": 360,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00028,
+      "schedule_deadline_budget_s": 0.00065,
+      "source": "es05",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009,
+      "destination": "es03",
+      "id": "TT16",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.0003,
+      "schedule_deadline_budget_s": 0.0006000000000000001,
+      "source": "es06",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009199999999999999,
+      "destination": "es01",
+      "id": "TT17",
+      "packet_size_bytes": 240,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00031999999999999997,
+      "schedule_deadline_budget_s": 0.0006199999999999999,
+      "source": "es07",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0009299999999999999,
+      "destination": "es05",
+      "id": "TT18",
+      "packet_size_bytes": 280,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00033999999999999997,
+      "schedule_deadline_budget_s": 0.0006299999999999999,
+      "source": "es08",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00094,
+      "destination": "es02",
+      "id": "TT19",
+      "packet_size_bytes": 320,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00035999999999999997,
+      "schedule_deadline_budget_s": 0.0006399999999999999,
+      "source": "es09",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.00095,
+      "destination": "es04",
+      "id": "TT20",
+      "packet_size_bytes": 360,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.00037999999999999997,
+      "schedule_deadline_budget_s": 0.00065,
+      "source": "es10",
+      "traffic_class": 1
+    }
+  ]
+}

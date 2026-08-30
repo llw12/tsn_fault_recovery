@@ -1,0 +1,9 @@
+scenario,flow_id,period_s,deadline_s,packet_size_B,route,eligible_sent,received,lost,deadline_miss_count,deadline_miss_ratio,deadline_success_count,mean_delay_us,max_delay_us
+multi_sat,TT1,0.001,0.00045,200,s1->s2->s4->destination,10,10,0,0,0,10,407.955,427.02
+multi_sat,TT2,0.001,0.0005,300,s1->s2->s4->destination,9,9,0,0,0,9,430.116666667,451.3
+multi_sat,TT3,0.001,0.00055,400,s1->s2->s4->destination,9,9,0,0,0,9,462.396666667,483.58
+online_delay_0_1,TT,0.001,0.001,200,s1->s3->s4->destination,20,19,1,0,0,19,318.023157895,353.65
+online_delay_1,TT,0.001,0.001,200,s1->s3->s4->destination,20,19,1,0,0,19,299.314210526,343.02
+online_delay_10,TT,0.001,0.001,200,s1->s3->s4->destination,20,10,10,0,0,10,259.979,343.02
+online_delay_5,TT,0.001,0.001,200,s1->s3->s4->destination,20,15,5,0,0,15,287.659333333,343.02
+single,TT,0.001,0.0003,200,s1->s2->s4->destination,10,10,0,9,0.9,1,322.355,343.02

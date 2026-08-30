@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "scenario_sha256": "f25d42b46271b5addcad76c7a99cf69804c7debe7833c9e8aed0b3cf47038002",
+  "total_precompute_wall_s": 0.15934964299999999,
+  "faults": {
+    "l_sw2_sw5": {"status": "SAT", "affected_flows": ["TT1", "TT2", "TT7"], "route_solver_wall_us": 38.318999999999996, "smt_solver_wall_us": 54770.240999999995, "profile_compile_wall_us": 46.701999999999998, "serialization_wall_us": 164.77000000000001, "total_precompute_wall_us": 55658.955000000002, "objective": 234, "profile_bytes_raw": 18205, "profile_file_raw": "l_sw2_sw5.raw.json", "diagnostic": "lexicographic optimum found"},
+    "l_sw3_sw6": {"status": "NO_AFFECTED_TT", "affected_flows": [], "route_solver_wall_us": 0, "smt_solver_wall_us": 0, "profile_compile_wall_us": 0, "serialization_wall_us": 0, "total_precompute_wall_us": 0, "objective": -1, "profile_bytes_raw": 0, "profile_file_raw": "", "diagnostic": "fault is not on any healthy TT route"},
+    "l_sw6_sw8": {"status": "SAT", "affected_flows": ["TT6", "TT9"], "route_solver_wall_us": 28.666999999999998, "smt_solver_wall_us": 59494.053, "profile_compile_wall_us": 49.135999999999996, "serialization_wall_us": 152.34299999999999, "total_precompute_wall_us": 60021.911999999997, "objective": 234, "profile_bytes_raw": 17465, "profile_file_raw": "l_sw6_sw8.raw.json", "diagnostic": "lexicographic optimum found"},
+    "l_sw7_sw9": {"status": "SAT", "affected_flows": ["TT3", "TT5"], "route_solver_wall_us": 29.726999999999997, "smt_solver_wall_us": 43122.466, "profile_compile_wall_us": 80.141000000000005, "serialization_wall_us": 194.38900000000001, "total_precompute_wall_us": 43668.776000000005, "objective": 234, "profile_bytes_raw": 19365, "profile_file_raw": "l_sw7_sw9.raw.json", "diagnostic": "lexicographic optimum found"}
+  }
+}

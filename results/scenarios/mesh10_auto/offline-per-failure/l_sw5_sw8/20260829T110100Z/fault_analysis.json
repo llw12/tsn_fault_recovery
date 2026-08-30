@@ -1,0 +1,61 @@
+{
+  "faults": {
+    "l_sw1_sw2": [
+      "TT1",
+      "TT7"
+    ],
+    "l_sw1_sw3": [
+      "TT10",
+      "TT5"
+    ],
+    "l_sw2_sw3": [
+      "TT4",
+      "TT8"
+    ],
+    "l_sw2_sw5": [
+      "TT1",
+      "TT2",
+      "TT7"
+    ],
+    "l_sw3_sw4": [
+      "TT10",
+      "TT4",
+      "TT5",
+      "TT8"
+    ],
+    "l_sw4_sw6": [
+      "TT6",
+      "TT9"
+    ],
+    "l_sw4_sw7": [
+      "TT10",
+      "TT3",
+      "TT4",
+      "TT5",
+      "TT8"
+    ],
+    "l_sw5_sw8": [
+      "TT1",
+      "TT2",
+      "TT7"
+    ],
+    "l_sw6_sw8": [
+      "TT6",
+      "TT9"
+    ],
+    "l_sw7_sw9": [
+      "TT3",
+      "TT5"
+    ],
+    "l_sw8_sw10": [
+      "TT2",
+      "TT6",
+      "TT7",
+      "TT9"
+    ],
+    "l_sw8_sw9": [
+      "TT1"
+    ]
+  },
+  "scenario_sha256": "374a54e7be324ca907812cd663bb64fcb4ef492ed1699239d6881cd0d4f2ff94"
+}

@@ -1,0 +1,2 @@
+scenario,policy_id,class_id,class_type,members,member_count,profile_id,profile_semantic_hash,min_pairwise_jaccard,mean_pairwise_jaccard,max_edge_distance,source_candidate_group,split_depth,validation_pass
+diamond_auto,JE040_D2,C0001,SHARED,l_s1_s2;l_s2_s4,2,AP_C0001,0f3160ef0e91b0567c2da52867a7fc79b31667d3bae6f739d30ff0e9525a5abf,1.0,1.0,0,G0001,0,True

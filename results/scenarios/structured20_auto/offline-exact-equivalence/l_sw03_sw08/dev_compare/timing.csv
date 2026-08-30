@@ -1,0 +1,2 @@
+scenario,mode,fault_id,failure_time_s,decision_ready_time_s,activation_time_s,route_solver_wall_us_runtime,smt_solver_wall_us_runtime,profile_compilation_wall_us,simulated_decision_delay_s,runtime_lookup_wall_us,activation_wall_us,initial_profile_precompute_wall_ms,recovery_precompute_wall_ms
+structured20_auto,offline-exact-equivalence,l_sw03_sw08,0.01,0.01,0.01,0,0,,0,1.55,320.028,218.16985,1188.185945

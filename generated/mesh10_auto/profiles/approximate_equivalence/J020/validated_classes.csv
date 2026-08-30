@@ -1,0 +1,5 @@
+scenario,policy_id,class_id,class_type,members,member_count,profile_id,profile_semantic_hash,min_pairwise_jaccard,mean_pairwise_jaccard,max_edge_distance,source_candidate_group,split_depth,validation_pass
+mesh10_auto,J020,C0001,SHARED,l_sw1_sw2;l_sw2_sw5;l_sw5_sw8;l_sw8_sw9,4,AP_C0001,ad77ec1c3bb3bab9730edf9fc33a68f52bbbba8b751fb5a00ade6b2632bb41bc,0.3333333333333333,0.5833333333333334,2,G0001,0,True
+mesh10_auto,J020,C0002,SHARED,l_sw1_sw3;l_sw3_sw4;l_sw4_sw7;l_sw7_sw9,4,AP_C0002,a3de243eda2297aef934b06fd9145196fd782c485368c4032c3287d9b649e098,0.2,0.4388888888888889,2,G0002,0,True
+mesh10_auto,J020,C0003,SINGLETON,l_sw2_sw3,1,PF_l_sw2_sw3,cc987d60152ba13b83c3a0c0feec59782d4fc9930a1680a63f33fee450d77199,1.0,1.0,0,G0003,0,True
+mesh10_auto,J020,C0004,SHARED,l_sw4_sw6;l_sw6_sw8;l_sw8_sw10,3,AP_C0004,3e5dfc97cf28ea46dc342a0115d60205ee95d77349baa8ae8b310a3e6f863d34,0.5,0.6666666666666666,1,G0004,0,True

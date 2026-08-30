@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "scenario_sha256": "7afc4db7a51805dfc22d5a76010132aea17b236bb24a836e89e69442d0c558c1",
+  "profile_id": "EQ_SYN_a77efb4e78b793de",
+  "logical_routes": [
+    {"flow_id": "TT", "node_path": ["source", "s1", "s3", "s4", "destination"], "link_path": ["l_source_s1", "l_s1_s3", "l_s3_s4", "l_s4_destination"]}
+  ],
+  "routes": [
+    {"flow_id": "TT", "switch": "s1", "destination": "destination", "interface": "eth1", "logical_link": "l_s1_s3"},
+    {"flow_id": "TT", "switch": "s3", "destination": "destination", "interface": "eth1", "logical_link": "l_s3_s4"},
+    {"flow_id": "TT", "switch": "s4", "destination": "destination", "interface": "eth2", "logical_link": "l_s4_destination"}
+  ],
+  "gate_schedules": [
+    {"gate_path": "s1.eth[1].macLayer.queue.transmissionGate[1]", "traffic_class": 1, "initially_open": true, "offset_s": 0.00084999999999999995, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]},
+    {"gate_path": "s1.eth[1].macLayer.queue.transmissionGate[0]", "traffic_class": 0, "initially_open": false, "offset_s": 0.00084999999999999995, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]},
+    {"gate_path": "s3.eth[1].macLayer.queue.transmissionGate[1]", "traffic_class": 1, "initially_open": true, "offset_s": 0.00082299999999999995, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]},
+    {"gate_path": "s3.eth[1].macLayer.queue.transmissionGate[0]", "traffic_class": 0, "initially_open": false, "offset_s": 0.00082299999999999995, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]},
+    {"gate_path": "s4.eth[2].macLayer.queue.transmissionGate[1]", "traffic_class": 1, "initially_open": true, "offset_s": 0.00079599999999999994, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]},
+    {"gate_path": "s4.eth[2].macLayer.queue.transmissionGate[0]", "traffic_class": 0, "initially_open": false, "offset_s": 0.00079599999999999994, "durations_s": [2.1999999999999999e-05, 0.00097799999999999992]}
+  ]
+}

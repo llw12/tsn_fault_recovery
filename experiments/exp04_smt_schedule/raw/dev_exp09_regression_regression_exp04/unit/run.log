@@ -1,0 +1,25 @@
+OMNeT++ Discrete Event Simulation  (C) 1992-2025 Andras Varga, OpenSim Ltd.
+Version: 6.4.0, build: 260506-2cf25223fe, edition: Academic Public License -- NOT FOR COMMERCIAL USE
+See the license for distribution terms and warranty disclaimer
+
+Setting up Cmdenv...
+
+Loading NED files from /home/opp_env/tsn_fault_recovery/src:  10
+Loading NED files from /home/opp_env/inet-4.7.0/src:  1262
+
+Preparing for running configuration SmtUnitTests, run #0...
+Assigned runID=SmtUnitTests-0-20260830-16:25:18-6842
+Setting up network "tsn_fault_recovery.networks.SmtScheduleUnitTestNetwork"...
+Initializing...
+Initializing module SmtScheduleUnitTestNetwork, stage 0
+Initializing module SmtScheduleUnitTestNetwork.test, stage 0
+[INFO]	SMT_SCHEDULE_SELF_TEST PASS tests=10
+
+Running simulation...
+** Event #1  t=0  on endsimulation (omnetpp::cEndSimulationEvent)  
+
+<!> Simulation time limit reached -- at t=0s, event #1
+
+Calling finish() at end of Run #0...
+
+End.

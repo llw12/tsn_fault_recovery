@@ -1,0 +1,4 @@
+scenario,policy_id,step,left_cluster,right_cluster,merged_members,min_pairwise_jaccard,max_edge_distance,merge_priority,result_candidate_group_id
+mesh10_auto,JE080_D1,1,l_sw2_sw5,l_sw5_sw8,l_sw2_sw5;l_sw5_sw8,1.0,0,"[-1.0,0,-2,[""l_sw2_sw5"",""l_sw5_sw8""]]",G0004
+mesh10_auto,JE080_D1,2,l_sw4_sw6,l_sw6_sw8,l_sw4_sw6;l_sw6_sw8,1.0,0,"[-1.0,0,-2,[""l_sw4_sw6"",""l_sw6_sw8""]]",G0006
+mesh10_auto,JE080_D1,3,l_sw3_sw4,l_sw4_sw7,l_sw3_sw4;l_sw4_sw7,0.8,0,"[-0.8,0,-2,[""l_sw3_sw4"",""l_sw4_sw7""]]",G0005

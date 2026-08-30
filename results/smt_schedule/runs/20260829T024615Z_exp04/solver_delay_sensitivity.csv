@@ -1,0 +1,5 @@
+scenario,solver_delay_s,activation_time_s,first_success_s,total_recovery_s,tt_lost,deadline_miss_count,route_solver_wall_us,smt_solver_wall_us,total_solver_wall_us
+online_delay_0_1,0.0001,0.0051,0.00635365,0.00135365,1,0,31.295,10783.822,11239.756
+online_delay_1,0.001,0.006,0.00613637,0.00113637,1,0,36.013,11181.069,11653.022
+online_delay_5,0.005,0.01,0.01013637,0.00513637,5,0,34.111,11329.087,11798.474
+online_delay_10,0.01,0.015,0.01513637,0.01013637,10,0,34.284,9869.456,10333.341

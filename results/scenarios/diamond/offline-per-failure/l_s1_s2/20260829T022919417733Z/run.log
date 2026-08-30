@@ -1,0 +1,28 @@
+OMNeT++ Discrete Event Simulation  (C) 1992-2025 Andras Varga, OpenSim Ltd.
+Version: 6.4.0, build: 260506-2cf25223fe, edition: Academic Public License -- NOT FOR COMMERCIAL USE
+See the license for distribution terms and warranty disclaimer
+
+Setting up Cmdenv...
+
+Loading NED files from /home/opp_env/tsn_fault_recovery/generated:  2
+Loading NED files from /home/opp_env/tsn_fault_recovery/src:  10
+Loading NED files from /home/opp_env/inet-4.7.0/src:  1262
+
+Preparing for running configuration Offline_l_s1_s2, run #0...
+Assigned runID=Offline_l_s1_s2-0-20260829-10:29:20-40889
+Setting up network "diamond.ScenarioNetwork"...
+Initializing...
+
+Running simulation...
+** Event #0   t=0   Elapsed: 7e-06s (0m 00s)  0% completed  (0% total)
+     Speed:     ev/sec=0   simsec/sec=0   ev/simsec=0
+     Messages:  created: 180   present: 180   in FES: 45   Memory (RSS): 122.656MiB
+** Event #4631   t=0.02   Elapsed: 0.021008s (0m 00s)  100% completed  (100% total)
+     Speed:     ev/sec=220492   simsec/sec=0.952245   ev/simsec=231550
+     Messages:  created: 3649   present: 209   in FES: 28   Memory (RSS): 123.281MiB
+
+<!> Simulation time limit reached -- at t=0.02s, event #4631
+
+Calling finish() at end of Run #0...
+
+End.

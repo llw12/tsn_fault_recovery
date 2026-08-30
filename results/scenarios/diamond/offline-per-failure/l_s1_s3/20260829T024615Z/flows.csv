@@ -1,0 +1,3 @@
+scenario,mode,fault_id,flow_id,source,destination,period_s,deadline_e2e_s,route_before,route_after,sent,received,lost,deadline_miss_count,deadline_miss_ratio,mean_delay_us,p50_delay_us,p95_delay_us,max_delay_us,affected_by_fault
+diamond,offline-per-failure,l_s1_s3,TT,source,destination,0.001,0.001,source->s1->s2->s4->destination,source->s1->s2->s4->destination,20,20,0,0,0,357.736,363.6,363.6,363.6,False
+diamond,offline-per-failure,l_s1_s3,BE,source,destination,0.0002,,,,100,98,2,0,,491.772244898,465.6,542.32,542.32,False

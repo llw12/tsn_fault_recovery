@@ -1,0 +1,9 @@
+scenario,status,objective_ticks,route_solver_wall_us,smt_solver_wall_us,total_solver_wall_us,diagnostic
+unit,PASS,,,,,
+single,SAT,116,,7744.646,7744.646,lexicographic optimum found
+multi_sat,SAT,216,,11994.685,11994.685,lexicographic optimum found
+multi_unsat,UNSAT,-1,,10919.404,10919.404,minimum route serialization plus hop margins exceeds deadline for flow TT1
+online_delay_0_1,SAT,116,34.658,11244.328,11695.714,
+online_delay_1,SAT,116,36.119,11889.114,12355.82,
+online_delay_5,SAT,116,35.791,11579.588,12036.159,
+online_delay_10,SAT,116,35.882,11584.69,12039.723,

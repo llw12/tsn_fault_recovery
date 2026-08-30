@@ -1,0 +1,73 @@
+version 3
+run SmtUnitTests-0-20260829-10:46:29-45519
+attr configname SmtUnitTests
+attr datetime 20260829-10:46:29
+attr datetimef 20260829-104629
+attr experiment SmtUnitTests
+attr inifile omnetpp.ini
+attr iterationvars ""
+attr iterationvarsd ""
+attr iterationvarsf ""
+attr measurement ""
+attr network tsn_fault_recovery.networks.SmtScheduleUnitTestNetwork
+attr processid 45519
+attr repetition 0
+attr replication #0
+attr resultdir /home/opp_env/tsn_fault_recovery/experiments/exp04_smt_schedule/raw/20260829T024615Z_exp04/unit
+attr runnumber 0
+attr seedset 0
+config cmdenv-express-mode false
+config result-dir /home/opp_env/tsn_fault_recovery/experiments/exp04_smt_schedule/raw/20260829T024615Z_exp04/unit
+config network tsn_fault_recovery.networks.SmtScheduleUnitTestNetwork
+config sim-time-limit 0s
+config network tsn_fault_recovery.networks.DiamondTsnNetwork
+config sim-time-limit 20ms
+config *.*.eth[*].bitrate 100Mbps
+config *.source.numApps 2
+config *.source.app[*].typename UdpSourceApp
+config *.source.app[0].display-name TT
+config *.source.app[0].io.destAddress "\"destination\""
+config *.source.app[0].io.destPort 1000
+config *.source.app[0].source.packetLength 200B
+config *.source.app[0].source.productionInterval 1ms
+config *.source.app[1].display-name BE
+config *.source.app[1].io.destAddress "\"destination\""
+config *.source.app[1].io.destPort 1001
+config *.source.app[1].source.packetLength 1400B
+config *.source.app[1].source.productionInterval 200us
+config *.source.app[0].io.displayStringTextFormat "\"{numSent} TT\""
+config *.source.app[1].io.displayStringTextFormat "\"{numSent} BE\""
+config *.destination.numApps 2
+config *.destination.app[*].typename UdpSinkApp
+config *.destination.app[0].display-name TT
+config *.destination.app[0].io.localPort 1000
+config *.destination.app[1].display-name BE
+config *.destination.app[1].io.localPort 1001
+config *.destination.app[0].io.displayStringTextFormat "\"{numReceived} TT\""
+config *.destination.app[1].io.displayStringTextFormat "\"{numReceived} BE\""
+config *.source.hasOutgoingStreams true
+config *.source.bridging.streamIdentifier.identifier.mapping "[{stream: \"TT\", packetFilter: expr(udp.destPort == 1000)}, {stream: \"BE\", packetFilter: expr(udp.destPort == 1001)}]"
+config *.source.bridging.streamCoder.encoder.mapping "[{stream: \"TT\", pcp: 4}, {stream: \"BE\", pcp: 0}]"
+config *.s*.hasEgressTrafficShaping true
+config *.s*.bridging.directionReverser.reverser.excludeEncapsulationProtocols "[\"ieee8021qctag\"]"
+config *.s*.eth[*].macLayer.queue.numTrafficClasses 2
+config *.s*.eth[*].macLayer.queue.*[0].display-name BE
+config *.s*.eth[*].macLayer.queue.*[1].display-name TT
+config *.s*.eth[*].macLayer.queue.transmissionGate[0].initiallyOpen false
+config *.s*.eth[*].macLayer.queue.transmissionGate[0].durations "[100us, 900us]"
+config *.s*.eth[*].macLayer.queue.transmissionGate[1].initiallyOpen true
+config *.s*.eth[*].macLayer.queue.transmissionGate[1].durations "[100us, 900us]"
+config *.visualizer.infoVisualizer.displayInfos true
+config *.visualizer.infoVisualizer.placementHint "\"top\""
+config *.visualizer.infoVisualizer.modules "\"*.*.app[*].io\""
+config *.visualizer.networkNodeVisualizer.annotationSpacing 12
+config *.visualizer.gateScheduleVisualizer.displayGateSchedules true
+config *.visualizer.gateScheduleVisualizer.gateFilter "\"**.s1.eth[1].**\""
+config *.visualizer.gateScheduleVisualizer.width 220
+config *.visualizer.gateScheduleVisualizer.height 16
+config *.visualizer.gateScheduleVisualizer.placementHint "\"top\""
+
+scalar SmtScheduleUnitTestNetwork.test testsPassed 10
+par SmtScheduleUnitTestNetwork.test typename "\"tsn_fault_recovery.control.SmtScheduleSelfTest\""
+par SmtScheduleUnitTestNetwork typename "\"tsn_fault_recovery.networks.SmtScheduleUnitTestNetwork\""
+

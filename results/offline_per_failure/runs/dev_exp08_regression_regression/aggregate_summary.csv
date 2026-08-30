@@ -1,0 +1,7 @@
+scenario,mode,fault_count,recovery_success_rate,mean_tt_loss,p95_tt_loss,max_tt_loss,mean_recovery_us,p50_recovery_us,p95_recovery_us,max_recovery_us,deadline_miss_ratio,precompute_total_ms,recovery_profile_count,recovery_profile_storage_bytes
+diamond,no-recovery,4,0.0,7.5,15.0,15.0,,,,,0.0,,0,0
+diamond,online,4,1.0,0.5,1.0,1.0,1246.32,1246.32,1246.32,1246.32,0.0,,0,0
+diamond,offline-per-failure,4,1.0,0.0,0.0,0.0,304.96000000000004,304.96000000000004,357.736,363.6,0.0,23.7132,2,4032
+mesh10,no-recovery,4,0.0,28.25,46.449999999999996,49.0,,,,,0.0,,0,0
+mesh10,online,4,1.0,1.75,2.8499999999999996,3.0,1093.5893333333333,1084.528,1135.648,1141.328,0.0,,0,0
+mesh10,offline-per-failure,4,1.0,0.0,0.0,0.0,93.58933333333334,84.528,135.648,141.328,0.0,172.45282,3,44534
