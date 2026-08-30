@@ -1,0 +1,32 @@
+{
+  "artifacts": {
+    "cache_summary.csv": "ae0973a993152024a18fc14fd586c032241abb59988f4ed6390c8772591178ae",
+    "candidate_groups.csv": "93f51c8b32d6d1cd7bb2b3d126f9ac990c878bf5693be4d1916d68b2e0bebe75",
+    "class_size_by_policy.png": "3dcbf2c19515260d8cdb0e7e328a8d3a61d1038fa93d7bac701057e7a16c26f9",
+    "class_validation.csv": "968abac9ddf40909b0094bcadadbd22f1816ae9d5523774ddf7a07d609e5d4f9",
+    "compression_frontier.csv": "ad6398ca0c4829629d145d5634eff8baa67aab392000eb417ce3b7eac190d3a9",
+    "compression_frontier.png": "0fb4ba5276153c1c96fb6cf149dd343eff387687960afe2fcaf4b591de7e8c5c",
+    "compression_vs_acceptance.png": "0ce96c4b66cd28253e7bcac31fa822c5414c63b221d17ff3fa92b5f0d3049c89",
+    "compression_vs_offline_cost.png": "74ba72aa40c8b54484b9f6fd411fff3239e3e9444b8f5609d375aa8f22442d2f",
+    "group_acceptance_diagnostic.csv": "c29e0574b6024a78b11b8ce0ac40e956d4858ec528cb421f3f7e7103f17d2e95",
+    "grouping_merge_trace.csv": "1de67d4ff88dfd917df5e051cc7300b92aaa6ede4ecbae9c92ba61ae3643806a",
+    "pareto_frontier.csv": "62271b666920b2c94b3406075407172217c4d65b96323cacd5d122f4cdb9a885",
+    "per_fault_policy_comparison.csv": "fa7c051c0fe563b55708774c122c3648338561de2aa2cbec6fd7df97e1aec9dc",
+    "policy_summary.csv": "cc9973fb7adcd61cf614b08017a278fec15869210a5235c96805d35610368447",
+    "recovery_delta_by_policy.png": "fe270f981319b1920bce9074451fd5ceaf8cbd55fad2070a339dba059fe02820",
+    "rejected_group_reasons.png": "11d498ff710fd8d0485d1df72bffe423dbca48ddafcfcf8b4fd926953ef207dd",
+    "rejected_groups.csv": "88a6e3d1f080b29df61a73633497f992d04051f785a031ab5d06c6ca453f0c6a",
+    "rejection_reason_summary.csv": "08799d87f55bb9b4120312005346d39833237f3fe288a86be36ee506a72b1006",
+    "summary.md": "a13205c17c683955f3cff4b43fb4df3f7475157756ad1572a714b53be089c50f",
+    "validated_classes.csv": "b74a52f8e0c30d457f9707f6346288f667c45a6d07fe1ecfae3b6c04b906c601"
+  },
+  "experiment": "exp09_approximate_equivalence",
+  "git_commit": "819b19915c390145419b9ea91db39e4ec8e11462",
+  "inet_version": "4.7.0",
+  "omnetpp_version": "6.4.0",
+  "policy_count_per_scenario": 14,
+  "run_id": "20260830T084408Z",
+  "scenario_count": 3,
+  "schema_version": 1,
+  "solver_timeout_ms": 30000
+}

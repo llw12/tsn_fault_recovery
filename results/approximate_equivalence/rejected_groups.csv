@@ -1,0 +1,2 @@
+scenario,policy_id,candidate_group_id,member_count,member_faults,min_jaccard,max_edge_distance,failure_stage,status,diagnostic,split_left,split_right,synthesis_wall_us,validation_wall_us
+structured20_auto,J020,G0001,5,l_sw01_sw02;l_sw01_sw06;l_sw02_sw03;l_sw03_sw04;l_sw04_sw05,0.3,3,SYNTHESIS,NO_ROUTE,BFS found no route for flow TT01 from es01 to es10,l_sw01_sw02;l_sw02_sw03;l_sw03_sw04,l_sw01_sw06;l_sw04_sw05,39.901,0
