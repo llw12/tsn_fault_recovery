@@ -11,6 +11,7 @@ experiments/*/raw/
 results/*/runs/
 results/scenarios/
 generated/
+scratch/
 simulations/*/results/
 scripts/__pycache__/
 tools/__pycache__/
