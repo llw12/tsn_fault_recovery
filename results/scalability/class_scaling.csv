@@ -1,0 +1,17 @@
+scenario,switch_count,policy_id,candidate_group_count,multi_fault_candidate_group_count,profile_count,largest_class,class_size_mean,class_size_p50,class_size_p95,class_size_max,shared_fault_coverage,recursive_split_count,max_split_depth,accepted_attempt_count,rejected_attempt_count
+structured20_auto,20,J100,17,5,17,2,1.29411764706,1,2,2,0.454545454545,0,0,5,0
+structured20_auto,20,J060,13,7,13,4,1.69230769231,2,2.8,4,0.727272727273,0,0,7,0
+structured20_auto,20,J040,9,8,9,4,2.44444444444,2,3.6,4,0.954545454545,0,0,8,0
+structured20_auto,20,J020,7,6,8,6,2.75,2.5,4.95,6,0.954545454545,1,1,7,1
+structured30_auto,30,J100,21,4,21,3,1.2380952381,1,2,3,0.346153846154,0,0,4,0
+structured30_auto,30,J060,20,5,20,3,1.3,1,2.05,3,0.423076923077,0,0,5,0
+structured30_auto,30,J040,16,9,16,3,1.625,2,2.25,3,0.730769230769,0,0,9,0
+structured30_auto,30,J020,10,9,10,4,2.6,2.5,4,4,0.961538461538,0,0,9,0
+structured40_auto,40,J100,26,6,26,2,1.23076923077,1,2,2,0.375,0,0,6,0
+structured40_auto,40,J060,24,8,24,2,1.33333333333,1,2,2,0.5,0,0,8,0
+structured40_auto,40,J040,21,11,21,2,1.52380952381,2,2,2,0.6875,0,0,11,0
+structured40_auto,40,J020,17,12,17,3,1.88235294118,2,3,3,0.84375,0,0,12,0
+structured50_auto,50,J100,39,10,39,5,1.33333333333,1,2,5,0.442307692308,0,0,10,0
+structured50_auto,50,J060,36,13,36,5,1.44444444444,1,2,5,0.557692307692,0,0,13,0
+structured50_auto,50,J040,26,18,26,5,2,2,3,5,0.846153846154,0,0,18,0
+structured50_auto,50,J020,19,19,19,5,2.73684210526,3,4.1,5,1,0,0,19,0

@@ -1,0 +1,17 @@
+scenario,switch_count,policy,validation_logical_count,validation_wall_ms,actual_execution_wall_ms,cold_cost_status
+structured20_auto,20,J100,22,63281.019727,NOT_CAPTURED,logical_validation_sum
+structured20_auto,20,J060,22,63064.494252,NOT_CAPTURED,logical_validation_sum
+structured20_auto,20,J040,22,62824.085769,NOT_CAPTURED,logical_validation_sum
+structured20_auto,20,J020,22,63029.043131,NOT_CAPTURED,logical_validation_sum
+structured30_auto,30,J100,26,107574.390498,NOT_CAPTURED,logical_validation_sum
+structured30_auto,30,J060,26,107712.184797,NOT_CAPTURED,logical_validation_sum
+structured30_auto,30,J040,26,108057.026542,NOT_CAPTURED,logical_validation_sum
+structured30_auto,30,J020,26,108702.266835,NOT_CAPTURED,logical_validation_sum
+structured40_auto,40,J100,32,190999.145021,NOT_CAPTURED,logical_validation_sum
+structured40_auto,40,J060,32,192014.016389,NOT_CAPTURED,logical_validation_sum
+structured40_auto,40,J040,32,193367.796502,NOT_CAPTURED,logical_validation_sum
+structured40_auto,40,J020,32,192784.849351,NOT_CAPTURED,logical_validation_sum
+structured50_auto,50,J100,52,543161.032052,NOT_CAPTURED,logical_validation_sum
+structured50_auto,50,J060,52,546643.645042,NOT_CAPTURED,logical_validation_sum
+structured50_auto,50,J040,52,556403.486278,NOT_CAPTURED,logical_validation_sum
+structured50_auto,50,J020,52,559758.266443,NOT_CAPTURED,logical_validation_sum

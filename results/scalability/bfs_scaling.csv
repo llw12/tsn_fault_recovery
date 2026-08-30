@@ -1,0 +1,5 @@
+scenario,switch_count,pf_route_mean_ms,pf_route_p50_ms,pf_route_p95_ms,pf_route_max_ms,bfs_call_count,measurement_boundary
+structured20_auto,20,0.109841772727,0.108502,0.19671565,0.245108,NOT_CAPTURED,algorithm_wall_clock
+structured30_auto,30,0.165504153846,0.1542145,0.330269,0.408651,NOT_CAPTURED,algorithm_wall_clock
+structured40_auto,40,0.25188084375,0.2049035,0.49827855,0.587532,NOT_CAPTURED,algorithm_wall_clock
+structured50_auto,50,0.426811615385,0.3744105,0.90017455,1.001018,NOT_CAPTURED,algorithm_wall_clock

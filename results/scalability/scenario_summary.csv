@@ -1,0 +1,5 @@
+scenario,switch_count,ES_count,TT_count,BE_count,physical_links,internal_links,candidate_faults,recoverable_faults,candidate_fault_ratio,P0_profile_bytes,P0_total_wall_ms,P0_route_wall_ms,P0_z3_wall_ms
+structured20_auto,20,10,20,4,45,35,22,22,0.628571428571,44626,217.319259,0.322849,215.693306
+structured30_auto,30,15,30,6,70,55,26,26,0.472727272727,50661,305.278599,0.601539,302.831277
+structured40_auto,40,20,40,8,95,75,32,32,0.426666666667,63925,505.798229,0.955972,502.847312
+structured50_auto,50,25,50,10,120,95,52,52,0.547368421053,103780,2124.181957,2.556305,2117.492121

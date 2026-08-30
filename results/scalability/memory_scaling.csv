@@ -1,0 +1,5 @@
+scenario,switch_count,peak_rss_mb,status,reason
+structured20_auto,20,NOT_CAPTURED,NOT_CAPTURED,peak RSS absent from formal campaign artifact
+structured30_auto,30,NOT_CAPTURED,NOT_CAPTURED,peak RSS absent from formal campaign artifact
+structured40_auto,40,NOT_CAPTURED,NOT_CAPTURED,peak RSS absent from formal campaign artifact
+structured50_auto,50,NOT_CAPTURED,NOT_CAPTURED,peak RSS absent from formal campaign artifact

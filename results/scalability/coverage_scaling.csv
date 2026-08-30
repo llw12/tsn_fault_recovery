@@ -1,0 +1,17 @@
+scenario,switch_count,policy_id,candidate_fault_count,recoverable_fault_count,PF_recovery_coverage,shared_fault_coverage,equivalence_profile_coverage
+structured20_auto,20,J100,22,22,1,0.454545454545,1
+structured20_auto,20,J060,22,22,1,0.727272727273,1
+structured20_auto,20,J040,22,22,1,0.954545454545,1
+structured20_auto,20,J020,22,22,1,0.954545454545,1
+structured30_auto,30,J100,26,26,1,0.346153846154,1
+structured30_auto,30,J060,26,26,1,0.423076923077,1
+structured30_auto,30,J040,26,26,1,0.730769230769,1
+structured30_auto,30,J020,26,26,1,0.961538461538,1
+structured40_auto,40,J100,32,32,1,0.375,1
+structured40_auto,40,J060,32,32,1,0.5,1
+structured40_auto,40,J040,32,32,1,0.6875,1
+structured40_auto,40,J020,32,32,1,0.84375,1
+structured50_auto,50,J100,52,52,1,0.442307692308,1
+structured50_auto,50,J060,52,52,1,0.557692307692,1
+structured50_auto,50,J040,52,52,1,0.846153846154,1
+structured50_auto,50,J020,52,52,1,1,1

@@ -1,0 +1,5 @@
+scenario,switch_count,internal_link_count,candidate_fault_count,recoverable_fault_count,candidate_per_switch,candidate_per_internal_link,candidate_growth_from_previous
+structured20_auto,20,35,22,22,1.1,0.628571428571,
+structured30_auto,30,55,26,26,0.866666666667,0.472727272727,1.18181818182
+structured40_auto,40,75,32,32,0.8,0.426666666667,1.23076923077
+structured50_auto,50,95,52,52,1.04,0.547368421053,1.625
