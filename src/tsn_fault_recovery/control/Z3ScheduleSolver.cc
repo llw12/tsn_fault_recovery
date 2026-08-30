@@ -86,6 +86,11 @@ ScheduleResult Z3ScheduleSolver::solve(const ScheduleRequest& request)
 
     z3::context context;
     z3::optimize optimizer(context);
+    if (request.solverTimeoutMs > 0) {
+        z3::params parameters(context);
+        parameters.set("timeout", static_cast<unsigned>(request.solverTimeoutMs));
+        optimizer.set(parameters);
+    }
     std::vector<std::vector<z3::expr>> starts;
     for (size_t f = 0; f < request.flows.size(); ++f) {
         std::vector<z3::expr> flowStarts;
@@ -171,7 +176,8 @@ ScheduleResult Z3ScheduleSolver::solve(const ScheduleRequest& request)
     }
     else {
         output.status = ScheduleStatus::UNKNOWN;
-        output.diagnostic = "Z3 Optimize returned UNKNOWN";
+        output.diagnostic = std::string("Z3 Optimize returned UNKNOWN: ")
+                + Z3_optimize_get_reason_unknown(context, optimizer);
     }
     output.wallTimeSeconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - wallStart).count();
     return output;

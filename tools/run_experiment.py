@@ -24,6 +24,9 @@ from tools.scenario_model import load_scenario
 from tools.analyze_critical_links import discover
 from tools.critical_link import affected_flow_set_hash
 from tools.exact_equivalence import ExactEquivalenceError, class_store_metrics, validate_class_store
+from tools.approximate_equivalence import (
+    ApproximateEquivalenceError, approximate_store_metrics, validate_approx_store,
+)
 
 IMPLEMENTED = tuple(name for name, mode in MODES.items() if mode.implemented)
 NOT_IMPLEMENTED = tuple(name for name, mode in MODES.items() if not mode.implemented)
@@ -43,6 +46,8 @@ def parse_args():
     parser.add_argument("--offline-lookup-delay-us", type=float, default=0.0,
                         help="simulated preloaded lookup delay; 0 is the ideal lower bound")
     parser.add_argument("--run-id", help="explicit run identifier for orchestrated experiments")
+    parser.add_argument("--equivalence-policy",
+                        help="approximate-equivalence policy id (for example J080 or JE060_D1)")
     return parser.parse_args()
 
 
@@ -59,6 +64,7 @@ def enter_environment(args) -> int:
     if args.skip_build: forwarded.append("--skip-build")
     forwarded += ["--offline-lookup-delay-us", str(args.offline_lookup_delay_us)]
     if args.run_id: forwarded += ["--run-id", args.run_id]
+    if args.equivalence_policy: forwarded += ["--equivalence-policy", args.equivalence_policy]
     command = f"cd {shlex.quote('/home/opp_env/tsn_fault_recovery')} && opp_env run inet-4.7.0 -q -c {shlex.quote(' '.join(shlex.quote(item) for item in forwarded))}"
     executable = ["wsl", "-d", "opp_env", "--", "bash", "-lc", command] if os.name == "nt" else ["bash", "-lc", command]
     return subprocess.run(executable).returncode
@@ -84,7 +90,8 @@ def scalar_from_file(path: Path, name: str) -> float | None:
 def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generated: Path,
                   recovery: bool, store: dict | None = None, store_path: Path | None = None,
                   offline_lookup_delay_s: float | None = None, class_store: dict | None = None,
-                  class_store_path: Path | None = None) -> None:
+                  class_store_path: Path | None = None,
+                  equivalence_policy: str | None = None) -> None:
     code_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True,
                                  stdout=subprocess.PIPE, check=True).stdout.strip()
     entry = store["faults"][fault] if store else None
@@ -119,9 +126,12 @@ def make_manifest(run_dir: Path, scenario: dict, mode: str, fault: str, generate
         "equivalence_class_id": class_id,
         "equivalence_class_size": len(class_entry["members"]) if class_entry else None,
         "equivalence_class_type": class_entry["class_type"] if class_entry else None,
+        "equivalence_policy": equivalence_policy,
+        "equivalence_policy_hash": class_store.get("policy_hash") if class_store else None,
         "per_failure_store_sha256": class_store.get("per_failure_store_sha256") if class_store else None,
         "offline_lookup_delay_s": offline_lookup_delay_s,
-        "runtime_solver_invocations": {"route": 0, "z3": 0, "profile_synthesis": 0} if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
+        "runtime_solver_invocations": {"route": 0, "z3": 0, "profile_synthesis": 0, "grouping": 0}
+                                      if mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"} else None,
         "artifacts": {"scenario": "scenario.json", "port_map": "port_map.json", "profile0": "profile0.json",
                       "candidate_faults": "candidate_faults.json",
                       "recovery_profile": "recovery_profile.json" if recovery else None},
@@ -152,7 +162,9 @@ def main() -> int:
     store_path = generated / "profiles/per_failure/store.json"
     port_map = json.loads((generated / "port_map.json").read_text())
     store = None
-    if any(mode in modes for mode in ("offline-per-failure", "offline-exact-equivalence")):
+    if "offline-approx-equivalence" in modes and not args.equivalence_policy:
+        raise SystemExit("--equivalence-policy is required for offline-approx-equivalence")
+    if any(mode in modes for mode in ("offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence")):
         try:
             store = validate_store(store_path, scenario, port_map)
         except ProfileStoreError as error:
@@ -172,20 +184,39 @@ def main() -> int:
         if args.fault not in class_store["fault_to_class"]:
             raise SystemExit(f"fault {args.fault!r} has no recoverable exact-equivalence class")
         exact_metrics = class_store_metrics(class_store_path)
+    approximate_store_path = (generated / "profiles/approximate_equivalence" /
+                              (args.equivalence_policy or "") / "store.json")
+    approximate_store = None
+    approximate_metrics = None
+    if "offline-approx-equivalence" in modes:
+        try:
+            approximate_store = validate_approx_store(
+                approximate_store_path, scenario, port_map, args.equivalence_policy)
+        except ApproximateEquivalenceError as error:
+            raise SystemExit(str(error)) from error
+        if args.fault not in approximate_store["fault_to_class"]:
+            raise SystemExit(f"fault {args.fault!r} has no recoverable approximate-equivalence class")
+        approximate_metrics = approximate_store_metrics(approximate_store_path)
     run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
     summaries = []
     for mode in modes:
-        run_dir = ROOT / "results/scenarios" / model.scenario_name / mode / args.fault / run_id
+        run_root = ROOT / "results/scenarios" / model.scenario_name / mode
+        if mode == "offline-approx-equivalence":
+            run_root /= args.equivalence_policy
+        run_dir = run_root / args.fault / run_id
         run_dir.mkdir(parents=True, exist_ok=True)
         copied_recovery = run_dir / "recovery_profile.json"
         if copied_recovery.exists(): copied_recovery.unlink()
         recovery_generated = generated / "profiles" / f"{mode}_{args.fault}.json"
         if recovery_generated.exists(): recovery_generated.unlink()
         label = {"no-recovery": "NoRecovery", "online": "Online", "offline-per-failure": "Offline",
-                 "offline-exact-equivalence": "Exact"}[mode]
+                 "offline-exact-equivalence": "Exact", "offline-approx-equivalence": "Approx"}[mode]
         config = label + f"_{args.fault}"
         overrides = ([f"--*.scenarioRecoveryController.offlineLookupDelay={args.offline_lookup_delay_us}us"]
-                     if mode in {"offline-per-failure", "offline-exact-equivalence"} else None)
+                     if mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"} else [])
+        if mode == "offline-approx-equivalence":
+            runtime_store = f"profiles/approximate_equivalence/{args.equivalence_policy}/runtime_store.json"
+            overrides.append(f'--*.scenarioRecoveryController.approximateProfileStore=readJSON("{runtime_store}")')
         run_omnet(generated, config, run_dir / "raw", run_dir / "run.log", overrides)
         for source_path, name in ((generated/"scenario.json","scenario.json"),(generated/"port_map.json","port_map.json"),(generated/"profiles/profile0.json","profile0.json"),(generated/"fault_analysis/candidate_faults.json","candidate_faults.json")):
             shutil.copy2(source_path, run_dir / name)
@@ -212,19 +243,32 @@ def main() -> int:
             class_id = class_store["fault_to_class"][args.fault]
             class_entry = class_store["classes"][class_id]
             shutil.copy2(class_store_path.parent / class_entry["profile_file"], run_dir / "recovery_profile.json")
+        elif mode == "offline-approx-equivalence":
+            class_id = approximate_store["fault_to_class"][args.fault]
+            class_entry = approximate_store["classes"][class_id]
+            shutil.copy2(approximate_store_path.parent / class_entry["profile_file"], run_dir / "recovery_profile.json")
         if store and mode == "offline-per-failure":
             shutil.copy2(store_path, run_dir / "profile_store.json")
         if class_store and mode == "offline-exact-equivalence":
             shutil.copy2(class_store_path, run_dir / "class_store.json")
+        if approximate_store and mode == "offline-approx-equivalence":
+            shutil.copy2(approximate_store_path, run_dir / "class_store.json")
+        selected_class_store = (class_store if mode == "offline-exact-equivalence" else
+                                approximate_store if mode == "offline-approx-equivalence" else None)
+        selected_class_store_path = (class_store_path if mode == "offline-exact-equivalence" else
+                                     approximate_store_path if mode == "offline-approx-equivalence" else None)
         make_manifest(run_dir, scenario, mode, args.fault, generated, (run_dir / "recovery_profile.json").exists(),
-                      store if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
+                      store if mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"} else None,
                       store_path if mode == "offline-per-failure" else None,
-                      args.offline_lookup_delay_us * 1e-6 if mode in {"offline-per-failure", "offline-exact-equivalence"} else None,
-                      class_store if mode == "offline-exact-equivalence" else None,
-                      class_store_path if mode == "offline-exact-equivalence" else None)
+                      args.offline_lookup_delay_us * 1e-6 if mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"} else None,
+                      selected_class_store, selected_class_store_path,
+                      args.equivalence_policy if mode == "offline-approx-equivalence" else None)
+        selected_metrics = (exact_metrics if mode == "offline-exact-equivalence" else
+                            approximate_metrics if mode == "offline-approx-equivalence" else metrics)
         summaries.append(analyze_run(run_dir, scenario, mode, args.fault, precompute_wall_ms,
-                                     store=store, profile_metrics=exact_metrics if mode == "offline-exact-equivalence" else metrics,
-                                     offline_lookup_delay_s=args.offline_lookup_delay_us * 1e-6))
+                                     store=store, profile_metrics=selected_metrics,
+                                     offline_lookup_delay_s=args.offline_lookup_delay_us * 1e-6,
+                                     class_store=selected_class_store))
         print(run_dir)
     if args.mode == "all":
         aggregate = ROOT / "results/scenarios" / model.scenario_name / f"all_{args.fault}_{run_id}.json"

@@ -27,6 +27,8 @@ class OfflinePerFailureProfileProvider {
     const OfflineProfileEntry& lookup(const std::string& faultId) const;
     void preloadExact(omnetpp::cValueMap *root, const std::string& expectedScenarioHash,
             const std::string& expectedSolverConfigHash);
+    void preloadEquivalence(omnetpp::cValueMap *root, const std::string& expectedScenarioHash,
+            const std::string& expectedSolverConfigHash, const std::string& expectedStrategy);
     const std::string& classForFault(const std::string& faultId) const;
     const OfflineProfileEntry& lookupClass(const std::string& classId) const;
     size_t size() const { return entries.size(); }

@@ -23,6 +23,7 @@ const char *faultProfileStatusName(FaultProfileStatus status)
         case FaultProfileStatus::NO_ROUTE: return "NO_ROUTE";
         case FaultProfileStatus::UNSAT: return "UNSAT";
         case FaultProfileStatus::FORWARDING_CONFLICT: return "FORWARDING_CONFLICT";
+        case FaultProfileStatus::TIMEOUT: return "TIMEOUT";
         default: return "ERROR";
     }
 }
@@ -118,6 +119,7 @@ ProfileComputationResult JointProfileComputer::compute(const std::string& profil
     request.frameOverheadBytes = scenario.frameOverheadBytes;
     request.linkBitrate = scenario.linkBitrate;
     request.beTrafficClass = scenario.beTrafficClass;
+    request.solverTimeoutMs = solverTimeoutMs;
 
     Z3ScheduleSolver solver;
     ++result.z3SolverInvocations;
@@ -125,8 +127,8 @@ ProfileComputationResult JointProfileComputer::compute(const std::string& profil
     result.smtSolverWallSeconds = schedule.wallTimeSeconds;
     result.scheduleObjectiveTicks = schedule.objectiveTicks;
     if (schedule.status != ScheduleStatus::SAT) {
-        result.status = schedule.status == ScheduleStatus::UNSAT ?
-                FaultProfileStatus::UNSAT : FaultProfileStatus::ERROR;
+        result.status = schedule.status == ScheduleStatus::UNSAT ? FaultProfileStatus::UNSAT :
+                (schedule.diagnostic.find("timeout") != std::string::npos ? FaultProfileStatus::TIMEOUT : FaultProfileStatus::ERROR);
         result.diagnostic = schedule.diagnostic;
         result.totalWallSeconds = std::chrono::duration<double>(
                 std::chrono::steady_clock::now() - totalStart).count();

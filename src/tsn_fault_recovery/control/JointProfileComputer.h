@@ -18,6 +18,7 @@ enum class FaultProfileStatus
     NO_ROUTE,
     UNSAT,
     FORWARDING_CONFLICT,
+    TIMEOUT,
     ERROR
 };
 
@@ -43,9 +44,11 @@ class JointProfileComputer
   private:
     const ScenarioData& scenario;
     const ScenarioRuntimeAdapter& adapter;
+    int solverTimeoutMs;
 
   public:
-    JointProfileComputer(const ScenarioData& scenario, const ScenarioRuntimeAdapter& adapter) : scenario(scenario), adapter(adapter) {}
+    JointProfileComputer(const ScenarioData& scenario, const ScenarioRuntimeAdapter& adapter,
+            int solverTimeoutMs = 0) : scenario(scenario), adapter(adapter), solverTimeoutMs(solverTimeoutMs) {}
 
     ProfileComputationResult computeInitial(const std::string& profileId) const;
     ProfileComputationResult computeForFault(const std::string& profileId, const std::string& faultId,

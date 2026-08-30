@@ -69,6 +69,7 @@ struct ScheduleRequest
     int frameOverheadBytes = 0;
     double linkBitrate = 0;
     int beTrafficClass = -1;
+    int solverTimeoutMs = 0;
 };
 
 struct ScheduleResult

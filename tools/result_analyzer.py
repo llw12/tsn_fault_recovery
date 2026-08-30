@@ -22,7 +22,8 @@ SUMMARY_FIELDS = [
     "runtime_lookup_wall_us", "simulated_decision_delay_s",
     "route_solver_wall_us_runtime", "smt_solver_wall_us_runtime",
     "runtime_route_solver_invocations", "runtime_z3_solver_invocations",
-    "runtime_profile_synthesis_invocations", "fault_to_class_lookup_wall_us", "class_profile_lookup_wall_us",
+    "runtime_profile_synthesis_invocations", "runtime_grouping_invocations",
+    "fault_to_class_lookup_wall_us", "class_profile_lookup_wall_us",
     "activation_wall_us", "tt_sent", "tt_received", "tt_lost", "deadline_miss_count",
     "deadline_miss_ratio", "failure_time_s", "decision_ready_time_s", "activation_time_s",
     "first_success_after_fault_s", "decision_delay_s", "activation_to_first_success_s",
@@ -131,7 +132,8 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
     nodes=scenario["nodes"]
     affected_count = len(affected)
     store_entry = store["faults"][fault_id] if store else None
-    if mode in {"offline-per-failure", "offline-exact-equivalence"}:
+    equivalence_mode = mode in {"offline-exact-equivalence", "offline-approx-equivalence"}
+    if mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"}:
         recovery_status = "RECOVERED" if store_entry["status"] == "SAT" and activation is not None else ("NO_ACTION" if store_entry["status"] == "NO_AFFECTED_TT" else "UNRECOVERABLE")
         recovery_action = "ACTIVATE_PROFILE" if store_entry["status"] == "SAT" else "NO_ACTION"
         simulated_delay = offline_lookup_delay_s
@@ -151,7 +153,7 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
         "recoverable_fault_count": None, "unrecoverable_fault_count": None,
     }
     initial_bytes = (run_dir/"profile0.json").stat().st_size
-    offline_only = mode in {"offline-per-failure", "offline-exact-equivalence"}
+    offline_only = mode in {"offline-per-failure", "offline-exact-equivalence", "offline-approx-equivalence"}
     stable_start = activation + scenario["simulation"]["cycle_time_s"] if activation is not None else None
     stable_packets = [row for row in packet_rows if row["flow_id"] in tt and stable_start is not None and row["send_time_s"] >= stable_start and row["send_time_s"] <= scenario["simulation"]["duration_s"] - tt[row["flow_id"]]["period_s"] + 1e-12]
     stable_received = sum(row["received"] for row in stable_packets)
@@ -180,8 +182,13 @@ def analyze_run(run_dir: Path, scenario: dict, mode: str, fault_id: str,
         "runtime_route_solver_invocations":int(_scalar(scalars,"scenario.runtime.routeSolverInvocations",0)),
         "runtime_z3_solver_invocations":int(_scalar(scalars,"scenario.runtime.z3SolverInvocations",0)),
         "runtime_profile_synthesis_invocations":int(_scalar(scalars,"scenario.runtime.profileSynthesisInvocations",0)),
-        "fault_to_class_lookup_wall_us":(_scalar(scalars,"scenario.exact.faultToClassLookupWallTimeSeconds") or 0)*1e6 if mode=="offline-exact-equivalence" else None,
-        "class_profile_lookup_wall_us":(_scalar(scalars,"scenario.exact.classProfileLookupWallTimeSeconds") or 0)*1e6 if mode=="offline-exact-equivalence" else None,
+        "runtime_grouping_invocations":int(_scalar(scalars,"scenario.runtime.groupingInvocations",0)),
+        "fault_to_class_lookup_wall_us":(_scalar(
+            scalars, "scenario.exact.faultToClassLookupWallTimeSeconds" if mode == "offline-exact-equivalence"
+            else "scenario.approximate.faultToClassLookupWallTimeSeconds") or 0)*1e6 if equivalence_mode else None,
+        "class_profile_lookup_wall_us":(_scalar(
+            scalars, "scenario.exact.classProfileLookupWallTimeSeconds" if mode == "offline-exact-equivalence"
+            else "scenario.approximate.classProfileLookupWallTimeSeconds") or 0)*1e6 if equivalence_mode else None,
         "activation_wall_us":(_scalar(scalars,"scenario.activationWallTimeSeconds") or 0)*1e6 if activation is not None else None,
         "tt_sent":tt_sent, "tt_received":tt_received, "tt_lost":tt_sent-tt_received,
         "deadline_miss_count":misses, "deadline_miss_ratio":misses/tt_received if tt_received else None,

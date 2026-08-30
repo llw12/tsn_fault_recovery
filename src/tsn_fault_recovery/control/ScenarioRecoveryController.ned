@@ -11,7 +11,9 @@ simple ScenarioRecoveryController
         object profile0 = default(object({}));
         object offlineProfileStore = default(object({}));
         object exactProfileStore = default(object({}));
+        object approximateProfileStore = default({});
         string solverConfigHash = default("");
+        int solverTimeoutMs = default(0);
         double offlineLookupDelay @unit(s) = default(0s);
         string profileOutputPath = default("profile0.json");
         string recoveryProfileOutputPath = default("recovery_profile.json");

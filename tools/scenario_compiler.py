@@ -222,6 +222,13 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
             f'*.scenarioRecoveryController.solverConfigHash = "{config_hash}"',
             '*.scenarioRecoveryController.offlineLookupDelay = 0us', "",
         ]
+        lines += [
+            f"[Config Approx_{config_suffix}]", f'*.scenarioManager.script = xml("{script}")',
+            '*.scenarioRecoveryController.mode = "offline-approx-equivalence"',
+            f'*.scenarioRecoveryController.faultId = "{fault_id}"',
+            f'*.scenarioRecoveryController.solverConfigHash = "{config_hash}"',
+            '*.scenarioRecoveryController.offlineLookupDelay = 0us', "",
+        ]
     return "\n".join(lines)
 
 
