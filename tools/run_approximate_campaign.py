@@ -64,8 +64,26 @@ def write_rows(path: Path, rows: list[dict], fields: list[str]) -> None:
             writer.writerow({field: row.get(field, "") for field in fields})
 
 
+def _required_flows_connected(scenario: dict, affected: list[str], disabled: set[str]) -> bool:
+    graph = {node["id"]: set() for node in scenario["nodes"]}
+    for link in scenario["links"]:
+        if link["id"] in disabled:
+            continue
+        graph[link["endpoint_a"]].add(link["endpoint_b"])
+        graph[link["endpoint_b"]].add(link["endpoint_a"])
+    flows = {flow["id"]: flow for flow in scenario["tt_flows"]}
+    for flow_id in affected:
+        flow = flows[flow_id]; pending = [flow["source"]]; seen = {flow["source"]}
+        while pending:
+            for node in graph[pending.pop()]:
+                if node not in seen: seen.add(node); pending.append(node)
+        if flow["destination"] not in seen:
+            return False
+    return True
+
+
 def synthesize(generated: Path, scenario: dict, candidate: dict, members: list[str],
-               timeout_ms: int) -> dict:
+               timeout_ms: int, topology_precheck: bool = False) -> dict:
     port_map = json.loads((generated / "port_map.json").read_text())
     key = synthesis_cache_key(scenario["scenario_sha256"], members,
                               solver_config_hash(scenario, port_map), candidate["candidate_set_sha256"])
@@ -77,6 +95,15 @@ def synthesize(generated: Path, scenario: dict, candidate: dict, members: list[s
     affected_by_fault = {row["fault_id"]: set(row["affected_flows"])
                          for row in candidate["candidate_faults"]}
     affected = sorted(set().union(*(affected_by_fault[fault] for fault in members)))
+    if topology_precheck and not _required_flows_connected(scenario, affected, set(members)):
+        return {
+            "status": "GRAPH_DISCONNECTED", "raw_status": "GRAPH_DISCONNECTED",
+            "members": sorted(members), "affected_flows": affected, "raw_profile": None,
+            "diagnostic": "required TT attachment pair disconnected under union-disabled links",
+            "solver_timeout_ms": timeout_ms, "route_solver_wall_us": 0,
+            "smt_solver_wall_us": 0, "synthesis_wall_us": 0,
+            "cache_reused": False, "source_synthesis_hash": key,
+        }
     cache_dir.mkdir(parents=True, exist_ok=True)
     relative = cache_dir.relative_to(generated).as_posix()
     profile_rel = f"{relative}/profile.raw.json"
@@ -187,7 +214,8 @@ def provisional_specs(sat_faults: list[str], shared: dict, candidate_group: str)
 
 
 def run_policy(source: Path, generated: Path, scenario: dict, candidate: dict, pf: dict,
-               features: dict, policy: Policy, run_id: str, timeout_ms: int) -> dict:
+               features: dict, policy: Policy, run_id: str, timeout_ms: int,
+               topology_precheck: bool = False) -> dict:
     grouping, trace = agglomerate(features, policy)
     root = generated / "profiles/approximate_equivalence" / policy.policy_id
     root.mkdir(parents=True, exist_ok=True)
@@ -209,7 +237,8 @@ def run_policy(source: Path, generated: Path, scenario: dict, candidate: dict, p
             continue
 
         def attempt(members: list[str], depth: int) -> dict:
-            synthesis = synthesize(generated, scenario, candidate, members, timeout_ms)
+            synthesis = synthesize(generated, scenario, candidate, members, timeout_ms,
+                                   topology_precheck=topology_precheck)
             logical = {key: value for key, value in synthesis.items() if key != "raw_profile"}
             logical.update({"candidate_group_id": group["group_id"], "split_depth": depth})
             attempts.append(logical)

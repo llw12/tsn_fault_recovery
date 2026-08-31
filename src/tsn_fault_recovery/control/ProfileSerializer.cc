@@ -36,4 +36,25 @@ ProfileDefinition ProfileSerializer::parse(cValueMap *root,const std::string& ex
     for(int i=0;i<gates->size();++i) { auto item=objectAt(gates,i); GateScheduleDefinition g; g.gatePath=textAt(item,"gate_path"); g.trafficClass=static_cast<int>(item->get("traffic_class").doubleValue()); g.initiallyOpen=item->get("initially_open").boolValue(); g.offset=SimTime(item->get("offset_s").doubleValue()); auto durations=arrayAt(item,"durations_s"); for(int j=0;j<durations->size();++j)g.durations.push_back(SimTime(durations->get(j).doubleValue())); profile.gateSchedules.push_back(g); }
     return profile;
 }
+
+std::map<std::string, LogicalRoute> ProfileSerializer::parseLogicalRoutes(cValueMap *root)
+{
+    if (!root) throw cRuntimeError("frozen primary routes are not an object");
+    std::map<std::string, LogicalRoute> result;
+    auto logical = arrayAt(root, "logical_routes");
+    for (int i = 0; i < logical->size(); ++i) {
+        auto item = objectAt(logical, i);
+        LogicalRoute route;
+        route.flowId = textAt(item, "flow_id");
+        auto nodes = arrayAt(item, "node_path");
+        for (int j = 0; j < nodes->size(); ++j)
+            route.nodePath.push_back(nodes->get(j).stringValue());
+        auto links = arrayAt(item, "link_path");
+        for (int j = 0; j < links->size(); ++j)
+            route.linkPath.push_back(links->get(j).stringValue());
+        if (!result.emplace(route.flowId, route).second)
+            throw cRuntimeError("duplicate frozen primary route for flow '%s'", route.flowId.c_str());
+    }
+    return result;
+}
 } // namespace tsn_fault_recovery

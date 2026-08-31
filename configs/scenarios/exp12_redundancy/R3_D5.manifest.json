@@ -1,0 +1,714 @@
+{
+  "edges": [
+    {
+      "endpoints": [
+        "sw01",
+        "sw02"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw01",
+        "sw03"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw01",
+        "sw09"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw01",
+        "sw11"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw01",
+        "sw17"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw02",
+        "sw03"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw02",
+        "sw04"
+      ],
+      "layer": "D4_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw02",
+        "sw09"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw02",
+        "sw10"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw03",
+        "sw04"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw03",
+        "sw05"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw03",
+        "sw11"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw04",
+        "sw05"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw04",
+        "sw06"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw04",
+        "sw12"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw05",
+        "sw06"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw05",
+        "sw13"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw05",
+        "sw15"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw06",
+        "sw07"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw06",
+        "sw08"
+      ],
+      "layer": "D4_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw06",
+        "sw14"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw07",
+        "sw08"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw07",
+        "sw15"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw07",
+        "sw16"
+      ],
+      "layer": "D4_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw07",
+        "sw23"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw08",
+        "sw15"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw08",
+        "sw16"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw09",
+        "sw10"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw09",
+        "sw17"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw09",
+        "sw18"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw10",
+        "sw11"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw10",
+        "sw18"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw10",
+        "sw20"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw11",
+        "sw12"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw11",
+        "sw19"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw12",
+        "sw13"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw12",
+        "sw20"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw12",
+        "sw21"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw13",
+        "sw14"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw13",
+        "sw21"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw13",
+        "sw22"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw14",
+        "sw15"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw14",
+        "sw22"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw14",
+        "sw24"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw15",
+        "sw16"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw15",
+        "sw23"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw16",
+        "sw24"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw16",
+        "sw32"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw17",
+        "sw18"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw17",
+        "sw25"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw17",
+        "sw33"
+      ],
+      "layer": "D4_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw18",
+        "sw19"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw18",
+        "sw26"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw19",
+        "sw20"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw19",
+        "sw27"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw19",
+        "sw29"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw20",
+        "sw21"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw20",
+        "sw28"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw21",
+        "sw22"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw21",
+        "sw29"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw22",
+        "sw23"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw22",
+        "sw30"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw23",
+        "sw24"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw23",
+        "sw25"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw23",
+        "sw31"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw24",
+        "sw32"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw24",
+        "sw40"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw25",
+        "sw26"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw25",
+        "sw33"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw25",
+        "sw34"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw26",
+        "sw27"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw26",
+        "sw33"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw26",
+        "sw34"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw27",
+        "sw28"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw27",
+        "sw35"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw27",
+        "sw36"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw28",
+        "sw29"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw28",
+        "sw36"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw28",
+        "sw38"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw29",
+        "sw30"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw29",
+        "sw37"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw30",
+        "sw31"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw30",
+        "sw38"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw30",
+        "sw39"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw31",
+        "sw32"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw31",
+        "sw39"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw31",
+        "sw40"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw32",
+        "sw34"
+      ],
+      "layer": "CURRENT_CROSS"
+    },
+    {
+      "endpoints": [
+        "sw32",
+        "sw40"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw33",
+        "sw34"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw33",
+        "sw35"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw34",
+        "sw35"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw35",
+        "sw36"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw35",
+        "sw37"
+      ],
+      "layer": "D4_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw36",
+        "sw37"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw36",
+        "sw38"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw37",
+        "sw38"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw37",
+        "sw39"
+      ],
+      "layer": "D5_EXTRA"
+    },
+    {
+      "endpoints": [
+        "sw38",
+        "sw39"
+      ],
+      "layer": "BASE_GRID"
+    },
+    {
+      "endpoints": [
+        "sw39",
+        "sw40"
+      ],
+      "layer": "BASE_GRID"
+    }
+  ],
+  "generator_version": "nested-grid-balanced-distance2-v1",
+  "level": "R3_D5",
+  "physical_link_count": 120,
+  "scenario_file_sha256": "c46d4f6741487784280276fd4da618a2d2d80b5506bc65a48c020c2817d11c6f",
+  "schema_version": 1,
+  "switch_count": 40,
+  "switch_edge_count": 100,
+  "target_average_degree": 5.0,
+  "topology_edge_set_sha256": "94cf1eee1ac2d92f2b12f925406f8900cef95f1e8606e36490d4fbda98505596",
+  "workload_sha256": "8d58dcd0abedc0323ffb89e6c83953917ef7a6d05cd0de4a93f94075d2d797e5"
+}

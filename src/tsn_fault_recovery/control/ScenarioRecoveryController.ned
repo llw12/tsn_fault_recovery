@@ -9,6 +9,8 @@ simple ScenarioRecoveryController
         object scenario = default(object({}));
         object portMap = default(object({}));
         object profile0 = default(object({}));
+        bool useFrozenPrimaryRoutes = default(false);
+        object frozenPrimaryRoutes = default({});
         object offlineProfileStore = default(object({}));
         object exactProfileStore = default(object({}));
         object approximateProfileStore = default({});

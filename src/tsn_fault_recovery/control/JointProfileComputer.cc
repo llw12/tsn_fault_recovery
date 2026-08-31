@@ -36,6 +36,25 @@ ProfileComputationResult JointProfileComputer::computeInitial(const std::string&
     return compute(profileId, {}, nullptr, allFlows);
 }
 
+ProfileComputationResult JointProfileComputer::computeInitialWithRoutes(const std::string& profileId,
+        const std::map<std::string, LogicalRoute>& frozenRoutes) const
+{
+    std::vector<std::string> allFlows;
+    for (const auto& flow : scenario.ttFlows) {
+        allFlows.push_back(flow.flowId);
+        auto route = frozenRoutes.find(flow.flowId);
+        if (route == frozenRoutes.end())
+            throw cRuntimeError("missing frozen primary route for flow '%s'", flow.flowId.c_str());
+        if (route->second.nodePath.empty() || route->second.nodePath.front() != flow.source ||
+                route->second.nodePath.back() != flow.destination ||
+                route->second.linkPath.size() + 1 != route->second.nodePath.size())
+            throw cRuntimeError("invalid frozen primary route for flow '%s'", flow.flowId.c_str());
+    }
+    if (frozenRoutes.size() != scenario.ttFlows.size())
+        throw cRuntimeError("frozen primary route set does not match TT flow set");
+    return compute(profileId, {}, &frozenRoutes, allFlows);
+}
+
 ProfileComputationResult JointProfileComputer::computeForFault(const std::string& profileId,
         const std::string& faultId, const std::map<std::string, LogicalRoute>& initialRoutes) const
 {

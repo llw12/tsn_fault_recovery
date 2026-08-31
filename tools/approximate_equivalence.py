@@ -294,12 +294,13 @@ def write_approx_store(generated: Path, policy: Policy, grouping_path: Path,
             profile = None
             if policy.policy_id == "J100":
                 exact_path = generated / "profiles/exact_equivalence/store.json"
-                exact = json.loads(exact_path.read_text())
-                exact_entry = next((entry for entry in exact["classes"].values()
-                                    if sorted(entry["members"]) == members), None)
-                if exact_entry is None:
-                    raise ApproximateEquivalenceError("J100 shared class has no exp08 counterpart")
-                profile = json.loads((exact_path.parent / exact_entry["profile_file"]).read_text())
+                if exact_path.exists():
+                    exact = json.loads(exact_path.read_text())
+                    exact_entry = next((entry for entry in exact["classes"].values()
+                                        if sorted(entry["members"]) == members), None)
+                    if exact_entry is None:
+                        raise ApproximateEquivalenceError("J100 shared class has no exp08 counterpart")
+                    profile = json.loads((exact_path.parent / exact_entry["profile_file"]).read_text())
             if profile is None:
                 profile = make_shared_profile(spec["raw_profile"], scenario, candidate, members,
                                               spec["affected_flows"], class_id)

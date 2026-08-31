@@ -51,6 +51,8 @@ class JointProfileComputer
             int solverTimeoutMs = 0) : scenario(scenario), adapter(adapter), solverTimeoutMs(solverTimeoutMs) {}
 
     ProfileComputationResult computeInitial(const std::string& profileId) const;
+    ProfileComputationResult computeInitialWithRoutes(const std::string& profileId,
+            const std::map<std::string, LogicalRoute>& frozenRoutes) const;
     ProfileComputationResult computeForFault(const std::string& profileId, const std::string& faultId,
             const std::map<std::string, LogicalRoute>& initialRoutes) const;
     ProfileComputationResult computeForDisabledLinks(const std::string& profileId,

@@ -24,8 +24,16 @@ def discover(source: Path, *, skip_build: bool = False) -> tuple[Path, dict]:
     generated = compile_scenario(source, ROOT / "generated")
     if not skip_build:
         subprocess.run(["make", "-j", str(os.cpu_count() or 2)], cwd=ROOT, check=True)
+    frozen = os.environ.get("TSN_FROZEN_PRIMARY_ROUTES", "")
+    overrides = None
+    if frozen:
+        frozen_path = Path(frozen).resolve()
+        if not frozen_path.exists():
+            raise RuntimeError(f"TSN_FROZEN_PRIMARY_ROUTES does not exist: {frozen_path}")
+        overrides = ["--*.scenarioRecoveryController.useFrozenPrimaryRoutes=true",
+                     f'--*.scenarioRecoveryController.frozenPrimaryRoutes=readJSON("{frozen_path}")']
     run_omnet(generated, "ScenarioPrecompute", generated / "precompute-results",
-              generated / "precompute.log")
+              generated / "precompute.log", overrides)
     profile0 = json.loads((generated / "profiles/profile0.json").read_text(encoding="utf-8"))
     analysis = CriticalLinkAnalyzer.analyze(model, profile0)
     write_analysis(analysis, generated / "fault_analysis")

@@ -59,7 +59,11 @@ void ScenarioRecoveryController::recordComputation(const char *prefix, const Pro
 
 void ScenarioRecoveryController::initializeProfile() {
     if (mode == "precompute") {
-        JointProfileComputer computer(scenario, adapter); auto result = computer.computeInitial("P0");
+        JointProfileComputer computer(scenario, adapter);
+        auto result = par("useFrozenPrimaryRoutes").boolValue()
+                ? computer.computeInitialWithRoutes("P0", ProfileSerializer::parseLogicalRoutes(
+                        check_and_cast<cValueMap *>(par("frozenPrimaryRoutes").objectValue())))
+                : computer.computeInitial("P0");
         if (result.status != FaultProfileStatus::SAT) throw cRuntimeError("Initial profile is %s: %s", faultProfileStatusName(result.status), result.diagnostic.c_str());
         profile0 = result.profile; for (const auto& route : profile0.logicalRoutes) initialRoutes[route.flowId] = route;
         ProfileSerializer::write(profile0, scenario.sha256, par("profileOutputPath").stringValue()); writeFaultAnalysis(); recordComputation("scenario.precompute", result); endSimulation(); return;
