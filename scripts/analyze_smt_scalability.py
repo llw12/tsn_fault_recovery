@@ -73,6 +73,8 @@ def representative_rows(rows: list[dict], mode: str = "PRODUCTION_OPTIMIZE") -> 
         completed = [r for r in members if r["status"] in COMPLETED]
         if completed:
             base["z3_check_wall_ms"] = percentile([r["z3_check_wall_ms"] for r in completed], .5)
+        else:
+            base["z3_check_wall_ms"] = None
         base["repeat_count"] = len(members); result.append(base)
     return result
 
@@ -81,7 +83,7 @@ def write_csv(path: Path, rows: list[dict], fields: list[str] | None = None) -> 
     if fields is None:
         fields = list(rows[0]) if rows else []
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore")
+        writer = csv.DictWriter(handle, fieldnames=fields, extrasaction="ignore", lineterminator="\n")
         writer.writeheader()
         for row in rows:
             writer.writerow({key: ("" if row.get(key) is None else
@@ -247,8 +249,14 @@ def figures(output: Path, rows: list[dict], summaries: list[dict], pfshared: lis
     ax.legend(frameon=False); save(fig, output / "z3_check_time_vs_scale.png")
     p0 = [r for r in summaries if r["mode"] == MODES[0] and r["case_type"] == "P0"]
     fig, ax = setup_plot("P0 Z3 check time vs network scale", "Median with min-max range across three production repeats", "Switch count", "Z3 check time (ms)")
-    x=[r["switch_count"] for r in p0]; y=[r["z3_p50_ms"] for r in p0]
-    ax.errorbar(x, y, yerr=[[a-b for a,b in zip(y,[r["z3_min_ms"] for r in p0])], [b-a for a,b in zip(y,[r["z3_max_ms"] for r in p0])]], color=BLUE, marker="o", capsize=4)
+    complete_p0 = [r for r in p0 if r["z3_p50_ms"] is not None]
+    x=[r["switch_count"] for r in complete_p0]; y=[r["z3_p50_ms"] for r in complete_p0]
+    if complete_p0:
+        ax.errorbar(x, y, yerr=[[a-b for a,b in zip(y,[r["z3_min_ms"] for r in complete_p0])], [b-a for a,b in zip(y,[r["z3_max_ms"] for r in complete_p0])]], color=BLUE, marker="o", capsize=4)
+    timed_out_scales = [str(r["switch_count"]) for r in p0 if r["z3_p50_ms"] is None and r["timeout_count"]]
+    if timed_out_scales:
+        ax.text(.99, .04, "All P0 repeats timed out: " + ", ".join(timed_out_scales) + " switches",
+                transform=ax.transAxes, ha="right", color=PINK, fontsize=9)
     save(fig, output / "p0_z3_vs_scale.png")
     pfcomp = [r for r in comparisons if r["case_type"] == "PF" and r["overhead_ratio"] is not None]
     byscale=defaultdict(list)
@@ -294,6 +302,8 @@ def fmt(value, digits=2): return "NA" if value is None else f"{value:.{digits}f}
 def summary_markdown(campaign: dict, scale: list[dict], front: list[dict], relationships_rows: list[dict],
                      pfshared: list[dict], comparisons: list[dict]) -> str:
     max_scale = max(scale, key=lambda r:r["switch_count"]); min_scale=min(scale,key=lambda r:r["switch_count"])
+    last_p0 = max((r for r in scale if r["p0_z3_median_ms"] is not None), key=lambda r:r["switch_count"])
+    last_pf = max((r for r in scale if r["pf_z3_mean_ms"] is not None), key=lambda r:r["switch_count"])
     completed_ratios=[r["overhead_ratio"] for r in comparisons if r["overhead_ratio"] is not None]
     all_timeouts=sum(r["timeout_count"] for r in scale); all_unknown=sum(r["unknown_other_count"] for r in scale); all_unsat=sum(r["unsat_count"] for r in scale)
     relation={r["feature"]:r["spearman_rho"] for r in relationships_rows if r["scope"]=="ALL"}
@@ -301,7 +311,7 @@ def summary_markdown(campaign: dict, scale: list[dict], front: list[dict], relat
     for r in pfshared: shared_by[r["scenario"]][r["case_family"]]=r
     lines=["# SMT Solver Scalability and Model Complexity Characterization", "",
            "## Technical summary", "",
-           f"Under the fixed {campaign['solver_timeout_ms']/1000:.0f}-second bound, the campaign covered {len(scale)} structured scales from {min_scale['switch_count']} to {max_scale['switch_count']} switches. P0 median Z3 time changed from {fmt(min_scale['p0_z3_median_ms'])} ms to {fmt(max_scale['p0_z3_median_ms'])} ms; the largest-scale PF mean/P95/max were {fmt(max_scale['pf_z3_mean_ms'])}/{fmt(max_scale['pf_z3_p95_ms'])}/{fmt(max_scale['pf_z3_max_ms'])} ms.", "",
+           f"Under the fixed {campaign['solver_timeout_ms']/1000:.0f}-second bound, the campaign covered {len(scale)} structured scales from {min_scale['switch_count']} to {max_scale['switch_count']} switches. Among completed P0 runs, median Z3 time rose from {fmt(min_scale['p0_z3_median_ms'])} ms at {min_scale['switch_count']} switches to {fmt(last_p0['p0_z3_median_ms'])} ms at {last_p0['switch_count']}; P0 at {max_scale['switch_count']} switches was {max_scale['p0_status']}. The last scale with completed PF cases was {last_pf['switch_count']} switches, with mean/P95/max {fmt(last_pf['pf_z3_mean_ms'])}/{fmt(last_pf['pf_z3_p95_ms'])}/{fmt(last_pf['pf_z3_max_ms'])} ms.", "",
            f"Observed production outcomes included {all_timeouts} TIMEOUT, {all_unknown} UNKNOWN_OTHER, and {all_unsat} UNSAT logical cases. These are empirical outcomes under one machine and fixed timeout, not a theoretical complexity bound. The evidence {'does not justify' if all_timeouts == 0 else 'may justify targeted investigation of'} solver optimization; it does not support introducing GA.", "",
            "## Key findings", "",
            "- P0 scaling: " + "; ".join(f"{r['switch_count']}={fmt(r['p0_z3_median_ms'])} ms" for r in scale) + ".",
@@ -360,6 +370,7 @@ def analyze(campaign_path: Path, output: Path, analysis_code_commit: str) -> dic
     manifest={"schema_version":1,"experiment":"exp11_smt_scalability","source_campaign":campaign_path.name,
               "source_campaign_sha256":hashlib.sha256(campaign_path.read_bytes()).hexdigest(),
               "implementation_commit":campaign["implementation_commit"],"analysis_code_commit":analysis_code_commit,
+              "analysis_source_sha256":hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               "generated_artifact_paths":artifacts,"artifact_sha256":{name:hashlib.sha256((output/name).read_bytes()).hexdigest() for name in artifacts},
               "completed_case_timing_rule":"SAT/UNSAT only; TIMEOUT/UNKNOWN/NO_ROUTE excluded",
               "report_surface":"repository-native summary.md with static PNG evidence"}

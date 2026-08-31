@@ -120,7 +120,9 @@ class SmtScalabilityTests(unittest.TestCase):
         rows=[sample_row(),sample_row("s:PF:g",status="TIMEOUT",z3=30000)]
         summary=scenario_summary(rows)[0]; self.assertEqual(summary["z3_mean_ms"],10); self.assertEqual(summary["timeout_count"],1)
 
-    def test_23_percentiles(self): self.assertEqual(percentile([1,2,3,4],.5),2.5)
+    def test_23_percentiles(self):
+        self.assertEqual(percentile([1,2,3,4],.5),2.5)
+        self.assertIn("complete_p0", (ROOT/"scripts/analyze_smt_scalability.py").read_text())
     def test_24_ranks_ties(self): self.assertEqual(ranks([2,1,2]),[2.5,1,2.5])
     def test_25_spearman(self): self.assertEqual(spearman([1,2,3],[3,2,1]),-1)
 
@@ -155,6 +157,7 @@ class SmtScalabilityTests(unittest.TestCase):
     def test_34_representative_p0_uses_median(self):
         rows=[{**sample_row("s:P0",z3=z),"case_type":"P0","repeat_index":i} for i,z in enumerate((3,1,2),1)]
         self.assertEqual(representative_rows(rows)[0]["z3_check_wall_ms"],2)
+        self.assertIsNone(representative_rows([{**rows[0],"status":"TIMEOUT"}])[0]["z3_check_wall_ms"])
 
     def test_35_analyzer_deterministic_relationships(self):
         rows=[sample_row("s:PF:a",z3=1),{**sample_row("s:PF:b",z3=2),"total_hard_constraint_count":400}]

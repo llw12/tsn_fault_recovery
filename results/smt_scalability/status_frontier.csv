@@ -1,0 +1,8 @@
+scenario,switch_count,p0_status,largest_scale_with_zero_timeout,first_scale_with_timeout,first_scale_with_p0_failure,pf_sat_count,pf_unsat_count,pf_timeout_count,pf_unknown_other_count,pf_no_route_count,shared_sat_count,shared_unsat_count,shared_timeout_count,shared_unknown_other_count,shared_no_route_count
+structured20_auto,20,SAT,60,80,100,22,0,0,0,0,18,0,0,0,1
+structured30_auto,30,SAT,60,80,100,26,0,0,0,0,22,0,0,0,0
+structured40_auto,40,SAT,60,80,100,32,0,0,0,0,29,0,0,0,0
+structured50_auto,50,SAT,60,80,100,52,0,0,0,0,47,0,0,0,0
+structured60_auto,60,SAT,60,80,100,59,0,0,0,0,53,0,0,0,0
+structured80_auto,80,SAT,60,80,100,98,0,1,0,0,84,0,1,0,0
+structured100_auto,100,TIMEOUT,60,80,100,0,0,0,0,0,0,0,0,0,0
