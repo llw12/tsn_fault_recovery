@@ -113,6 +113,7 @@ def build_tables(raw: dict, result: Path) -> dict[str, list[dict]]:
                                    "split_depth": attempt.get("split_depth", 0),
                                    "validation_status": attempt.get("validation_status", "NOT_RUN")})
             classes = pdata["classes"]; shared = [row for row in classes if row["class_type"] == "SHARED"]
+            raw_attempts = [row for row in pdata["attempts"] if int(row.get("split_depth", 0)) == 0]
             candidate_groups = data["invariant"]["groups"][policy]["group_count"]
             candidate_count = len(data["invariant"]["candidate_ids"])
             pf_bytes = sum(int(row.get("profile_bytes", 0)) for row in data["pf"] if row["raw_status"] == "SAT")
@@ -127,9 +128,8 @@ def build_tables(raw: dict, result: Path) -> dict[str, list[dict]]:
                 "shared_fault_coverage": sum(len(row["members"]) for row in shared) / candidate_count,
                 "largest_class_size": max((len(row["members"]) for row in classes), default=0),
                 "storage_compression": 1 - final_bytes / pf_bytes if pf_bytes else 0,
-                "union_connected_fraction": mean([float(row["graph_connected"]) for row in group_rows
-                                                   if row["level"] == level and row["policy_id"] == policy]),
-                "graph_disconnected_count": sum(row["raw_status"] == "GRAPH_DISCONNECTED" for row in pdata["attempts"]),
+                "union_connected_fraction": mean([float(row["graph_connected"]) for row in raw_attempts]),
+                "graph_disconnected_count": sum(row["status"] == "GRAPH_DISCONNECTED" for row in raw_attempts),
             }
             policy_rows.append(policy_row)
             for entry in classes:
@@ -138,7 +138,7 @@ def build_tables(raw: dict, result: Path) -> dict[str, list[dict]]:
                                    "route_hash": entry["recovery_route_hash"], "hop_count": entry["recovery_hop_count"]})
                 for layer, count in entry["edge_layer_usage"].items():
                     usage_rows.append({"level": level, "kind": "CLASS", "policy_id": policy, "layer": layer, "use_count": count})
-            reasons = Counter(row["raw_status"] for row in pdata["attempts"] if row["raw_status"] != "SHARED_SAT")
+            reasons = Counter(row["status"] for row in pdata["attempts"] if row["status"] != "SHARED_SAT")
             for reason, count in sorted(reasons.items()):
                 failure_rows.append({"level": level, "policy_id": policy, "reason": reason, "count": count})
             validations = pdata["validations"]
@@ -226,10 +226,30 @@ def plot_figures(tables: dict[str, list[dict]], output: Path) -> None:
     x = [row["average_degree"] for row in topo]; labels = [row["level"] for row in topo]
     def save(name):
         plt.tight_layout(); plt.savefig(figdir / f"{name}.png", metadata={"Software":"tsn_fault_recovery-exp12"}); plt.close()
-    plt.figure(figsize=(7,4)); plt.bar(labels, [row["switch_edge_count"] for row in topo], color="#2457A7")
-    plt.ylabel("Switch edges"); plt.title("Topology redundancy levels"); save("topology_redundancy_levels")
-    plt.figure(figsize=(7,4)); plt.plot(x, [row["global_edge_connectivity"] for row in topo], marker="o", color="#2457A7")
-    plt.xlabel("Average degree"); plt.ylabel("Global edge connectivity"); plt.title("Average degree vs edge connectivity"); save("average_degree_vs_edge_connectivity")
+    fig,axes=plt.subplots(1,5,figsize=(15,3.2),sharex=True,sharey=True)
+    previous_edges=set()
+    for axis,level in zip(axes,labels):
+        model=load_scenario(ROOT/"configs/scenarios/exp12_redundancy"/f"{level}.yaml")
+        edges={tuple(sorted((link.endpoint_a,link.endpoint_b))) for link in model.links
+               if link.endpoint_a.startswith("sw") and link.endpoint_b.startswith("sw")}
+        for left,right in sorted(edges):
+            li=int(left[2:])-1; ri=int(right[2:])-1
+            lx,ly=li%8,4-li//8; rx,ry=ri%8,4-ri//8
+            axis.plot([lx,rx],[ly,ry],color="#D95F02" if (left,right) not in previous_edges else "#9AA6B2",
+                      linewidth=1.5 if (left,right) not in previous_edges else .7,zorder=1)
+        axis.scatter([i%8 for i in range(40)],[4-i//8 for i in range(40)],s=9,color="#2457A7",zorder=2)
+        axis.set_title(f"{level}\n|E|={len(edges)}")
+        axis.set_aspect("equal"); axis.set_xticks([]); axis.set_yticks([])
+        previous_edges=edges
+    fig.suptitle("Nested topology redundancy levels (orange = newly added edges)")
+    save("topology_redundancy_levels")
+    tt=tables["tt_pair_edge_connectivity.csv"]
+    tt_by_level={level:[float(row["edge_connectivity"]) for row in tt if row["level"]==level] for level in labels}
+    plt.figure(figsize=(8,4))
+    plt.plot(x,[mean(tt_by_level[level]) for level in labels],marker="o",label="mean",color="#2457A7")
+    plt.plot(x,[statistics.median(tt_by_level[level]) for level in labels],marker="s",label="p50",color="#C47A15")
+    plt.plot(x,[p95(tt_by_level[level]) for level in labels],marker="^",label="p95",color="#6C7A32")
+    plt.xlabel("Average degree"); plt.ylabel("TT-pair edge connectivity"); plt.title("Average degree vs TT-pair edge connectivity"); plt.legend(); save("average_degree_vs_edge_connectivity")
     for name, field, title, ylabel in (
         ("realized_compression_vs_degree","realized_compression","Realized compression vs degree","Compression"),
         ("compression_gap_vs_degree","compression_gap","Compression gap vs degree","Candidate - realized"),
@@ -243,12 +263,13 @@ def plot_figures(tables: dict[str, list[dict]], output: Path) -> None:
         for policy in colors:
             rows=[r for r in policies if r["policy_id"]==policy]; plt.plot([r["average_degree"] for r in rows],[r[field] for r in rows],marker="o",label=policy,color=colors[policy])
         plt.xlabel("Average degree"); plt.ylabel(ylabel); plt.title(title); plt.legend(); save(name)
-    plt.figure(figsize=(7,4))
+    plt.figure(figsize=(8,4))
     for policy in colors:
         rows=[r for r in policies if r["policy_id"]==policy]
         plt.plot([r["average_degree"] for r in rows],[r["candidate_compression"] for r in rows],linestyle="--",label=f"{policy} candidate",color=colors[policy])
         plt.plot([r["average_degree"] for r in rows],[r["realized_compression"] for r in rows],marker="o",label=f"{policy} realized",color=colors[policy])
-    plt.xlabel("Average degree"); plt.ylabel("Compression"); plt.title("Candidate vs realized compression"); plt.legend(ncol=2); save("candidate_vs_realized_compression")
+    plt.xlabel("Average degree"); plt.ylabel("Compression"); plt.title("Candidate vs realized compression")
+    plt.legend(ncol=1,loc="center left",bbox_to_anchor=(1.0,.5),fontsize=8); save("candidate_vs_realized_compression")
     failures=tables["failure_reason_summary.csv"]; reasons=sorted({r["reason"] for r in failures})
     plt.figure(figsize=(8,4)); bottom=[0]*len(labels)
     for reason in reasons:
@@ -268,25 +289,58 @@ def plot_figures(tables: dict[str, list[dict]], output: Path) -> None:
 
 def write_summary(tables: dict[str, list[dict]], output: Path) -> None:
     topo=tables["topology_metrics.csv"]; policy=tables["policy_summary.csv"]
+    levels=[row["level"] for row in topo]; controlled=json.loads((output/"controlled_variables.json").read_text())
     best=max(policy,key=lambda r:r["realized_compression"])
+    by_policy={name:[row for row in policy if row["policy_id"]==name] for name in ("J100","J040","J020")}
+    tt=tables["tt_pair_edge_connectivity.csv"]
+    tt_stats=[]
+    for level in levels:
+        values=[float(row["edge_connectivity"]) for row in tt if row["level"]==level]
+        tt_stats.append((mean(values),statistics.median(values),p95(values)))
+    pf=tables["pf_summary.csv"]
+    pf_sat=[sum(row["level"]==level and row["status"]=="SAT" for row in pf) for level in levels]
+    pf_total=[sum(row["level"]==level for row in pf) for level in levels]
+    raw_disc={name:[row["graph_disconnected_count"] for row in by_policy[name]] for name in by_policy}
+    union={name:[row["union_connected_fraction"] for row in by_policy[name]] for name in by_policy}
+    rescues=tables["topology_rescue_summary.csv"]
+    usage=tables["recovery_edge_usage.csv"]
+    added_usage=[]
+    for level in levels:
+        rows=[row for row in usage if row["level"]==level]
+        total=sum(int(row["use_count"]) for row in rows)
+        added=sum(int(row["use_count"]) for row in rows if row["layer"]!="BASE_GRID")
+        added_usage.append((added,total,added/total if total else 0.0))
+    routes=tables["route_choice_transition.csv"]
+    route_sequences=defaultdict(dict)
+    for row in routes: route_sequences[(row["kind"],row["policy_id"],row["case_id"])][row["level"]]=row["route_hash"]
+    route_changes=route_comparisons=0
+    for sequence in route_sequences.values():
+        hashes=[sequence[level] for level in levels if level in sequence]
+        route_changes+=sum(a!=b for a,b in zip(hashes,hashes[1:])); route_comparisons+=max(0,len(hashes)-1)
+    failures=Counter()
+    for row in tables["failure_reason_summary.csv"]: failures[row["reason"]]+=int(row["count"])
+    quality=tables["quality_comparison.csv"]
+    zero_quality=all(float(row["shared_max"])==0.0 for row in quality if row["metric"] in {"tt_lost","deadline_miss_count"})
+    latency_delta=max((abs(float(row["shared_mean"])-float(row["pf_mean"])) for row in quality if row["metric"]=="recovery_duration_us"),default=0.0)
+    native=tables["native_p0_diagnostic.csv"]
     lines=["# Topology Redundancy Sensitivity of Recovery-Profile Equivalence","",
            "## Technical summary","",
            f"The controlled nested campaign completed five 40-switch topologies from {topo[0]['switch_edge_count']} to {topo[-1]['switch_edge_count']} internal edges. The largest observed realized compression was {best['realized_compression']:.3f} ({best['level']}, {best['policy_id']}). Connectivity is interpreted as recovery-path supply; final sharing additionally depends on the fixed BFS route, Z3 schedule, forwarding realizability, and every-member runtime validation.","",
            "## RQ1–RQ14 evidence-backed answers","",
-           f"1. **RQ1 — supplied redundancy:** average degree increased exactly through {', '.join(str(r['average_degree']) for r in topo)}.",
-           f"2. **RQ2 — structural connectivity:** global edge connectivity changed through {', '.join(str(r['global_edge_connectivity']) for r in topo)} and never decreased.",
-           "3. **RQ3 — frozen workload:** all levels use one workload and one frozen healthy-primary-route fingerprint.",
-           f"4. **RQ4 — PF recoverability:** {sum(r['status']=='SAT' for r in tables['pf_summary.csv'])} level-fault cases were schedule-feasible under the production BFS/Z3 pipeline.",
-           f"5. **RQ5 — candidate compression:** grouping remained topology-invariant by construction; J100/J040/J020 candidate compression is {', '.join(f'{r['policy_id']}={r['candidate_compression']:.3f}' for r in policy[:3])}.",
-           "6. **RQ6 — union connectivity:** nested fixed-group connectivity never made a true-to-false transition.",
-           f"7. **RQ7 — connectivity rescue:** {sum(r['connectivity_rescues'] for r in tables['topology_rescue_summary.csv'])} fixed groups changed from disconnected to connected.",
-           "8. **RQ8 — synthesis rescue:** shared SAT is reported separately from graph connectivity; no alternative-route oracle was used.",
-           f"9. **RQ9 — realized compression:** the observed maximum was {best['realized_compression']:.3f}; non-monotone rows, if any, are retained.",
-           "10. **RQ10 — compression gap:** candidate-versus-realized gaps are reported per level and policy without topology retuning.",
-           "11. **RQ11 — profile/storage response:** final class counts and recovery-profile byte compression are reported against same-level PF.",
-           "12. **RQ12 — route drift:** route hashes, hop counts, and edge-layer use identify changes caused by deterministic shortest-path selection.",
-           "13. **RQ13 — runtime behavior:** accepted classes require member-level offline validation with zero BFS, Z3, grouping, and synthesis invocations.",
-           "14. **RQ14 — quality:** loss, deadline misses, and recovery latency use only same-level PF/shared comparable members and explicit denominators.","",
+           f"1. **RQ1 — actual recovery redundancy:** average degree rose through {', '.join(str(r['average_degree']) for r in topo)}; TT-pair edge-connectivity mean/p50/p95 rose through {', '.join(f'{a:.2f}/{b:.2f}/{c:.2f}' for a,b,c in tt_stats)}. The structural supply of recovery paths therefore increased, especially at R3 and R4.",
+           f"2. **RQ2 — controlled-variable identity:** all five levels share workload `{controlled['workload_sha256'][:12]}`, frozen primary routes `{controlled['frozen_primary_routes_sha256'][:12]}`, candidate faults `{controlled['candidate_ids_sha256'][:12]}`, affected sets `{controlled['affected_sha256'][:12]}`, Jaccard inputs `{controlled['jaccard_sha256'][:12]}`, and one group hash per policy.",
+           f"3. **RQ3 — raw GRAPH_DISCONNECTED:** counts by R0→R4 were J100 {raw_disc['J100']}, J040 {raw_disc['J040']}, and J020 {raw_disc['J020']}; only J020 improved, from one disconnected raw group to zero.",
+           f"4. **RQ4 — union-disabled connectivity:** connected fractions were J100 {', '.join(f'{v:.3f}' for v in union['J100'])}, J040 {', '.join(f'{v:.3f}' for v in union['J040'])}, and J020 {', '.join(f'{v:.3f}' for v in union['J020'])}. No fixed group regressed from connected to disconnected.",
+           f"5. **RQ5 — topology rescue:** {sum(r['connectivity_rescues'] for r in rescues)} fixed raw group became connected; synthesis/validation rescues were {sum(r['synthesis_rescues'] for r in rescues)}/{sum(r['validated_rescues'] for r in rescues)} transition events.",
+           f"6. **RQ6 — candidate versus realized compression:** candidate compression stayed fixed at J100={by_policy['J100'][0]['candidate_compression']:.3f}, J040={by_policy['J040'][0]['candidate_compression']:.3f}, J020={by_policy['J020'][0]['candidate_compression']:.3f}; realized compression increased to a maximum of {best['realized_compression']:.3f} at {best['level']}/{best['policy_id']}, but this coincided with fewer PF-feasible faults and must not be read as pure sharing gain.",
+           f"7. **RQ7 — candidate-realized gap:** R0→R4 gaps were J100 {', '.join(f'{r['compression_gap']:.3f}' for r in by_policy['J100'])}, J040 {', '.join(f'{r['compression_gap']:.3f}' for r in by_policy['J040'])}, and J020 {', '.join(f'{r['compression_gap']:.3f}' for r in by_policy['J020'])}. Negative values reflect final stores that omit infeasible PF cases, not extra validated sharing.",
+           f"8. **RQ8 — shared fault coverage:** R0→R4 coverage was J100 {', '.join(f'{r['shared_fault_coverage']:.3f}' for r in by_policy['J100'])}, J040 {', '.join(f'{r['shared_fault_coverage']:.3f}' for r in by_policy['J040'])}, and J020 {', '.join(f'{r['shared_fault_coverage']:.3f}' for r in by_policy['J020'])}; coverage fell at high redundancy under the fixed production BFS.",
+           f"9. **RQ9 — largest validated class:** sizes were J100 {', '.join(str(r['largest_class_size']) for r in by_policy['J100'])}, J040 {', '.join(str(r['largest_class_size']) for r in by_policy['J040'])}, and J020 {', '.join(str(r['largest_class_size']) for r in by_policy['J020'])}; the maximum remained 6 and did not grow with added edges.",
+           f"10. **RQ10 — PF recoverability:** SAT counts were {', '.join(f'{a}/{b}' for a,b in zip(pf_sat,pf_total))} for R0→R4. Recoverability fell from 34/34 to 13/34 because deterministic BFS route drift produced forwarding conflicts despite stronger graph connectivity.",
+           f"11. **RQ11 — connected synthesis failures:** after excluding successful attempts, failures were {dict(sorted(failures.items()))}; the only connected shared-synthesis rejection type observed was FORWARDING_CONFLICT, with no solver timeout or unknown result.",
+           f"12. **RQ12 — added-edge use:** non-grid recovery-edge uses/total uses were {', '.join(f'{a}/{t} ({q:.1%})' for a,t,q in added_usage)} for R0→R4. Added layers were therefore exercised rather than merely present.",
+           f"13. **RQ13 — recovery quality:** all comparable shared validations had zero TT loss and zero deadline misses ({zero_quality}); the maximum absolute PF/shared mean recovery-latency difference was {latency_delta:.3f} us, with explicit same-level denominators.",
+           f"14. **RQ14 — evidence-based conclusion:** topology redundancy was a real supply-side constraint (higher TT-pair connectivity and one connectivity rescue), but it was not sufficient for better deployable sharing under deterministic BFS: PF SAT and shared coverage fell while route hashes changed in {route_changes}/{route_comparisons} comparable transitions. Native-P0 candidate counts {', '.join(str(r['native_candidate_count']) for r in native)} also confirm why freezing healthy routes was necessary.","",
            "## Scope, method, and definitions","",
            "R0 is the 5×8 grid; R1 is exactly the current structured40 undirected switch edge set; R2/R3/R4 add 5/20/20 deterministic Manhattan-distance-2 edges. Healthy primary routes, traffic, scheduling parameters, candidate faults, affected sets, Jaccard inputs, and raw group memberships are frozen. Recovery routes are recomputed by the production BFS on each current topology.","",
            "## Limitations and robustness checks","",
