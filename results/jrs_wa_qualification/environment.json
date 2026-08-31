@@ -1,0 +1,20 @@
+{
+  "inet": "4.7.0",
+  "omnetpp": "6.4.0",
+  "platform": "Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+  "python": "3.14.4",
+  "solver": {
+    "gurobi_version": "13.0.3",
+    "gurobipy_version": [
+      13,
+      0,
+      3
+    ],
+    "seed": 1024,
+    "status": "PASS",
+    "threads": 1,
+    "wall_ms": 0.786814
+  },
+  "tsnkit_commit": "f8492f76753e75aa2254feb3e326feec3faad4a8",
+  "tsnkit_version": "0.3.0"
+}

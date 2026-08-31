@@ -1,0 +1,11 @@
+case_id,scenario,level,case_type,fault_or_group,member_faults,affected_flows,legacy_status,selection_rule,route_scope,forwarding_model
+Q00,stream_aware_micro,,stream-aware-micro,,,TT1;TT2,LEGACY_FORWARDING_CONFLICT,fixed qualification micro-case,all-reroute,stream-aware
+Q01,diamond,,representative-pf,l_s1_s2,l_s1_s2,TT,SAT,lexicographically first route-affecting configured candidate,affected-only,stream-aware
+Q02,mesh10,,representative-pf,l_sw2_sw5,l_sw2_sw5,TT1;TT2;TT7,SAT,lexicographically first route-affecting configured candidate,affected-only,stream-aware
+Q03,structured20_auto,,representative-pf,l_sw01_sw02,l_sw01_sw02,TT01;TT02;TT03;TT05;TT08;TT11;TT16;TT17,SAT,lexicographically first route-affecting configured candidate,affected-only,stream-aware
+Q04,exp12_r0_grid,R0_GRID,legacy-sat-pf,l_sw01_sw02,l_sw01_sw02,TT01;TT02;TT10;TT13,SAT,lexicographically first two legacy BFS SAT PF rows,affected-only,stream-aware
+Q05,exp12_r0_grid,R0_GRID,legacy-sat-pf,l_sw01_sw09,l_sw01_sw09,TT02;TT13;TT21;TT29,SAT,lexicographically first two legacy BFS SAT PF rows,affected-only,stream-aware
+Q06,exp12_r2_d4,R2_D4,legacy-forwarding-conflict-pf,l_sw09_sw10,l_sw09_sw10,TT05;TT06;TT14;TT17,FORWARDING_CONFLICT,lexicographically first two legacy BFS FORWARDING_CONFLICT PF rows,affected-only,stream-aware
+Q07,exp12_r2_d4,R2_D4,legacy-forwarding-conflict-pf,l_sw10_sw11,l_sw10_sw11,TT05;TT06;TT14;TT17,FORWARDING_CONFLICT,lexicographically first two legacy BFS FORWARDING_CONFLICT PF rows,affected-only,stream-aware
+Q08,exp12_r3_d5,R3_D5,legacy-shared-forwarding-conflict,l_sw07_sw15;l_sw15_sw23,l_sw07_sw15;l_sw15_sw23,TT01;TT05;TT12;TT16;TT24;TT28;TT32;TT36,FORWARDING_CONFLICT,lexicographically first shared raw FORWARDING_CONFLICT group,affected-only,stream-aware
+Q09,exp12_r1_current,R1_CURRENT,j020-topology-rescued-group,l_sw01_sw02;l_sw01_sw09;l_sw02_sw03,l_sw01_sw02;l_sw01_sw09;l_sw02_sw03,TT01;TT02;TT10;TT13;TT21;TT29,SHARED_SAT,lexicographically first J020 RESCUED transition from R0 disconnected,affected-only,stream-aware

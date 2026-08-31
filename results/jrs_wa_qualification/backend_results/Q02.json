@@ -1,0 +1,1707 @@
+{
+  "affected_flow_ids": [
+    "TT1",
+    "TT2",
+    "TT7"
+  ],
+  "backend": "tsnkit-jrs-wa",
+  "case_id": "Q02",
+  "diagnostic": "OPTIMAL",
+  "disabled_links": [
+    "l_sw2_sw5"
+  ],
+  "feasible": true,
+  "logical_routes": [
+    {
+      "flow_id": "TT1",
+      "link_path": [
+        "l_es1_sw1",
+        "l_sw1_sw3",
+        "l_sw3_sw6",
+        "l_sw6_sw8",
+        "l_sw8_sw9",
+        "l_es5_sw9"
+      ],
+      "node_path": [
+        "es1",
+        "sw1",
+        "sw3",
+        "sw6",
+        "sw8",
+        "sw9",
+        "es5"
+      ]
+    },
+    {
+      "flow_id": "TT10",
+      "link_path": [
+        "l_es4_sw7",
+        "l_sw4_sw7",
+        "l_sw3_sw4",
+        "l_sw1_sw3",
+        "l_es1_sw1"
+      ],
+      "node_path": [
+        "es4",
+        "sw7",
+        "sw4",
+        "sw3",
+        "sw1",
+        "es1"
+      ]
+    },
+    {
+      "flow_id": "TT2",
+      "link_path": [
+        "l_es2_sw2",
+        "l_sw2_sw3",
+        "l_sw3_sw4",
+        "l_sw4_sw7",
+        "l_sw7_sw9",
+        "l_sw9_sw10",
+        "l_es6_sw10"
+      ],
+      "node_path": [
+        "es2",
+        "sw2",
+        "sw3",
+        "sw4",
+        "sw7",
+        "sw9",
+        "sw10",
+        "es6"
+      ]
+    },
+    {
+      "flow_id": "TT3",
+      "link_path": [
+        "l_es3_sw4",
+        "l_sw4_sw7",
+        "l_sw7_sw9",
+        "l_es5_sw9"
+      ],
+      "node_path": [
+        "es3",
+        "sw4",
+        "sw7",
+        "sw9",
+        "es5"
+      ]
+    },
+    {
+      "flow_id": "TT4",
+      "link_path": [
+        "l_es4_sw7",
+        "l_sw4_sw7",
+        "l_sw3_sw4",
+        "l_sw2_sw3",
+        "l_es2_sw2"
+      ],
+      "node_path": [
+        "es4",
+        "sw7",
+        "sw4",
+        "sw3",
+        "sw2",
+        "es2"
+      ]
+    },
+    {
+      "flow_id": "TT5",
+      "link_path": [
+        "l_es5_sw9",
+        "l_sw7_sw9",
+        "l_sw4_sw7",
+        "l_sw3_sw4",
+        "l_sw1_sw3",
+        "l_es1_sw1"
+      ],
+      "node_path": [
+        "es5",
+        "sw9",
+        "sw7",
+        "sw4",
+        "sw3",
+        "sw1",
+        "es1"
+      ]
+    },
+    {
+      "flow_id": "TT6",
+      "link_path": [
+        "l_es6_sw10",
+        "l_sw8_sw10",
+        "l_sw6_sw8",
+        "l_sw4_sw6",
+        "l_es3_sw4"
+      ],
+      "node_path": [
+        "es6",
+        "sw10",
+        "sw8",
+        "sw6",
+        "sw4",
+        "es3"
+      ]
+    },
+    {
+      "flow_id": "TT7",
+      "link_path": [
+        "l_es1_sw1",
+        "l_sw1_sw3",
+        "l_sw3_sw6",
+        "l_sw6_sw8",
+        "l_sw8_sw10",
+        "l_es6_sw10"
+      ],
+      "node_path": [
+        "es1",
+        "sw1",
+        "sw3",
+        "sw6",
+        "sw8",
+        "sw10",
+        "es6"
+      ]
+    },
+    {
+      "flow_id": "TT8",
+      "link_path": [
+        "l_es2_sw2",
+        "l_sw2_sw3",
+        "l_sw3_sw4",
+        "l_sw4_sw7",
+        "l_es4_sw7"
+      ],
+      "node_path": [
+        "es2",
+        "sw2",
+        "sw3",
+        "sw4",
+        "sw7",
+        "es4"
+      ]
+    },
+    {
+      "flow_id": "TT9",
+      "link_path": [
+        "l_es3_sw4",
+        "l_sw4_sw6",
+        "l_sw6_sw8",
+        "l_sw8_sw10",
+        "l_es6_sw10"
+      ],
+      "node_path": [
+        "es3",
+        "sw4",
+        "sw6",
+        "sw8",
+        "sw10",
+        "es6"
+      ]
+    }
+  ],
+  "objective": 0.0,
+  "optimal_proven": true,
+  "profile": {
+    "forwarding_model": "stream-aware",
+    "gate_schedules": [
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000113088,
+          3.6912e-05,
+          0.000813888
+        ],
+        "gate_path": "sw1.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000372112,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000113088,
+          3.6912e-05,
+          0.000813888
+        ],
+        "gate_path": "sw1.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000372112,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000960176
+        ],
+        "gate_path": "sw1.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000876288,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000960176
+        ],
+        "gate_path": "sw1.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000876288,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000358816,
+          4.0624e-05,
+          0.000564448
+        ],
+        "gate_path": "sw10.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000831552,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000358816,
+          4.0624e-05,
+          0.000564448
+        ],
+        "gate_path": "sw10.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000831552,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw10.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000897088,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw10.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000897088,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw2.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000344512,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw2.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000344512,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw2.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000855488,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw2.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000855488,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          6.5024e-05,
+          0.000934976
+        ],
+        "gate_path": "sw3.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000374224,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          6.5024e-05,
+          0.000934976
+        ],
+        "gate_path": "sw3.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000374224,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw3.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000349024,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw3.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000349024,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw3.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000850976,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw3.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000850976,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000960176
+        ],
+        "gate_path": "sw3.eth[3].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000872576,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000960176
+        ],
+        "gate_path": "sw3.eth[3].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000872576,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw4.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000888352,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw4.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000888352,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.0624e-05,
+          5.8864e-05,
+          3.6912e-05,
+          0.0008636
+        ],
+        "gate_path": "sw4.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000913664,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.0624e-05,
+          5.8864e-05,
+          3.6912e-05,
+          0.0008636
+        ],
+        "gate_path": "sw4.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000913664,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw4.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000837888,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw4.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000837888,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.5136e-05,
+          0.000954864
+        ],
+        "gate_path": "sw4.eth[3].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000846464,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.5136e-05,
+          0.000954864
+        ],
+        "gate_path": "sw4.eth[3].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000846464,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw6.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000891264,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw6.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000891264,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000339616,
+          3.6112e-05,
+          0.000584448
+        ],
+        "gate_path": "sw6.eth[4].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000835776,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.9824e-05,
+          0.000339616,
+          3.6112e-05,
+          0.000584448
+        ],
+        "gate_path": "sw6.eth[4].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000835776,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw7.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000841952,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.8512e-05,
+          0.000961488
+        ],
+        "gate_path": "sw7.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000841952,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.3024e-05,
+          6.2576e-05,
+          3.6912e-05,
+          0.000857488
+        ],
+        "gate_path": "sw7.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000922688,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.3024e-05,
+          6.2576e-05,
+          3.6912e-05,
+          0.000857488
+        ],
+        "gate_path": "sw7.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000922688,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.0624e-05,
+          0.000959376
+        ],
+        "gate_path": "sw7.eth[3].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.00083824,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.0624e-05,
+          0.000959376
+        ],
+        "gate_path": "sw7.eth[3].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.00083824,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw8.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000894176,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw8.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000894176,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw8.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000833664,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          4.1424e-05,
+          0.000958576
+        ],
+        "gate_path": "sw8.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000833664,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw8.eth[3].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000454224,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw8.eth[3].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000454224,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          2.288e-06,
+          3.7712e-05,
+          0.000923888
+        ],
+        "gate_path": "sw9.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000452112,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          2.288e-06,
+          3.7712e-05,
+          0.000923888
+        ],
+        "gate_path": "sw9.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000452112,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw9.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000917888,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6112e-05,
+          0.000963888
+        ],
+        "gate_path": "sw9.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000917888,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw9.eth[3].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000831616,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          3.6912e-05,
+          0.000963088
+        ],
+        "gate_path": "sw9.eth[3].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000831616,
+        "traffic_class": 0
+      }
+    ],
+    "gcl_deployment_guard_ns": 34000,
+    "logical_routes": [
+      {
+        "flow_id": "TT1",
+        "link_path": [
+          "l_es1_sw1",
+          "l_sw1_sw3",
+          "l_sw3_sw6",
+          "l_sw6_sw8",
+          "l_sw8_sw9",
+          "l_es5_sw9"
+        ],
+        "node_path": [
+          "es1",
+          "sw1",
+          "sw3",
+          "sw6",
+          "sw8",
+          "sw9",
+          "es5"
+        ]
+      },
+      {
+        "flow_id": "TT10",
+        "link_path": [
+          "l_es4_sw7",
+          "l_sw4_sw7",
+          "l_sw3_sw4",
+          "l_sw1_sw3",
+          "l_es1_sw1"
+        ],
+        "node_path": [
+          "es4",
+          "sw7",
+          "sw4",
+          "sw3",
+          "sw1",
+          "es1"
+        ]
+      },
+      {
+        "flow_id": "TT2",
+        "link_path": [
+          "l_es2_sw2",
+          "l_sw2_sw3",
+          "l_sw3_sw4",
+          "l_sw4_sw7",
+          "l_sw7_sw9",
+          "l_sw9_sw10",
+          "l_es6_sw10"
+        ],
+        "node_path": [
+          "es2",
+          "sw2",
+          "sw3",
+          "sw4",
+          "sw7",
+          "sw9",
+          "sw10",
+          "es6"
+        ]
+      },
+      {
+        "flow_id": "TT3",
+        "link_path": [
+          "l_es3_sw4",
+          "l_sw4_sw7",
+          "l_sw7_sw9",
+          "l_es5_sw9"
+        ],
+        "node_path": [
+          "es3",
+          "sw4",
+          "sw7",
+          "sw9",
+          "es5"
+        ]
+      },
+      {
+        "flow_id": "TT4",
+        "link_path": [
+          "l_es4_sw7",
+          "l_sw4_sw7",
+          "l_sw3_sw4",
+          "l_sw2_sw3",
+          "l_es2_sw2"
+        ],
+        "node_path": [
+          "es4",
+          "sw7",
+          "sw4",
+          "sw3",
+          "sw2",
+          "es2"
+        ]
+      },
+      {
+        "flow_id": "TT5",
+        "link_path": [
+          "l_es5_sw9",
+          "l_sw7_sw9",
+          "l_sw4_sw7",
+          "l_sw3_sw4",
+          "l_sw1_sw3",
+          "l_es1_sw1"
+        ],
+        "node_path": [
+          "es5",
+          "sw9",
+          "sw7",
+          "sw4",
+          "sw3",
+          "sw1",
+          "es1"
+        ]
+      },
+      {
+        "flow_id": "TT6",
+        "link_path": [
+          "l_es6_sw10",
+          "l_sw8_sw10",
+          "l_sw6_sw8",
+          "l_sw4_sw6",
+          "l_es3_sw4"
+        ],
+        "node_path": [
+          "es6",
+          "sw10",
+          "sw8",
+          "sw6",
+          "sw4",
+          "es3"
+        ]
+      },
+      {
+        "flow_id": "TT7",
+        "link_path": [
+          "l_es1_sw1",
+          "l_sw1_sw3",
+          "l_sw3_sw6",
+          "l_sw6_sw8",
+          "l_sw8_sw10",
+          "l_es6_sw10"
+        ],
+        "node_path": [
+          "es1",
+          "sw1",
+          "sw3",
+          "sw6",
+          "sw8",
+          "sw10",
+          "es6"
+        ]
+      },
+      {
+        "flow_id": "TT8",
+        "link_path": [
+          "l_es2_sw2",
+          "l_sw2_sw3",
+          "l_sw3_sw4",
+          "l_sw4_sw7",
+          "l_es4_sw7"
+        ],
+        "node_path": [
+          "es2",
+          "sw2",
+          "sw3",
+          "sw4",
+          "sw7",
+          "es4"
+        ]
+      },
+      {
+        "flow_id": "TT9",
+        "link_path": [
+          "l_es3_sw4",
+          "l_sw4_sw6",
+          "l_sw6_sw8",
+          "l_sw8_sw10",
+          "l_es6_sw10"
+        ],
+        "node_path": [
+          "es3",
+          "sw4",
+          "sw6",
+          "sw8",
+          "sw10",
+          "es6"
+        ]
+      }
+    ],
+    "profile_id": "JRS_WA",
+    "routes": [
+      {
+        "destination": "es5",
+        "flow_id": "TT1",
+        "interface": "eth2",
+        "logical_link": "l_sw1_sw3",
+        "stream_handle": 1,
+        "switch": "sw1"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT1",
+        "interface": "eth3",
+        "logical_link": "l_sw3_sw6",
+        "stream_handle": 1,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT1",
+        "interface": "eth4",
+        "logical_link": "l_sw6_sw8",
+        "stream_handle": 1,
+        "switch": "sw6"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT1",
+        "interface": "eth3",
+        "logical_link": "l_sw8_sw9",
+        "stream_handle": 1,
+        "switch": "sw8"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT1",
+        "interface": "eth0",
+        "logical_link": "l_es5_sw9",
+        "stream_handle": 1,
+        "switch": "sw9"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT10",
+        "interface": "eth0",
+        "logical_link": "l_es1_sw1",
+        "stream_handle": 2,
+        "switch": "sw1"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT10",
+        "interface": "eth0",
+        "logical_link": "l_sw1_sw3",
+        "stream_handle": 2,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT10",
+        "interface": "eth1",
+        "logical_link": "l_sw3_sw4",
+        "stream_handle": 2,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT10",
+        "interface": "eth1",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 2,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth0",
+        "logical_link": "l_es6_sw10",
+        "stream_handle": 3,
+        "switch": "sw10"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth2",
+        "logical_link": "l_sw2_sw3",
+        "stream_handle": 3,
+        "switch": "sw2"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth2",
+        "logical_link": "l_sw3_sw4",
+        "stream_handle": 3,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth3",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 3,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth3",
+        "logical_link": "l_sw7_sw9",
+        "stream_handle": 3,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT2",
+        "interface": "eth3",
+        "logical_link": "l_sw9_sw10",
+        "stream_handle": 3,
+        "switch": "sw9"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT3",
+        "interface": "eth3",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 4,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT3",
+        "interface": "eth3",
+        "logical_link": "l_sw7_sw9",
+        "stream_handle": 4,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es5",
+        "flow_id": "TT3",
+        "interface": "eth0",
+        "logical_link": "l_es5_sw9",
+        "stream_handle": 4,
+        "switch": "sw9"
+      },
+      {
+        "destination": "es2",
+        "flow_id": "TT4",
+        "interface": "eth0",
+        "logical_link": "l_es2_sw2",
+        "stream_handle": 5,
+        "switch": "sw2"
+      },
+      {
+        "destination": "es2",
+        "flow_id": "TT4",
+        "interface": "eth1",
+        "logical_link": "l_sw2_sw3",
+        "stream_handle": 5,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es2",
+        "flow_id": "TT4",
+        "interface": "eth1",
+        "logical_link": "l_sw3_sw4",
+        "stream_handle": 5,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es2",
+        "flow_id": "TT4",
+        "interface": "eth1",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 5,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT5",
+        "interface": "eth0",
+        "logical_link": "l_es1_sw1",
+        "stream_handle": 6,
+        "switch": "sw1"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT5",
+        "interface": "eth0",
+        "logical_link": "l_sw1_sw3",
+        "stream_handle": 6,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT5",
+        "interface": "eth1",
+        "logical_link": "l_sw3_sw4",
+        "stream_handle": 6,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT5",
+        "interface": "eth1",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 6,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es1",
+        "flow_id": "TT5",
+        "interface": "eth1",
+        "logical_link": "l_sw7_sw9",
+        "stream_handle": 6,
+        "switch": "sw9"
+      },
+      {
+        "destination": "es3",
+        "flow_id": "TT6",
+        "interface": "eth1",
+        "logical_link": "l_sw8_sw10",
+        "stream_handle": 7,
+        "switch": "sw10"
+      },
+      {
+        "destination": "es3",
+        "flow_id": "TT6",
+        "interface": "eth0",
+        "logical_link": "l_es3_sw4",
+        "stream_handle": 7,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es3",
+        "flow_id": "TT6",
+        "interface": "eth1",
+        "logical_link": "l_sw4_sw6",
+        "stream_handle": 7,
+        "switch": "sw6"
+      },
+      {
+        "destination": "es3",
+        "flow_id": "TT6",
+        "interface": "eth1",
+        "logical_link": "l_sw6_sw8",
+        "stream_handle": 7,
+        "switch": "sw8"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT7",
+        "interface": "eth2",
+        "logical_link": "l_sw1_sw3",
+        "stream_handle": 8,
+        "switch": "sw1"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT7",
+        "interface": "eth0",
+        "logical_link": "l_es6_sw10",
+        "stream_handle": 8,
+        "switch": "sw10"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT7",
+        "interface": "eth3",
+        "logical_link": "l_sw3_sw6",
+        "stream_handle": 8,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT7",
+        "interface": "eth4",
+        "logical_link": "l_sw6_sw8",
+        "stream_handle": 8,
+        "switch": "sw6"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT7",
+        "interface": "eth2",
+        "logical_link": "l_sw8_sw10",
+        "stream_handle": 8,
+        "switch": "sw8"
+      },
+      {
+        "destination": "es4",
+        "flow_id": "TT8",
+        "interface": "eth2",
+        "logical_link": "l_sw2_sw3",
+        "stream_handle": 9,
+        "switch": "sw2"
+      },
+      {
+        "destination": "es4",
+        "flow_id": "TT8",
+        "interface": "eth2",
+        "logical_link": "l_sw3_sw4",
+        "stream_handle": 9,
+        "switch": "sw3"
+      },
+      {
+        "destination": "es4",
+        "flow_id": "TT8",
+        "interface": "eth3",
+        "logical_link": "l_sw4_sw7",
+        "stream_handle": 9,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es4",
+        "flow_id": "TT8",
+        "interface": "eth0",
+        "logical_link": "l_es4_sw7",
+        "stream_handle": 9,
+        "switch": "sw7"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT9",
+        "interface": "eth0",
+        "logical_link": "l_es6_sw10",
+        "stream_handle": 10,
+        "switch": "sw10"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT9",
+        "interface": "eth2",
+        "logical_link": "l_sw4_sw6",
+        "stream_handle": 10,
+        "switch": "sw4"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT9",
+        "interface": "eth4",
+        "logical_link": "l_sw6_sw8",
+        "stream_handle": 10,
+        "switch": "sw6"
+      },
+      {
+        "destination": "es6",
+        "flow_id": "TT9",
+        "interface": "eth2",
+        "logical_link": "l_sw8_sw10",
+        "stream_handle": 10,
+        "switch": "sw8"
+      }
+    ],
+    "scenario_sha256": "7d5aa7f5d411473322060be76d78ee365485835b4b44cc4ead93a22abf12cdc9",
+    "schema_version": 1,
+    "semantic_profile_hash": "b2d05a0d4803abbc28357f8b1eb34da762c6514b17c8f51b111a185f97f0f15c"
+  },
+  "runtime_jrs_invocations": 0,
+  "scenario": "mesh10",
+  "schedule_windows": [
+    {
+      "egress_path": "sw1.eth[0]",
+      "end_ns": 630000,
+      "flow_id": "TT5",
+      "logical_link": "l_es1_sw1",
+      "start_ns": 627888,
+      "switch": "sw1",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw1.eth[0]",
+      "end_ns": 780000,
+      "flow_id": "TT10",
+      "logical_link": "l_es1_sw1",
+      "start_ns": 777088,
+      "switch": "sw1",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw1.eth[2]",
+      "end_ns": 127424,
+      "flow_id": "TT7",
+      "logical_link": "l_sw1_sw3",
+      "start_ns": 123712,
+      "switch": "sw1",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw1.eth[2]",
+      "end_ns": 129536,
+      "flow_id": "TT1",
+      "logical_link": "l_sw1_sw3",
+      "start_ns": 127424,
+      "switch": "sw1",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw10.eth[0]",
+      "end_ns": 170560,
+      "flow_id": "TT9",
+      "logical_link": "l_es6_sw10",
+      "start_ns": 168448,
+      "switch": "sw10",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw10.eth[0]",
+      "end_ns": 567088,
+      "flow_id": "TT7",
+      "logical_link": "l_es6_sw10",
+      "start_ns": 563376,
+      "switch": "sw10",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw10.eth[0]",
+      "end_ns": 570000,
+      "flow_id": "TT2",
+      "logical_link": "l_es6_sw10",
+      "start_ns": 567088,
+      "switch": "sw10",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw10.eth[1]",
+      "end_ns": 105824,
+      "flow_id": "TT6",
+      "logical_link": "l_sw8_sw10",
+      "start_ns": 102912,
+      "switch": "sw10",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw2.eth[0]",
+      "end_ns": 660000,
+      "flow_id": "TT4",
+      "logical_link": "l_es2_sw2",
+      "start_ns": 655488,
+      "switch": "sw2",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw2.eth[2]",
+      "end_ns": 149024,
+      "flow_id": "TT8",
+      "logical_link": "l_sw2_sw3",
+      "start_ns": 144512,
+      "switch": "sw2",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw2.eth[2]",
+      "end_ns": 151936,
+      "flow_id": "TT2",
+      "logical_link": "l_sw2_sw3",
+      "start_ns": 149024,
+      "switch": "sw2",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[0]",
+      "end_ns": 627888,
+      "flow_id": "TT5",
+      "logical_link": "l_sw1_sw3",
+      "start_ns": 625776,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[0]",
+      "end_ns": 656800,
+      "flow_id": "TT10",
+      "logical_link": "l_sw1_sw3",
+      "start_ns": 653888,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[1]",
+      "end_ns": 655488,
+      "flow_id": "TT4",
+      "logical_link": "l_sw2_sw3",
+      "start_ns": 650976,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[2]",
+      "end_ns": 153536,
+      "flow_id": "TT8",
+      "logical_link": "l_sw3_sw4",
+      "start_ns": 149024,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[2]",
+      "end_ns": 156448,
+      "flow_id": "TT2",
+      "logical_link": "l_sw3_sw4",
+      "start_ns": 153536,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[3]",
+      "end_ns": 131136,
+      "flow_id": "TT7",
+      "logical_link": "l_sw3_sw6",
+      "start_ns": 127424,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw3.eth[3]",
+      "end_ns": 133248,
+      "flow_id": "TT1",
+      "logical_link": "l_sw3_sw6",
+      "start_ns": 131136,
+      "switch": "sw3",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[0]",
+      "end_ns": 114560,
+      "flow_id": "TT6",
+      "logical_link": "l_es3_sw4",
+      "start_ns": 111648,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[1]",
+      "end_ns": 88448,
+      "flow_id": "TT5",
+      "logical_link": "l_sw3_sw4",
+      "start_ns": 86336,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[1]",
+      "end_ns": 92960,
+      "flow_id": "TT4",
+      "logical_link": "l_sw3_sw4",
+      "start_ns": 88448,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[1]",
+      "end_ns": 188736,
+      "flow_id": "TT10",
+      "logical_link": "l_sw3_sw4",
+      "start_ns": 185824,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[2]",
+      "end_ns": 164224,
+      "flow_id": "TT9",
+      "logical_link": "l_sw4_sw6",
+      "start_ns": 162112,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[3]",
+      "end_ns": 158048,
+      "flow_id": "TT8",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 153536,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[3]",
+      "end_ns": 161760,
+      "flow_id": "TT3",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 158048,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw4.eth[3]",
+      "end_ns": 164672,
+      "flow_id": "TT2",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 161760,
+      "switch": "sw4",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw6.eth[1]",
+      "end_ns": 111648,
+      "flow_id": "TT6",
+      "logical_link": "l_sw4_sw6",
+      "start_ns": 108736,
+      "switch": "sw6",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw6.eth[4]",
+      "end_ns": 166336,
+      "flow_id": "TT9",
+      "logical_link": "l_sw6_sw8",
+      "start_ns": 164224,
+      "switch": "sw6",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw6.eth[4]",
+      "end_ns": 170048,
+      "flow_id": "TT7",
+      "logical_link": "l_sw6_sw8",
+      "start_ns": 166336,
+      "switch": "sw6",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw6.eth[4]",
+      "end_ns": 545776,
+      "flow_id": "TT1",
+      "logical_link": "l_sw6_sw8",
+      "start_ns": 543664,
+      "switch": "sw6",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[0]",
+      "end_ns": 162560,
+      "flow_id": "TT8",
+      "logical_link": "l_es4_sw7",
+      "start_ns": 158048,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[1]",
+      "end_ns": 81824,
+      "flow_id": "TT4",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 77312,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[1]",
+      "end_ns": 86336,
+      "flow_id": "TT5",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 84224,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[1]",
+      "end_ns": 185824,
+      "flow_id": "TT10",
+      "logical_link": "l_sw4_sw7",
+      "start_ns": 182912,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[3]",
+      "end_ns": 165472,
+      "flow_id": "TT3",
+      "logical_link": "l_sw7_sw9",
+      "start_ns": 161760,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw7.eth[3]",
+      "end_ns": 168384,
+      "flow_id": "TT2",
+      "logical_link": "l_sw7_sw9",
+      "start_ns": 165472,
+      "switch": "sw7",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw8.eth[1]",
+      "end_ns": 108736,
+      "flow_id": "TT6",
+      "logical_link": "l_sw6_sw8",
+      "start_ns": 105824,
+      "switch": "sw8",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw8.eth[2]",
+      "end_ns": 168448,
+      "flow_id": "TT9",
+      "logical_link": "l_sw8_sw10",
+      "start_ns": 166336,
+      "switch": "sw8",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw8.eth[2]",
+      "end_ns": 173760,
+      "flow_id": "TT7",
+      "logical_link": "l_sw8_sw10",
+      "start_ns": 170048,
+      "switch": "sw8",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw8.eth[3]",
+      "end_ns": 547888,
+      "flow_id": "TT1",
+      "logical_link": "l_sw8_sw9",
+      "start_ns": 545776,
+      "switch": "sw8",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw9.eth[0]",
+      "end_ns": 550000,
+      "flow_id": "TT1",
+      "logical_link": "l_es5_sw9",
+      "start_ns": 547888,
+      "switch": "sw9",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw9.eth[0]",
+      "end_ns": 590000,
+      "flow_id": "TT3",
+      "logical_link": "l_es5_sw9",
+      "start_ns": 586288,
+      "switch": "sw9",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw9.eth[1]",
+      "end_ns": 84224,
+      "flow_id": "TT5",
+      "logical_link": "l_sw7_sw9",
+      "start_ns": 82112,
+      "switch": "sw9",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sw9.eth[3]",
+      "end_ns": 171296,
+      "flow_id": "TT2",
+      "logical_link": "l_sw9_sw10",
+      "start_ns": 168384,
+      "switch": "sw9",
+      "traffic_class": 1
+    }
+  ],
+  "statistics": {
+    "fixed_release_extension": true,
+    "gurobi_status_code": 2,
+    "mip_gap": 0.0,
+    "num_constraints": 1911,
+    "num_general_constraints": 10,
+    "num_variables": 1237,
+    "route_lock_extension": true,
+    "route_scope": "affected-only",
+    "seed": 1024,
+    "solution_count": 1,
+    "solver_runtime_ms": 5.3310394287109375,
+    "threads": 1,
+    "timeout_s": 30
+  },
+  "status": "OPTIMAL",
+  "timings_ms": {
+    "input_conversion": 0.492011,
+    "model_build": 738.260845,
+    "output_extract": 1.364592,
+    "solver_wall": 5.392711,
+    "total_backend": 745.598161
+  }
+}

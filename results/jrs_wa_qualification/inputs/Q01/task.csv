@@ -1,0 +1,2 @@
+stream,src,dst,size,period,deadline,jitter
+0,5,[0],2640,1000000,680000,0

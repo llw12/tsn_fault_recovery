@@ -1,0 +1,322 @@
+{
+  "affected_flow_ids": [
+    "TT1",
+    "TT2"
+  ],
+  "backend": "tsnkit-jrs-wa",
+  "case_id": "Q00",
+  "diagnostic": "OPTIMAL",
+  "disabled_links": [],
+  "feasible": true,
+  "logical_routes": [
+    {
+      "flow_id": "TT1",
+      "link_path": [
+        "l_src1_s0",
+        "l_s0_a",
+        "l_a_d",
+        "l_d_dst"
+      ],
+      "node_path": [
+        "source1",
+        "s0",
+        "sA",
+        "sD",
+        "destination"
+      ]
+    },
+    {
+      "flow_id": "TT2",
+      "link_path": [
+        "l_src2_s0",
+        "l_s0_b",
+        "l_b_d",
+        "l_d_dst"
+      ],
+      "node_path": [
+        "source2",
+        "s0",
+        "sB",
+        "sD",
+        "destination"
+      ]
+    }
+  ],
+  "objective": 0.0,
+  "optimal_proven": true,
+  "profile": {
+    "forwarding_model": "stream-aware",
+    "gate_schedules": [
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "s0.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000897888,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "s0.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000897888,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "s0.eth[1].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000697888,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "s0.eth[1].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000697888,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "sA.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000895776,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "sA.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000895776,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "sB.eth[0].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000695776,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          2.7112e-05,
+          0.000972888
+        ],
+        "gate_path": "sB.eth[0].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000695776,
+        "traffic_class": 0
+      },
+      {
+        "durations_s": [
+          2.9224e-05,
+          0.000970776
+        ],
+        "gate_path": "sD.eth[2].macLayer.queue.transmissionGate[1]",
+        "initially_open": true,
+        "offset_s": 0.000204224,
+        "traffic_class": 1
+      },
+      {
+        "durations_s": [
+          2.9224e-05,
+          0.000970776
+        ],
+        "gate_path": "sD.eth[2].macLayer.queue.transmissionGate[0]",
+        "initially_open": false,
+        "offset_s": 0.000204224,
+        "traffic_class": 0
+      }
+    ],
+    "gcl_deployment_guard_ns": 25000,
+    "logical_routes": [
+      {
+        "flow_id": "TT1",
+        "link_path": [
+          "l_src1_s0",
+          "l_s0_a",
+          "l_a_d",
+          "l_d_dst"
+        ],
+        "node_path": [
+          "source1",
+          "s0",
+          "sA",
+          "sD",
+          "destination"
+        ]
+      },
+      {
+        "flow_id": "TT2",
+        "link_path": [
+          "l_src2_s0",
+          "l_s0_b",
+          "l_b_d",
+          "l_d_dst"
+        ],
+        "node_path": [
+          "source2",
+          "s0",
+          "sB",
+          "sD",
+          "destination"
+        ]
+      }
+    ],
+    "profile_id": "JRS_WA",
+    "routes": [
+      {
+        "destination": "destination",
+        "flow_id": "TT1",
+        "interface": "eth0",
+        "logical_link": "l_s0_a",
+        "stream_handle": 1,
+        "switch": "s0"
+      },
+      {
+        "destination": "destination",
+        "flow_id": "TT1",
+        "interface": "eth0",
+        "logical_link": "l_a_d",
+        "stream_handle": 1,
+        "switch": "sA"
+      },
+      {
+        "destination": "destination",
+        "flow_id": "TT1",
+        "interface": "eth2",
+        "logical_link": "l_d_dst",
+        "stream_handle": 1,
+        "switch": "sD"
+      },
+      {
+        "destination": "destination",
+        "flow_id": "TT2",
+        "interface": "eth1",
+        "logical_link": "l_s0_b",
+        "stream_handle": 2,
+        "switch": "s0"
+      },
+      {
+        "destination": "destination",
+        "flow_id": "TT2",
+        "interface": "eth0",
+        "logical_link": "l_b_d",
+        "stream_handle": 2,
+        "switch": "sB"
+      },
+      {
+        "destination": "destination",
+        "flow_id": "TT2",
+        "interface": "eth2",
+        "logical_link": "l_d_dst",
+        "stream_handle": 2,
+        "switch": "sD"
+      }
+    ],
+    "scenario_sha256": "9f10269cdd24920a353d2cc4fd9fc235d313fb06b80ba987ceb870445a5c9b83",
+    "schema_version": 1,
+    "semantic_profile_hash": "7009b49b890d8799e86f92729d8941e22bd46f5a8c4e25fe9cbbc8efc120e311"
+  },
+  "runtime_jrs_invocations": 0,
+  "scenario": "stream_aware_micro",
+  "schedule_windows": [
+    {
+      "egress_path": "s0.eth[0]",
+      "end_ns": 104224,
+      "flow_id": "TT1",
+      "logical_link": "l_s0_a",
+      "start_ns": 102112,
+      "switch": "s0",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "s0.eth[1]",
+      "end_ns": 304224,
+      "flow_id": "TT2",
+      "logical_link": "l_s0_b",
+      "start_ns": 302112,
+      "switch": "s0",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sA.eth[0]",
+      "end_ns": 106336,
+      "flow_id": "TT1",
+      "logical_link": "l_a_d",
+      "start_ns": 104224,
+      "switch": "sA",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sB.eth[0]",
+      "end_ns": 306336,
+      "flow_id": "TT2",
+      "logical_link": "l_b_d",
+      "start_ns": 304224,
+      "switch": "sB",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sD.eth[2]",
+      "end_ns": 797888,
+      "flow_id": "TT2",
+      "logical_link": "l_d_dst",
+      "start_ns": 795776,
+      "switch": "sD",
+      "traffic_class": 1
+    },
+    {
+      "egress_path": "sD.eth[2]",
+      "end_ns": 800000,
+      "flow_id": "TT1",
+      "logical_link": "l_d_dst",
+      "start_ns": 797888,
+      "switch": "sD",
+      "traffic_class": 1
+    }
+  ],
+  "statistics": {
+    "fixed_release_extension": true,
+    "gurobi_status_code": 2,
+    "mip_gap": 0.0,
+    "num_constraints": 84,
+    "num_general_constraints": 2,
+    "num_variables": 61,
+    "route_lock_extension": false,
+    "route_scope": "all-reroute",
+    "seed": 1024,
+    "solution_count": 1,
+    "solver_runtime_ms": 0.9279251098632812,
+    "threads": 1,
+    "timeout_s": 30
+  },
+  "status": "OPTIMAL",
+  "timings_ms": {
+    "input_conversion": 0.45724,
+    "model_build": 51.845926,
+    "output_extract": 0.32464,
+    "solver_wall": 0.985469,
+    "total_backend": 220.030357
+  }
+}

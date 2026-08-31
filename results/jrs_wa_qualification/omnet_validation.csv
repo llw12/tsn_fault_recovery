@@ -1,0 +1,11 @@
+be_forwarded,case_id,deadline_and_delivery_pass,diagnostic,exit_code,max_tt_latency_ns,omnet_valid,route_match,tt_received_total,tt_sent_after_stabilization
+True,Q00,True,PASS,0,697840,True,True,6,4
+False,Q01,True,PASS,0,679520,True,True,3,3
+True,Q02,True,PASS,0,599952,True,True,30,21
+,Q03,,NOT_FEASIBLE,,,False,,,
+,Q04,,NOT_FEASIBLE,,,False,,,
+,Q05,,NOT_FEASIBLE,,,False,,,
+,Q06,,NOT_FEASIBLE,,,False,,,
+,Q07,,NOT_FEASIBLE,,,False,,,
+,Q08,,NOT_FEASIBLE,,,False,,,
+,Q09,,NOT_FEASIBLE,,,False,,,

@@ -1,0 +1,2 @@
+audit_id,scenario,route_mode,legacy_z3_status,jrs_status,frame_size_semantics,release_semantics,deadline_semantics,resolved_gap,note
+S00,diamond,fixed healthy routes,SAT,OPTIMAL,payload + frame_overhead exactly once,fixed source egress transmission equality,schedule_deadline_budget,True,Q01 locks every unaffected healthy route; affected routes remain recovery variables as required.

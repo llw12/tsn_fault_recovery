@@ -1,0 +1,39 @@
+{
+  "affected_flow_ids": [
+    "TT01",
+    "TT05",
+    "TT12",
+    "TT16",
+    "TT24",
+    "TT28",
+    "TT32",
+    "TT36"
+  ],
+  "backend": "tsnkit-jrs-wa",
+  "case_id": "Q08",
+  "diagnostic": "restricted Gurobi license capacity precheck: 40 streams x 236 directed arcs; JRS-WA formulation exceeds the 2000-variable size-limited license",
+  "disabled_links": [
+    "l_sw07_sw15",
+    "l_sw15_sw23"
+  ],
+  "feasible": false,
+  "logical_routes": [],
+  "objective": null,
+  "optimal_proven": false,
+  "profile": null,
+  "runtime_jrs_invocations": 0,
+  "scenario": "exp12_r3_d5",
+  "schedule_windows": [],
+  "statistics": {
+    "restricted_license": true,
+    "routing_binary_upper_bound": 9440,
+    "seed": 1024,
+    "threads": 1,
+    "timeout_s": 30
+  },
+  "status": "GUROBI_LICENSE_CAPACITY_LIMIT",
+  "timings_ms": {
+    "input_conversion": 1.048627,
+    "total_backend": 1.100412
+  }
+}

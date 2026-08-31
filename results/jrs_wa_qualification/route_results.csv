@@ -1,0 +1,14 @@
+case_id,flow_id,node_path,link_path,continuous,loop_free,avoids_disabled
+Q00,TT1,source1;s0;sA;sD;destination,l_src1_s0;l_s0_a;l_a_d;l_d_dst,True,True,True
+Q00,TT2,source2;s0;sB;sD;destination,l_src2_s0;l_s0_b;l_b_d;l_d_dst,True,True,True
+Q01,TT,source;s1;s3;s4;destination,l_source_s1;l_s1_s3;l_s3_s4;l_s4_destination,True,True,True
+Q02,TT1,es1;sw1;sw3;sw6;sw8;sw9;es5,l_es1_sw1;l_sw1_sw3;l_sw3_sw6;l_sw6_sw8;l_sw8_sw9;l_es5_sw9,True,True,True
+Q02,TT10,es4;sw7;sw4;sw3;sw1;es1,l_es4_sw7;l_sw4_sw7;l_sw3_sw4;l_sw1_sw3;l_es1_sw1,True,True,True
+Q02,TT2,es2;sw2;sw3;sw4;sw7;sw9;sw10;es6,l_es2_sw2;l_sw2_sw3;l_sw3_sw4;l_sw4_sw7;l_sw7_sw9;l_sw9_sw10;l_es6_sw10,True,True,True
+Q02,TT3,es3;sw4;sw7;sw9;es5,l_es3_sw4;l_sw4_sw7;l_sw7_sw9;l_es5_sw9,True,True,True
+Q02,TT4,es4;sw7;sw4;sw3;sw2;es2,l_es4_sw7;l_sw4_sw7;l_sw3_sw4;l_sw2_sw3;l_es2_sw2,True,True,True
+Q02,TT5,es5;sw9;sw7;sw4;sw3;sw1;es1,l_es5_sw9;l_sw7_sw9;l_sw4_sw7;l_sw3_sw4;l_sw1_sw3;l_es1_sw1,True,True,True
+Q02,TT6,es6;sw10;sw8;sw6;sw4;es3,l_es6_sw10;l_sw8_sw10;l_sw6_sw8;l_sw4_sw6;l_es3_sw4,True,True,True
+Q02,TT7,es1;sw1;sw3;sw6;sw8;sw10;es6,l_es1_sw1;l_sw1_sw3;l_sw3_sw6;l_sw6_sw8;l_sw8_sw10;l_es6_sw10,True,True,True
+Q02,TT8,es2;sw2;sw3;sw4;sw7;es4,l_es2_sw2;l_sw2_sw3;l_sw3_sw4;l_sw4_sw7;l_es4_sw7,True,True,True
+Q02,TT9,es3;sw4;sw6;sw8;sw10;es6,l_es3_sw4;l_sw4_sw6;l_sw6_sw8;l_sw8_sw10;l_es6_sw10,True,True,True

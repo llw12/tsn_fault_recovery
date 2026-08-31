@@ -1,0 +1,7 @@
+criterion,pass,evidence
+integration,True,micro + diamond + mesh/structured OMNeT
+affected-only route lock,True,exact directed-arc equality constraints
+former forwarding conflict deployed,False,Q06=GUROBI_LICENSE_CAPACITY_LIMIT;Q07=GUROBI_LICENSE_CAPACITY_LIMIT;Q08=GUROBI_LICENSE_CAPACITY_LIMIT
+repeatability,True,"{""Q01"": true, ""Q06"": true, ""Q09"": true}"
+runtime solver invocation zero,True,offline backend results
+BACKEND_QUALIFIED,False,all required engineering conditions
