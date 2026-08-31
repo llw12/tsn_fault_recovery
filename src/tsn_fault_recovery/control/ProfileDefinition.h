@@ -9,6 +9,17 @@
 
 namespace tsn_fault_recovery {
 
+enum class ForwardingModel
+{
+    DESTINATION_MAC,
+    STREAM_AWARE
+};
+
+inline const char *forwardingModelName(ForwardingModel model)
+{
+    return model == ForwardingModel::STREAM_AWARE ? "stream-aware" : "destination-mac";
+}
+
 struct RouteDefinition
 {
     std::string switchPath;
@@ -16,6 +27,7 @@ struct RouteDefinition
     std::string egressInterface;
     std::string flowId;
     std::string logicalLinkId;
+    int streamHandle = 0;
 };
 
 struct GateScheduleDefinition
@@ -30,6 +42,7 @@ struct GateScheduleDefinition
 struct ProfileDefinition
 {
     std::string profileId;
+    ForwardingModel forwardingModel = ForwardingModel::DESTINATION_MAC;
     std::vector<RouteDefinition> routes;
     std::vector<GateScheduleDefinition> gateSchedules;
     std::vector<LogicalRoute> logicalRoutes;

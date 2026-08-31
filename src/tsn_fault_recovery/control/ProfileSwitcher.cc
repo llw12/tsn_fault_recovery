@@ -24,6 +24,7 @@ struct ResolvedRoute
     MacForwardingTable *macTable;
     NetworkInterface *egressInterface;
     MacAddress destinationMac;
+    int vlanId;
     int oldInterfaceId;
 };
 
@@ -49,6 +50,14 @@ std::vector<std::string> splitWords(const char *text)
     while (stream >> word)
         words.push_back(word);
     return words;
+}
+
+ForwardingModel parseForwardingModel(const char *text)
+{
+    std::string value = text;
+    if (value == "destination-mac") return ForwardingModel::DESTINATION_MAC;
+    if (value == "stream-aware") return ForwardingModel::STREAM_AWARE;
+    throw cRuntimeError("Unknown forwardingModel '%s'", text);
 }
 
 GateParameters readGateParameters(PeriodicGate *gate)
@@ -112,17 +121,26 @@ ProfileDefinition ProfileSwitcher::buildScheduledProfile() const
 {
     ProfileDefinition profile;
     profile.profileId = par("profileId").stringValue();
+    profile.forwardingModel = parseForwardingModel(par("forwardingModel").stringValue());
 
     auto switchPaths = splitWords(par("profileRouteSwitches").stringValue());
     auto interfaces = splitWords(par("profileRouteInterfaces").stringValue());
+    auto flowIds = splitWords(par("profileRouteFlowIds").stringValue());
+    auto handles = splitWords(par("profileRouteStreamHandles").stringValue());
     if (switchPaths.empty()) {
         switchPaths.push_back(par("switchPath").stringValue());
         interfaces.push_back(par("backupInterface").stringValue());
     }
     if (switchPaths.size() != interfaces.size())
         throw cRuntimeError("profileRouteSwitches and profileRouteInterfaces must contain the same number of values");
-    for (size_t i = 0; i < switchPaths.size(); ++i)
-        profile.routes.push_back({switchPaths[i], par("destinationPath").stringValue(), interfaces[i]});
+    if ((!flowIds.empty() && flowIds.size() != switchPaths.size()) ||
+            (!handles.empty() && handles.size() != switchPaths.size()))
+        throw cRuntimeError("profileRouteFlowIds/profileRouteStreamHandles must be empty or match profileRouteSwitches");
+    for (size_t i = 0; i < switchPaths.size(); ++i) {
+        int streamHandle = handles.empty() ? 0 : std::stoi(handles[i]);
+        profile.routes.push_back({switchPaths[i], par("destinationPath").stringValue(), interfaces[i],
+                flowIds.empty() ? "" : flowIds[i], "", streamHandle});
+    }
 
     if (par("activateGclProfile").boolValue()) {
         auto egressPaths = splitWords(par("profileEgressInterfaces").stringValue());
@@ -143,8 +161,12 @@ void ProfileSwitcher::validateProfile(const ProfileDefinition& profile) const
     for (const auto& route : profile.routes) {
         if (route.switchPath.empty() || route.destinationPath.empty() || route.egressInterface.empty())
             throw cRuntimeError("Profile '%s' contains an incomplete route entry", profile.profileId.c_str());
+        if (profile.forwardingModel == ForwardingModel::STREAM_AWARE &&
+                (route.flowId.empty() || route.streamHandle < 1 || route.streamHandle > 4094))
+            throw cRuntimeError("Profile '%s' contains an invalid stream-aware route for flow '%s' handle=%d",
+                    profile.profileId.c_str(), route.flowId.c_str(), route.streamHandle);
     }
-    auto forwarding = ForwardingRealizabilityValidator::validate(profile.routes);
+    auto forwarding = ForwardingRealizabilityValidator::validate(profile.routes, profile.forwardingModel);
     if (!forwarding.valid)
         throw cRuntimeError("Profile '%s' is not forwarding-realizable: %s", profile.profileId.c_str(), forwarding.diagnostic.c_str());
     for (const auto& gate : profile.gateSchedules) {
@@ -178,8 +200,9 @@ ActivationResult ProfileSwitcher::activateProfile(const ProfileDefinition& profi
         if (destinationInterface == nullptr)
             throw cRuntimeError("Destination '%s' has no non-loopback interface", definition.destinationPath.c_str());
         MacAddress destinationMac = destinationInterface->getMacAddress();
-        routes.push_back({&definition, macTable, egress, destinationMac,
-                macTable->getUnicastAddressForwardingInterface(destinationMac, 0)});
+        int vlanId = profile.forwardingModel == ForwardingModel::STREAM_AWARE ? definition.streamHandle : 0;
+        routes.push_back({&definition, macTable, egress, destinationMac, vlanId,
+                macTable->getUnicastAddressForwardingInterface(destinationMac, vlanId)});
     }
     for (const auto& definition : profile.gateSchedules) {
         auto *gateModule = network->getModuleByPath(definition.gatePath.c_str());
@@ -192,12 +215,13 @@ ActivationResult ProfileSwitcher::activateProfile(const ProfileDefinition& profi
     EV_INFO << "PROFILE_ACTIVATION_BEGIN profile=" << profile.profileId << " time=" << simTime() << endl;
     for (const auto& route : routes) {
         int newId = route.egressInterface->getInterfaceId();
-        route.macTable->setUnicastAddressForwardingInterface(newId, route.destinationMac, 0);
-        int readback = route.macTable->getUnicastAddressForwardingInterface(route.destinationMac, 0);
+        route.macTable->setUnicastAddressForwardingInterface(newId, route.destinationMac, route.vlanId);
+        int readback = route.macTable->getUnicastAddressForwardingInterface(route.destinationMac, route.vlanId);
         if (readback != newId)
             throw cRuntimeError("Forwarding readback failed for '%s'", route.definition->switchPath.c_str());
         EV_INFO << "PROFILE_ROUTE switch=" << route.definition->switchPath << " destination=" << route.destinationMac
                 << " flow=" << route.definition->flowId << " logicalLink=" << route.definition->logicalLinkId
+                << " forwardingModel=" << forwardingModelName(profile.forwardingModel) << " streamHandle=" << route.vlanId
                 << " oldInterfaceId=" << route.oldInterfaceId << " newInterface=" << route.definition->egressInterface
                 << " newInterfaceId=" << newId << endl;
     }

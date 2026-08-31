@@ -156,13 +156,16 @@ ProfileComputationResult JointProfileComputer::compute(const std::string& profil
 
     auto compileStart = std::chrono::steady_clock::now();
     result.profile.profileId = profileId;
+    result.profile.forwardingModel = scenario.forwardingModel;
     for (const auto& flow : scenario.ttFlows) {
         const auto& logical = routes.at(flow.flowId);
         result.profile.logicalRoutes.push_back(logical);
-        auto entries = adapter.forwardingEntries(logical, scenario.graph, flow.destination);
+        int streamHandle = scenario.forwardingModel == ForwardingModel::STREAM_AWARE
+                ? scenario.streamHandles.at(flow.flowId) : 0;
+        auto entries = adapter.forwardingEntries(logical, scenario.graph, flow.destination, streamHandle);
         result.profile.routes.insert(result.profile.routes.end(), entries.begin(), entries.end());
     }
-    auto forwarding = ForwardingRealizabilityValidator::validate(result.profile.routes);
+    auto forwarding = ForwardingRealizabilityValidator::validate(result.profile.routes, result.profile.forwardingModel);
     if (!forwarding.valid) {
         result.status = FaultProfileStatus::FORWARDING_CONFLICT;
         result.diagnostic = forwarding.diagnostic;

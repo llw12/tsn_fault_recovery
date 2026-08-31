@@ -16,6 +16,9 @@ simple ProfileSwitcher
         string profileId = default("manual-route-only");
         string profileRouteSwitches = default("");
         string profileRouteInterfaces = default("");
+        string profileRouteFlowIds = default("");
+        string profileRouteStreamHandles = default("");
+        string forwardingModel = default("destination-mac");
 
         bool activateGclProfile = default(false);
         string profileEgressInterfaces = default("");

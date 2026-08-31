@@ -10,5 +10,8 @@ out/
 scripts/__pycache__/
 tools/__pycache__/
 tests/__pycache__/
+.venv-jrs/
+gurobi.lic
+*.gurobi.lic
 core
 core.*

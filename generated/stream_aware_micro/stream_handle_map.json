@@ -1,0 +1,10 @@
+{
+  "flow_to_stream_handle": {
+    "TT1": 1,
+    "TT2": 2
+  },
+  "forwarding_model": "stream-aware",
+  "implementation": "inet-vlan-backed-stream-handle",
+  "scenario_name": "stream_aware_micro",
+  "schema_version": 1
+}

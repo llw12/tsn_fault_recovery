@@ -8,6 +8,7 @@
   "properties": {
     "schema_version": {"const": 1},
     "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+    "forwardingModel": {"enum": ["destination-mac", "stream-aware"]},
     "simulation": {
       "type": "object",
       "required": ["duration", "cycle_time", "time_quantum"],

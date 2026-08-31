@@ -1,0 +1,104 @@
+{
+  "links": {
+    "l_a_d": {
+      "a": {
+        "egress_path": "sA.eth[0]",
+        "interface": "eth0",
+        "node": "sA",
+        "peer": "sD"
+      },
+      "b": {
+        "egress_path": "sD.eth[0]",
+        "interface": "eth0",
+        "node": "sD",
+        "peer": "sA"
+      }
+    },
+    "l_b_d": {
+      "a": {
+        "egress_path": "sB.eth[0]",
+        "interface": "eth0",
+        "node": "sB",
+        "peer": "sD"
+      },
+      "b": {
+        "egress_path": "sD.eth[1]",
+        "interface": "eth1",
+        "node": "sD",
+        "peer": "sB"
+      }
+    },
+    "l_d_dst": {
+      "a": {
+        "egress_path": "sD.eth[2]",
+        "interface": "eth2",
+        "node": "sD",
+        "peer": "destination"
+      },
+      "b": {
+        "egress_path": "destination.eth[0]",
+        "interface": "eth0",
+        "node": "destination",
+        "peer": "sD"
+      }
+    },
+    "l_s0_a": {
+      "a": {
+        "egress_path": "s0.eth[0]",
+        "interface": "eth0",
+        "node": "s0",
+        "peer": "sA"
+      },
+      "b": {
+        "egress_path": "sA.eth[1]",
+        "interface": "eth1",
+        "node": "sA",
+        "peer": "s0"
+      }
+    },
+    "l_s0_b": {
+      "a": {
+        "egress_path": "s0.eth[1]",
+        "interface": "eth1",
+        "node": "s0",
+        "peer": "sB"
+      },
+      "b": {
+        "egress_path": "sB.eth[1]",
+        "interface": "eth1",
+        "node": "sB",
+        "peer": "s0"
+      }
+    },
+    "l_src1_s0": {
+      "a": {
+        "egress_path": "source1.eth[0]",
+        "interface": "eth0",
+        "node": "source1",
+        "peer": "s0"
+      },
+      "b": {
+        "egress_path": "s0.eth[2]",
+        "interface": "eth2",
+        "node": "s0",
+        "peer": "source1"
+      }
+    },
+    "l_src2_s0": {
+      "a": {
+        "egress_path": "source2.eth[0]",
+        "interface": "eth0",
+        "node": "source2",
+        "peer": "s0"
+      },
+      "b": {
+        "egress_path": "s0.eth[3]",
+        "interface": "eth3",
+        "node": "s0",
+        "peer": "source2"
+      }
+    }
+  },
+  "scenario_name": "stream_aware_micro",
+  "schema_version": 1
+}

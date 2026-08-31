@@ -13,6 +13,7 @@ struct ScenarioData
 {
     std::string name;
     std::string sha256;
+    ForwardingModel forwardingModel = ForwardingModel::DESTINATION_MAC;
     NetworkGraph graph;
     std::vector<AffectedFlow> ttFlows;
     omnetpp::simtime_t cycleTime;
@@ -25,6 +26,7 @@ struct ScenarioData
     int beTrafficClass = 0;
     double linkBitrate = 0;
     std::vector<std::string> faultCandidates;
+    std::map<std::string, int> streamHandles;
 };
 
 struct PortBinding { std::string interfaceName; std::string egressPath; };
@@ -42,7 +44,7 @@ class ScenarioRuntimeAdapter
     std::set<std::string> currentDisabledLinks(omnetpp::cModule *network) const;
     std::vector<std::string> egressPaths(const LogicalRoute& route, const NetworkGraph& graph) const;
     std::vector<RouteDefinition> forwardingEntries(const LogicalRoute& route,
-            const NetworkGraph& graph, const std::string& destination) const;
+            const NetworkGraph& graph, const std::string& destination, int streamHandle = 0) const;
 };
 
 } // namespace tsn_fault_recovery

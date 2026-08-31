@@ -44,6 +44,7 @@ OBJS = $O/src/tsn_fault_recovery/control/AffectedFlowAnalyzer.o \
     $O/src/tsn_fault_recovery/control/OfflinePerFailureProfileProvider.o \
     $O/src/tsn_fault_recovery/control/OnlineJointRecoveryController.o \
     $O/src/tsn_fault_recovery/control/PacketIdentityRecorder.o \
+    $O/src/tsn_fault_recovery/control/StreamForwardingRecorder.o \
     $O/src/tsn_fault_recovery/control/PipelineScheduleGenerator.o \
     $O/src/tsn_fault_recovery/control/ProfileSerializer.o \
     $O/src/tsn_fault_recovery/control/ProfileSwitcher.o \

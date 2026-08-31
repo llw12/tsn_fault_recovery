@@ -1,0 +1,151 @@
+{
+  "be_flows": [
+    {
+      "destination": "destination",
+      "id": "BE",
+      "interval_s": 0.0005,
+      "packet_size_bytes": 400,
+      "pcp": 0,
+      "release_offset_s": 4.9999999999999996e-05,
+      "source": "source1",
+      "traffic_class": 0
+    }
+  ],
+  "fault_candidate_policy": {
+    "exclude": [],
+    "mode": "explicit"
+  },
+  "fault_candidates": [
+    "l_s0_a"
+  ],
+  "forwarding_model": "stream-aware",
+  "links": [
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sA",
+      "endpoint_b": "sD",
+      "id": "l_a_d",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sB",
+      "endpoint_b": "sD",
+      "id": "l_b_d",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "sD",
+      "endpoint_b": "destination",
+      "id": "l_d_dst",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "s0",
+      "endpoint_b": "sA",
+      "id": "l_s0_a",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "s0",
+      "endpoint_b": "sB",
+      "id": "l_s0_b",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "source1",
+      "endpoint_b": "s0",
+      "id": "l_src1_s0",
+      "propagation_delay_s": 0.0
+    },
+    {
+      "bitrate_bps": 1000000000.0,
+      "endpoint_a": "source2",
+      "endpoint_b": "s0",
+      "id": "l_src2_s0",
+      "propagation_delay_s": 0.0
+    }
+  ],
+  "network": {
+    "default_bitrate_bps": 1000000000.0,
+    "default_propagation_delay_s": 0.0
+  },
+  "nodes": [
+    {
+      "id": "destination",
+      "type": "end_system"
+    },
+    {
+      "id": "s0",
+      "type": "switch"
+    },
+    {
+      "id": "sA",
+      "type": "switch"
+    },
+    {
+      "id": "sB",
+      "type": "switch"
+    },
+    {
+      "id": "sD",
+      "type": "switch"
+    },
+    {
+      "id": "source1",
+      "type": "end_system"
+    },
+    {
+      "id": "source2",
+      "type": "end_system"
+    }
+  ],
+  "scenario_name": "stream_aware_micro",
+  "scenario_sha256": "0d505be8228a18ce5cef6c2b374c0823411d1fd55a5f8b6302fc5d5e8e23612f",
+  "scheduling": {
+    "be_traffic_class": 0,
+    "endpoint_budget_s": 9.999999999999999e-05,
+    "frame_overhead_bytes": 64,
+    "hop_margin_s": 4.9999999999999996e-06,
+    "ingress_margin_s": 1.9999999999999998e-05
+  },
+  "schema_version": 1,
+  "simulation": {
+    "cycle_time_s": 0.001,
+    "duration_s": 0.005,
+    "failure_time_s": 0.004,
+    "random_seed": 13,
+    "solver_delay_s": 0.0,
+    "time_quantum_s": 1e-06
+  },
+  "tt_flows": [
+    {
+      "deadline_e2e_s": 0.0007999999999999999,
+      "destination": "destination",
+      "id": "TT1",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 9.999999999999999e-05,
+      "schedule_deadline_budget_s": 0.0006999999999999999,
+      "source": "source1",
+      "traffic_class": 1
+    },
+    {
+      "deadline_e2e_s": 0.0007999999999999999,
+      "destination": "destination",
+      "id": "TT2",
+      "packet_size_bytes": 200,
+      "pcp": 4,
+      "period_s": 0.001,
+      "release_offset_s": 0.0003,
+      "schedule_deadline_budget_s": 0.0006999999999999999,
+      "source": "source2",
+      "traffic_class": 1
+    }
+  ]
+}

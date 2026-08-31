@@ -17,7 +17,8 @@ struct ForwardingValidationResult
 class ForwardingRealizabilityValidator
 {
   public:
-    static ForwardingValidationResult validate(const std::vector<RouteDefinition>& routes);
+    static ForwardingValidationResult validate(const std::vector<RouteDefinition>& routes,
+            ForwardingModel model = ForwardingModel::DESTINATION_MAC);
 };
 
 } // namespace tsn_fault_recovery

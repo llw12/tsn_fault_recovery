@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 from tools.scenario_model import ScenarioModel, load_scenario, write_canonical
@@ -34,6 +34,20 @@ def build_port_map(model: ScenarioModel) -> dict:
     return {"schema_version": 1, "scenario_name": model.scenario_name, "links": links}
 
 
+def build_stream_handle_map(model: ScenarioModel) -> dict:
+    """Map TT flow IDs to IEEE 802.1Q VID-backed stable stream handles."""
+    flow_ids = sorted(flow.id for flow in model.tt_flows)
+    if len(flow_ids) > 4094:
+        raise ValueError("stream-aware forwarding supports at most 4094 TT streams")
+    return {
+        "schema_version": 1,
+        "scenario_name": model.scenario_name,
+        "forwarding_model": model.forwarding_model,
+        "implementation": "inet-vlan-backed-stream-handle",
+        "flow_to_stream_handle": {flow_id: index + 1 for index, flow_id in enumerate(flow_ids)},
+    }
+
+
 def _position(index: int, count: int, *, y: int) -> tuple[int, int]:
     spacing = 800 // max(count - 1, 1)
     return 100 + index * spacing, y
@@ -54,6 +68,7 @@ def render_ned(model: ScenarioModel) -> str:
         "import tsn_fault_recovery.control.PacketIdentityRecorder;",
         "import tsn_fault_recovery.control.ProfileSwitcher;",
         "import tsn_fault_recovery.control.ScenarioRecoveryController;", "",
+        "import tsn_fault_recovery.control.StreamForwardingRecorder;", "",
         "network ScenarioNetwork extends Module", "{", "    parameters:",
         "        bool hasGlobalArp = default(true);",
         "        *.ipv4.arp.typename = default(hasGlobalArp ? \"GlobalArp\" : \"Arp\");",
@@ -75,6 +90,7 @@ def render_ned(model: ScenarioModel) -> str:
         "        profileSwitcher: ProfileSwitcher { @display(\"p=440,70;is=s\"); }",
         "        scenarioRecoveryController: ScenarioRecoveryController { @display(\"p=530,70;is=s\"); }",
         "        packetIdentityRecorder: PacketIdentityRecorder { @display(\"p=620,70;is=s\"); }",
+        "        streamForwardingRecorder: StreamForwardingRecorder { @display(\"p=710,70;is=s\"); }",
         "    connections:",
     ]
     for link in model.links:
@@ -101,6 +117,8 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
         flows_by_source.setdefault(flow.source, []).append(flow)
         flows_by_destination.setdefault(flow.destination, []).append(flow)
     ports = {flow.id: 11000 + index for index, flow in enumerate(sorted(all_flows, key=lambda item: item.id))}
+    stream_handles = build_stream_handle_map(model)["flow_to_stream_handle"]
+    tt_ids = set(stream_handles)
     lines = [
         "[General]", f"network = {package}", f"sim-time-limit = {_seconds(model.simulation.duration_s)}",
         "cmdenv-express-mode = true", "record-eventlog = false", "**.scalar-recording = true", "**.vector-recording = true",
@@ -146,12 +164,36 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
             ]
         if outgoing:
             identifiers = _mapping([f'{{stream: "{flow.id}", packetFilter: expr(udp.destPort == {ports[flow.id]})}}' for flow in outgoing])
-            encoders = _mapping([f'{{stream: "{flow.id}", pcp: {flow.pcp}}}' for flow in outgoing])
+            encoders = _mapping([
+                f'{{stream: "{flow.id}", pcp: {flow.pcp}, vlan: {stream_handles[flow.id]}}}'
+                if model.forwarding_model == "stream-aware" and flow.id in tt_ids
+                else f'{{stream: "{flow.id}", pcp: {flow.pcp}}}'
+                for flow in outgoing
+            ])
             lines += [f"*.{node.id}.hasOutgoingStreams = true", f"*.{node.id}.bridging.streamIdentifier.identifier.mapping = {identifiers}", f"*.{node.id}.bridging.streamCoder.encoder.mapping = {encoders}"]
+        incoming_tt = [flow for flow in incoming if flow.id in tt_ids]
+        if model.forwarding_model == "stream-aware" and incoming_tt:
+            decoders = _mapping([
+                f'{{vlan: {stream_handles[flow.id]}, stream: "{flow.id}"}}'
+                for flow in incoming_tt
+            ])
+            lines += [
+                f"*.{node.id}.hasIncomingStreams = true",
+                f"*.{node.id}.bridging.streamCoder.decoder.mapping = {decoders}",
+            ]
         lines.append("")
     switches = [node.id for node in model.nodes if node.type == "switch"]
     max_class = max([model.scheduling.be_traffic_class] + [flow.traffic_class for flow in all_flows])
     for switch in switches:
+        if model.forwarding_model == "stream-aware":
+            decoder = _mapping([f'{{vlan: {handle}, stream: "{flow_id}"}}' for flow_id, handle in stream_handles.items()])
+            encoder = _mapping([f'{{stream: "{flow_id}", vlan: {handle}}}' for flow_id, handle in stream_handles.items()])
+            lines += [
+                f"*.{switch}.hasIncomingStreams = true",
+                f"*.{switch}.hasOutgoingStreams = true",
+                f"*.{switch}.bridging.streamCoder.decoder.mapping = {decoder}",
+                f"*.{switch}.bridging.streamCoder.encoder.mapping = {encoder}",
+            ]
         lines += [
             f"*.{switch}.hasEgressTrafficShaping = true",
             f"*.{switch}.bridging.directionReverser.reverser.excludeEncapsulationProtocols = [\"ieee8021qctag\"]",
@@ -167,6 +209,13 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
     scenario_value["scenario_sha256"] = model.sha256()
     config_hash = solver_config_hash(scenario_value, port_map)
     lines += ["", f'*.packetIdentityRecorder.flowIds = "{_quoted_words([flow.id for flow in all_flows])}"']
+    if model.forwarding_model == "stream-aware":
+        lines += [
+            "*.streamForwardingRecorder.enabled = true",
+            f'*.streamForwardingRecorder.switches = "{_quoted_words(switches)}"',
+            f'*.streamForwardingRecorder.flowIds = "{_quoted_words(list(stream_handles))}"',
+            f'*.streamForwardingRecorder.streamHandles = "{_quoted_words([str(value) for value in stream_handles.values()])}"',
+        ]
     source_modules, destination_modules = [], []
     for flow in all_flows:
         outgoing = sorted(flows_by_source[flow.source], key=lambda item: item.id)
@@ -233,8 +282,16 @@ def render_ini(model: ScenarioModel, fault_candidates: tuple[str, ...] | None = 
 
 
 def compile_scenario(source: str | Path, output_root: str | Path,
-                     resolved_candidate_faults: tuple[str, ...] | None = None) -> Path:
+                     resolved_candidate_faults: tuple[str, ...] | None = None,
+                     forwarding_model_override: str | None = None,
+                     scenario_name_override: str | None = None) -> Path:
     model = load_scenario(source)
+    if forwarding_model_override is not None:
+        if forwarding_model_override not in {"destination-mac", "stream-aware"}:
+            raise ValueError("invalid forwarding-model override")
+        model = replace(model, forwarding_model=forwarding_model_override)
+    if scenario_name_override is not None:
+        model = replace(model, scenario_name=scenario_name_override)
     if resolved_candidate_faults is not None:
         known = {link.id for link in model.links}
         if tuple(sorted(resolved_candidate_faults)) != resolved_candidate_faults:
@@ -252,6 +309,9 @@ def compile_scenario(source: str | Path, output_root: str | Path,
     (destination / "scenario.json").write_text(
         json.dumps(scenario_value, indent=2, sort_keys=True, ensure_ascii=False) + "\n", encoding="utf-8")
     (destination / "port_map.json").write_text(json.dumps(build_port_map(model), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if model.forwarding_model == "stream-aware":
+        (destination / "stream_handle_map.json").write_text(
+            json.dumps(build_stream_handle_map(model), indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (destination / "ScenarioNetwork.ned").write_text(render_ned(model), encoding="utf-8")
     ini = render_ini(model, candidates)
     (destination / "base.ini").write_text(ini, encoding="utf-8")

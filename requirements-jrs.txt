@@ -1,0 +1,5 @@
+# TSNKit stable v0.3.0, pinned to the exact upstream tag commit used by exp13.
+tsnkit @ git+https://github.com/ChuanyuXue/tsnkit.git@f8492f76753e75aa2254feb3e326feec3faad4a8
+# Required by gurobipy's matrix-expression path used by TSNKit JRS-WA.
+gurobipy==13.0.3
+scipy==1.18.1

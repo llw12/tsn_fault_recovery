@@ -22,9 +22,13 @@ class ScenarioFrameworkSelfTest : public cSimpleModule {
     auto paths=adapter.egressPaths(one,graph); require(paths==std::vector<std::string>({"a.eth[2]","c.eth[1]"}),"logical route compiles through port map");
     std::vector<RouteDefinition> conflicting={{"a","es5","eth1","TT1","l3"},{"a","es5","eth2","TT2","l4"}};
     auto conflict=ForwardingRealizabilityValidator::validate(conflicting); require(!conflict.valid && conflict.diagnostic.find("destination-MAC forwarding conflict")!=std::string::npos,"forwarding conflict rejected");
+    require(ForwardingRealizabilityValidator::validate(conflicting,ForwardingModel::STREAM_AWARE).valid,"different streams may diverge at one switch");
+    std::vector<RouteDefinition> sameFlowConflict={{"a","es5","eth1","TT1","l3",1},{"a","es5","eth2","TT1","l4",1}};
+    auto streamConflict=ForwardingRealizabilityValidator::validate(sameFlowConflict,ForwardingModel::STREAM_AWARE);
+    require(!streamConflict.valid && streamConflict.diagnostic.find("stream-aware forwarding conflict")!=std::string::npos,"same stream divergence rejected");
     std::vector<RouteDefinition> compatible={{"a","es5","eth1","TT1","l3"},{"a","es5","eth1","TT2","l3"}};
     require(ForwardingRealizabilityValidator::validate(compatible).valid,"compatible forwarding accepted");
-    EV_INFO<<"SCENARIO_FRAMEWORK_SELF_TESTS PASS count=8"<<endl;
+    EV_INFO<<"SCENARIO_FRAMEWORK_SELF_TESTS PASS count=10"<<endl;
   }
 };
 Define_Module(ScenarioFrameworkSelfTest);

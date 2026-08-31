@@ -94,6 +94,7 @@ class CandidateSelection:
 class ScenarioModel:
     schema_version: int
     scenario_name: str
+    forwarding_model: str
     simulation: SimulationConfig
     network: NetworkConfig
     scheduling: SchedulingConfig
@@ -110,7 +111,7 @@ class ScenarioModel:
             policy["scope"] = self.candidate_selection.scope
         if self.candidate_selection.criterion is not None:
             policy["criterion"] = self.candidate_selection.criterion
-        return {
+        value = {
             "schema_version": self.schema_version,
             "scenario_name": self.scenario_name,
             "simulation": asdict(self.simulation),
@@ -123,6 +124,9 @@ class ScenarioModel:
             "fault_candidate_policy": policy,
             "fault_candidates": list(self.fault_candidates),
         }
+        if self.forwarding_model != "destination-mac":
+            value["forwarding_model"] = self.forwarding_model
+        return value
 
     def canonical_json(self, *, include_hash: bool = True) -> str:
         value = self.canonical_dict()
@@ -171,6 +175,9 @@ def load_scenario(path: str | Path) -> ScenarioModel:
     name = raw.get("name")
     if not isinstance(name, str) or not _IDENTIFIER.fullmatch(name):
         raise ScenarioValidationError("name must be a valid NED/Python identifier")
+    forwarding_model = raw.get("forwardingModel", "destination-mac")
+    if forwarding_model not in {"destination-mac", "stream-aware"}:
+        raise ScenarioValidationError("forwardingModel must be destination-mac or stream-aware")
 
     simulation_raw = _require_mapping(raw, "simulation")
     network_raw = _require_mapping(raw, "network")
@@ -343,7 +350,7 @@ def load_scenario(path: str | Path) -> ScenarioModel:
         scope = selection_raw.get("scope")
         criterion = selection_raw.get("criterion")
     selection = CandidateSelection(mode, scope, criterion, tuple(sorted(exclude)))
-    return ScenarioModel(1, name, simulation, network, scheduling, nodes, links,
+    return ScenarioModel(1, name, forwarding_model, simulation, network, scheduling, nodes, links,
             tuple(sorted(tt_flows, key=lambda item: item.id)), tuple(sorted(be_flows, key=lambda item: item.id)),
             selection, tuple(sorted(candidates)))
 

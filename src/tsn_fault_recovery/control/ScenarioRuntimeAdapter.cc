@@ -14,6 +14,11 @@ ScenarioData ScenarioRuntimeAdapter::parseScenario(cValueMap *root)
     if (!root) throw cRuntimeError("scenario parameter is not an object");
     ScenarioData data;
     data.name=textAt(root,"scenario_name"); data.sha256=textAt(root,"scenario_sha256");
+    if (root->containsKey("forwarding_model")) {
+        std::string model=textAt(root,"forwarding_model");
+        if(model=="stream-aware")data.forwardingModel=ForwardingModel::STREAM_AWARE;
+        else if(model!="destination-mac")throw cRuntimeError("Unknown forwarding_model '%s'",model.c_str());
+    }
     auto simulation=mapAt(root,"simulation");
     data.cycleTime=SimTime(numberAt(simulation,"cycle_time_s"));
     data.timeQuantum=SimTime(numberAt(simulation,"time_quantum_s"));
@@ -39,6 +44,7 @@ ScenarioData ScenarioRuntimeAdapter::parseScenario(cValueMap *root)
         value.scheduleDeadlineBudget=SimTime(numberAt(flow,"schedule_deadline_budget_s"));
         data.ttFlows.push_back(value);
     }
+    for(size_t i=0;i<data.ttFlows.size();++i)data.streamHandles[data.ttFlows[i].flowId]=static_cast<int>(i)+1;
     auto faults=arrayAt(root,"fault_candidates"); for(int i=0;i<faults->size();++i) data.faultCandidates.push_back(faults->get(i).stringValue());
     return data;
 }
@@ -77,12 +83,12 @@ std::vector<std::string> ScenarioRuntimeAdapter::egressPaths(const LogicalRoute&
     return result;
 }
 
-std::vector<RouteDefinition> ScenarioRuntimeAdapter::forwardingEntries(const LogicalRoute& route,const NetworkGraph& graph,const std::string& destination) const
+std::vector<RouteDefinition> ScenarioRuntimeAdapter::forwardingEntries(const LogicalRoute& route,const NetworkGraph& graph,const std::string& destination,int streamHandle) const
 {
     std::vector<RouteDefinition> result;
     for(size_t hop=0;hop<route.linkPath.size();++hop) {
         const auto& node=route.nodePath[hop]; if(graph.getNode(node).type!=NodeType::SWITCH) continue;
-        const auto& port=binding(route.linkPath[hop],node); result.push_back({node,destination,port.interfaceName,route.flowId,route.linkPath[hop]});
+        const auto& port=binding(route.linkPath[hop],node); result.push_back({node,destination,port.interfaceName,route.flowId,route.linkPath[hop],streamHandle});
     }
     return result;
 }

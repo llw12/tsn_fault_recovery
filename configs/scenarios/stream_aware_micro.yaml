@@ -1,0 +1,86 @@
+schema_version: 1
+name: stream_aware_micro
+forwardingModel: stream-aware
+
+simulation:
+  duration: 5ms
+  cycle_time: 1ms
+  time_quantum: 1us
+  failure_time: 4ms
+  solver_delay: 0us
+  random_seed: 13
+
+network:
+  default_link:
+    bitrate: 1Gbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 20us
+  hop_margin: 5us
+  endpoint_budget: 100us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: source1
+    - id: source2
+    - id: destination
+  switches:
+    - id: s0
+    - id: sA
+    - id: sB
+    - id: sD
+  links:
+    - id: l_src1_s0
+      endpoints: [source1, s0]
+    - id: l_src2_s0
+      endpoints: [source2, s0]
+    - id: l_s0_a
+      endpoints: [s0, sA]
+    - id: l_s0_b
+      endpoints: [s0, sB]
+    - id: l_a_d
+      endpoints: [sA, sD]
+    - id: l_b_d
+      endpoints: [sB, sD]
+    - id: l_d_dst
+      endpoints: [sD, destination]
+
+traffic:
+  tt_flows:
+    - id: TT1
+      source: source1
+      destination: destination
+      packet_size: 200B
+      period: 1ms
+      deadline: 800us
+      release_offset: 100us
+      pcp: 4
+      traffic_class: 1
+    - id: TT2
+      source: source2
+      destination: destination
+      packet_size: 200B
+      period: 1ms
+      deadline: 800us
+      release_offset: 300us
+      pcp: 4
+      traffic_class: 1
+  be_flows:
+    - id: BE
+      source: source1
+      destination: destination
+      packet_size: 400B
+      interval: 500us
+      release_offset: 50us
+      pcp: 0
+      traffic_class: 0
+
+faults:
+  model: single_link
+  candidate_selection:
+    mode: explicit
+  candidates:
+    - l_s0_a
