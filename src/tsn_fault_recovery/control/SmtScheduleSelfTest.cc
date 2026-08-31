@@ -115,8 +115,24 @@ class SmtScheduleSelfTest : public cSimpleModule
         require(repeated.status == ScheduleStatus::SAT && repeated.objectiveTicks == single.objectiveTicks
                 && sameWindows(repeated.windows, single.windows), "solver output is not deterministic");
 
-        recordScalar("testsPassed", 10);
-        EV_INFO << "SMT_SCHEDULE_SELF_TEST PASS tests=10" << endl;
+        // 11-15. Instrumentation is exact and feasibility uses the same hard model without objectives.
+        require(single.startTimeVarCount == 3 && single.otherAuxVarCount == 1
+                && single.orderingBoolVarCount == 0 && single.totalSymbolicVarCount == 4,
+                "symbolic variable counters are incorrect");
+        require(single.cycleBoundConstraintCount == 6 && single.releaseConstraintCount == 1
+                && single.hopPrecedenceConstraintCount == 2 && single.deadlineConstraintCount == 1
+                && single.nonOverlapConstraintCount == 0 && single.otherHardConstraintCount == 2
+                && single.totalHardConstraintCount == 12, "hard-constraint counters are incorrect");
+        require(shared.nonOverlapConstraintCount == 3 && shared.contentionPairCount == 3,
+                "contention/non-overlap counters are incorrect");
+        require(single.objectiveCount == 5, "production objective count changed");
+        auto feasible = solver.solveFeasibilityOnly(singleRequest);
+        require(feasible.status == ScheduleStatus::SAT && feasible.objectiveCount == 0
+                && feasible.windows.empty() && feasible.totalHardConstraintCount == single.totalHardConstraintCount,
+                "feasibility-only mode is not using the same hard constraints");
+
+        recordScalar("testsPassed", 15);
+        EV_INFO << "SMT_SCHEDULE_SELF_TEST PASS tests=15" << endl;
     }
 
     virtual void handleMessage(cMessage *) override

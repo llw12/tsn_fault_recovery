@@ -9,6 +9,8 @@ class Z3ScheduleSolver : public ScheduleSolver
 {
   public:
     virtual ScheduleResult solve(const ScheduleRequest& request) override;
+    // Experiment-only entry point. Runtime recovery controllers never call this.
+    ScheduleResult solveFeasibilityOnly(const ScheduleRequest& request);
 };
 
 } // namespace tsn_fault_recovery

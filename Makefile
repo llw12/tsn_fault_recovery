@@ -51,6 +51,7 @@ OBJS = $O/src/tsn_fault_recovery/control/AffectedFlowAnalyzer.o \
     $O/src/tsn_fault_recovery/control/ScenarioFrameworkSelfTest.o \
     $O/src/tsn_fault_recovery/control/ScenarioRuntimeAdapter.o \
     $O/src/tsn_fault_recovery/control/SmtScheduleSelfTest.o \
+    $O/src/tsn_fault_recovery/control/SmtScalabilityBenchmark.o \
     $O/src/tsn_fault_recovery/control/SmtValidationController.o \
     $O/src/tsn_fault_recovery/control/TimeTickConverter.o \
     $O/src/tsn_fault_recovery/control/Z3ScheduleSolver.o \

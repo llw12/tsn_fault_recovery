@@ -1,0 +1,449 @@
+schema_version: 1
+name: structured80_auto
+
+simulation:
+  duration: 30ms
+  cycle_time: 1ms
+  time_quantum: 1us
+  failure_time: 10ms
+  solver_delay: 1ms
+  random_seed: 0
+
+network:
+  default_link:
+    bitrate: 1Gbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 25us
+  hop_margin: 3us
+  endpoint_budget: 300us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: es01
+    - id: es02
+    - id: es03
+    - id: es04
+    - id: es05
+    - id: es06
+    - id: es07
+    - id: es08
+    - id: es09
+    - id: es10
+    - id: es11
+    - id: es12
+    - id: es13
+    - id: es14
+    - id: es15
+    - id: es16
+    - id: es17
+    - id: es18
+    - id: es19
+    - id: es20
+    - id: es21
+    - id: es22
+    - id: es23
+    - id: es24
+    - id: es25
+    - id: es26
+    - id: es27
+    - id: es28
+    - id: es29
+    - id: es30
+    - id: es31
+    - id: es32
+    - id: es33
+    - id: es34
+    - id: es35
+    - id: es36
+    - id: es37
+    - id: es38
+    - id: es39
+    - id: es40
+  switches:
+    - id: sw01
+    - id: sw02
+    - id: sw03
+    - id: sw04
+    - id: sw05
+    - id: sw06
+    - id: sw07
+    - id: sw08
+    - id: sw09
+    - id: sw10
+    - id: sw11
+    - id: sw12
+    - id: sw13
+    - id: sw14
+    - id: sw15
+    - id: sw16
+    - id: sw17
+    - id: sw18
+    - id: sw19
+    - id: sw20
+    - id: sw21
+    - id: sw22
+    - id: sw23
+    - id: sw24
+    - id: sw25
+    - id: sw26
+    - id: sw27
+    - id: sw28
+    - id: sw29
+    - id: sw30
+    - id: sw31
+    - id: sw32
+    - id: sw33
+    - id: sw34
+    - id: sw35
+    - id: sw36
+    - id: sw37
+    - id: sw38
+    - id: sw39
+    - id: sw40
+    - id: sw41
+    - id: sw42
+    - id: sw43
+    - id: sw44
+    - id: sw45
+    - id: sw46
+    - id: sw47
+    - id: sw48
+    - id: sw49
+    - id: sw50
+    - id: sw51
+    - id: sw52
+    - id: sw53
+    - id: sw54
+    - id: sw55
+    - id: sw56
+    - id: sw57
+    - id: sw58
+    - id: sw59
+    - id: sw60
+    - id: sw61
+    - id: sw62
+    - id: sw63
+    - id: sw64
+    - id: sw65
+    - id: sw66
+    - id: sw67
+    - id: sw68
+    - id: sw69
+    - id: sw70
+    - id: sw71
+    - id: sw72
+    - id: sw73
+    - id: sw74
+    - id: sw75
+    - id: sw76
+    - id: sw77
+    - id: sw78
+    - id: sw79
+    - id: sw80
+  links:
+    - {id: l_es01_sw01, endpoints: [es01, sw01]}
+    - {id: l_es02_sw03, endpoints: [es02, sw03]}
+    - {id: l_es03_sw05, endpoints: [es03, sw05]}
+    - {id: l_es04_sw07, endpoints: [es04, sw07]}
+    - {id: l_es05_sw09, endpoints: [es05, sw09]}
+    - {id: l_es06_sw11, endpoints: [es06, sw11]}
+    - {id: l_es07_sw13, endpoints: [es07, sw13]}
+    - {id: l_es08_sw15, endpoints: [es08, sw15]}
+    - {id: l_es09_sw17, endpoints: [es09, sw17]}
+    - {id: l_es10_sw19, endpoints: [es10, sw19]}
+    - {id: l_es11_sw21, endpoints: [es11, sw21]}
+    - {id: l_es12_sw23, endpoints: [es12, sw23]}
+    - {id: l_es13_sw25, endpoints: [es13, sw25]}
+    - {id: l_es14_sw27, endpoints: [es14, sw27]}
+    - {id: l_es15_sw29, endpoints: [es15, sw29]}
+    - {id: l_es16_sw31, endpoints: [es16, sw31]}
+    - {id: l_es17_sw33, endpoints: [es17, sw33]}
+    - {id: l_es18_sw35, endpoints: [es18, sw35]}
+    - {id: l_es19_sw37, endpoints: [es19, sw37]}
+    - {id: l_es20_sw39, endpoints: [es20, sw39]}
+    - {id: l_es21_sw41, endpoints: [es21, sw41]}
+    - {id: l_es22_sw43, endpoints: [es22, sw43]}
+    - {id: l_es23_sw45, endpoints: [es23, sw45]}
+    - {id: l_es24_sw47, endpoints: [es24, sw47]}
+    - {id: l_es25_sw49, endpoints: [es25, sw49]}
+    - {id: l_es26_sw51, endpoints: [es26, sw51]}
+    - {id: l_es27_sw53, endpoints: [es27, sw53]}
+    - {id: l_es28_sw55, endpoints: [es28, sw55]}
+    - {id: l_es29_sw57, endpoints: [es29, sw57]}
+    - {id: l_es30_sw59, endpoints: [es30, sw59]}
+    - {id: l_es31_sw61, endpoints: [es31, sw61]}
+    - {id: l_es32_sw63, endpoints: [es32, sw63]}
+    - {id: l_es33_sw65, endpoints: [es33, sw65]}
+    - {id: l_es34_sw67, endpoints: [es34, sw67]}
+    - {id: l_es35_sw69, endpoints: [es35, sw69]}
+    - {id: l_es36_sw71, endpoints: [es36, sw71]}
+    - {id: l_es37_sw73, endpoints: [es37, sw73]}
+    - {id: l_es38_sw75, endpoints: [es38, sw75]}
+    - {id: l_es39_sw77, endpoints: [es39, sw77]}
+    - {id: l_es40_sw79, endpoints: [es40, sw79]}
+    - {id: l_sw01_sw02, endpoints: [sw01, sw02]}
+    - {id: l_sw01_sw17, endpoints: [sw01, sw17]}
+    - {id: l_sw01_sw19, endpoints: [sw01, sw19]}
+    - {id: l_sw02_sw03, endpoints: [sw02, sw03]}
+    - {id: l_sw02_sw18, endpoints: [sw02, sw18]}
+    - {id: l_sw03_sw04, endpoints: [sw03, sw04]}
+    - {id: l_sw03_sw19, endpoints: [sw03, sw19]}
+    - {id: l_sw04_sw05, endpoints: [sw04, sw05]}
+    - {id: l_sw04_sw20, endpoints: [sw04, sw20]}
+    - {id: l_sw05_sw06, endpoints: [sw05, sw06]}
+    - {id: l_sw05_sw21, endpoints: [sw05, sw21]}
+    - {id: l_sw05_sw23, endpoints: [sw05, sw23]}
+    - {id: l_sw06_sw07, endpoints: [sw06, sw07]}
+    - {id: l_sw06_sw22, endpoints: [sw06, sw22]}
+    - {id: l_sw07_sw08, endpoints: [sw07, sw08]}
+    - {id: l_sw07_sw23, endpoints: [sw07, sw23]}
+    - {id: l_sw08_sw09, endpoints: [sw08, sw09]}
+    - {id: l_sw08_sw24, endpoints: [sw08, sw24]}
+    - {id: l_sw09_sw10, endpoints: [sw09, sw10]}
+    - {id: l_sw09_sw25, endpoints: [sw09, sw25]}
+    - {id: l_sw09_sw27, endpoints: [sw09, sw27]}
+    - {id: l_sw10_sw11, endpoints: [sw10, sw11]}
+    - {id: l_sw10_sw26, endpoints: [sw10, sw26]}
+    - {id: l_sw11_sw12, endpoints: [sw11, sw12]}
+    - {id: l_sw11_sw27, endpoints: [sw11, sw27]}
+    - {id: l_sw12_sw13, endpoints: [sw12, sw13]}
+    - {id: l_sw12_sw28, endpoints: [sw12, sw28]}
+    - {id: l_sw13_sw14, endpoints: [sw13, sw14]}
+    - {id: l_sw13_sw29, endpoints: [sw13, sw29]}
+    - {id: l_sw13_sw31, endpoints: [sw13, sw31]}
+    - {id: l_sw14_sw15, endpoints: [sw14, sw15]}
+    - {id: l_sw14_sw30, endpoints: [sw14, sw30]}
+    - {id: l_sw15_sw16, endpoints: [sw15, sw16]}
+    - {id: l_sw15_sw31, endpoints: [sw15, sw31]}
+    - {id: l_sw16_sw32, endpoints: [sw16, sw32]}
+    - {id: l_sw17_sw18, endpoints: [sw17, sw18]}
+    - {id: l_sw17_sw33, endpoints: [sw17, sw33]}
+    - {id: l_sw18_sw19, endpoints: [sw18, sw19]}
+    - {id: l_sw18_sw34, endpoints: [sw18, sw34]}
+    - {id: l_sw18_sw36, endpoints: [sw18, sw36]}
+    - {id: l_sw19_sw20, endpoints: [sw19, sw20]}
+    - {id: l_sw19_sw35, endpoints: [sw19, sw35]}
+    - {id: l_sw20_sw21, endpoints: [sw20, sw21]}
+    - {id: l_sw20_sw36, endpoints: [sw20, sw36]}
+    - {id: l_sw21_sw22, endpoints: [sw21, sw22]}
+    - {id: l_sw21_sw37, endpoints: [sw21, sw37]}
+    - {id: l_sw22_sw23, endpoints: [sw22, sw23]}
+    - {id: l_sw22_sw38, endpoints: [sw22, sw38]}
+    - {id: l_sw22_sw40, endpoints: [sw22, sw40]}
+    - {id: l_sw23_sw24, endpoints: [sw23, sw24]}
+    - {id: l_sw23_sw39, endpoints: [sw23, sw39]}
+    - {id: l_sw24_sw25, endpoints: [sw24, sw25]}
+    - {id: l_sw24_sw40, endpoints: [sw24, sw40]}
+    - {id: l_sw25_sw26, endpoints: [sw25, sw26]}
+    - {id: l_sw25_sw41, endpoints: [sw25, sw41]}
+    - {id: l_sw26_sw27, endpoints: [sw26, sw27]}
+    - {id: l_sw26_sw42, endpoints: [sw26, sw42]}
+    - {id: l_sw26_sw44, endpoints: [sw26, sw44]}
+    - {id: l_sw27_sw28, endpoints: [sw27, sw28]}
+    - {id: l_sw27_sw43, endpoints: [sw27, sw43]}
+    - {id: l_sw28_sw29, endpoints: [sw28, sw29]}
+    - {id: l_sw28_sw44, endpoints: [sw28, sw44]}
+    - {id: l_sw29_sw30, endpoints: [sw29, sw30]}
+    - {id: l_sw29_sw45, endpoints: [sw29, sw45]}
+    - {id: l_sw30_sw31, endpoints: [sw30, sw31]}
+    - {id: l_sw30_sw46, endpoints: [sw30, sw46]}
+    - {id: l_sw30_sw48, endpoints: [sw30, sw48]}
+    - {id: l_sw31_sw32, endpoints: [sw31, sw32]}
+    - {id: l_sw31_sw47, endpoints: [sw31, sw47]}
+    - {id: l_sw32_sw48, endpoints: [sw32, sw48]}
+    - {id: l_sw33_sw34, endpoints: [sw33, sw34]}
+    - {id: l_sw33_sw49, endpoints: [sw33, sw49]}
+    - {id: l_sw34_sw35, endpoints: [sw34, sw35]}
+    - {id: l_sw34_sw50, endpoints: [sw34, sw50]}
+    - {id: l_sw35_sw36, endpoints: [sw35, sw36]}
+    - {id: l_sw35_sw51, endpoints: [sw35, sw51]}
+    - {id: l_sw35_sw53, endpoints: [sw35, sw53]}
+    - {id: l_sw36_sw37, endpoints: [sw36, sw37]}
+    - {id: l_sw36_sw52, endpoints: [sw36, sw52]}
+    - {id: l_sw37_sw38, endpoints: [sw37, sw38]}
+    - {id: l_sw37_sw53, endpoints: [sw37, sw53]}
+    - {id: l_sw38_sw39, endpoints: [sw38, sw39]}
+    - {id: l_sw38_sw54, endpoints: [sw38, sw54]}
+    - {id: l_sw39_sw40, endpoints: [sw39, sw40]}
+    - {id: l_sw39_sw55, endpoints: [sw39, sw55]}
+    - {id: l_sw39_sw57, endpoints: [sw39, sw57]}
+    - {id: l_sw40_sw41, endpoints: [sw40, sw41]}
+    - {id: l_sw40_sw56, endpoints: [sw40, sw56]}
+    - {id: l_sw41_sw42, endpoints: [sw41, sw42]}
+    - {id: l_sw41_sw57, endpoints: [sw41, sw57]}
+    - {id: l_sw42_sw43, endpoints: [sw42, sw43]}
+    - {id: l_sw42_sw58, endpoints: [sw42, sw58]}
+    - {id: l_sw43_sw44, endpoints: [sw43, sw44]}
+    - {id: l_sw43_sw59, endpoints: [sw43, sw59]}
+    - {id: l_sw43_sw61, endpoints: [sw43, sw61]}
+    - {id: l_sw44_sw45, endpoints: [sw44, sw45]}
+    - {id: l_sw44_sw60, endpoints: [sw44, sw60]}
+    - {id: l_sw45_sw46, endpoints: [sw45, sw46]}
+    - {id: l_sw45_sw61, endpoints: [sw45, sw61]}
+    - {id: l_sw46_sw47, endpoints: [sw46, sw47]}
+    - {id: l_sw46_sw62, endpoints: [sw46, sw62]}
+    - {id: l_sw47_sw48, endpoints: [sw47, sw48]}
+    - {id: l_sw47_sw49, endpoints: [sw47, sw49]}
+    - {id: l_sw47_sw63, endpoints: [sw47, sw63]}
+    - {id: l_sw48_sw64, endpoints: [sw48, sw64]}
+    - {id: l_sw49_sw50, endpoints: [sw49, sw50]}
+    - {id: l_sw49_sw65, endpoints: [sw49, sw65]}
+    - {id: l_sw50_sw51, endpoints: [sw50, sw51]}
+    - {id: l_sw50_sw66, endpoints: [sw50, sw66]}
+    - {id: l_sw51_sw52, endpoints: [sw51, sw52]}
+    - {id: l_sw51_sw67, endpoints: [sw51, sw67]}
+    - {id: l_sw52_sw53, endpoints: [sw52, sw53]}
+    - {id: l_sw52_sw68, endpoints: [sw52, sw68]}
+    - {id: l_sw52_sw70, endpoints: [sw52, sw70]}
+    - {id: l_sw53_sw54, endpoints: [sw53, sw54]}
+    - {id: l_sw53_sw69, endpoints: [sw53, sw69]}
+    - {id: l_sw54_sw55, endpoints: [sw54, sw55]}
+    - {id: l_sw54_sw70, endpoints: [sw54, sw70]}
+    - {id: l_sw55_sw56, endpoints: [sw55, sw56]}
+    - {id: l_sw55_sw71, endpoints: [sw55, sw71]}
+    - {id: l_sw56_sw57, endpoints: [sw56, sw57]}
+    - {id: l_sw56_sw72, endpoints: [sw56, sw72]}
+    - {id: l_sw56_sw74, endpoints: [sw56, sw74]}
+    - {id: l_sw57_sw58, endpoints: [sw57, sw58]}
+    - {id: l_sw57_sw73, endpoints: [sw57, sw73]}
+    - {id: l_sw58_sw59, endpoints: [sw58, sw59]}
+    - {id: l_sw58_sw74, endpoints: [sw58, sw74]}
+    - {id: l_sw59_sw60, endpoints: [sw59, sw60]}
+    - {id: l_sw59_sw75, endpoints: [sw59, sw75]}
+    - {id: l_sw60_sw61, endpoints: [sw60, sw61]}
+    - {id: l_sw60_sw76, endpoints: [sw60, sw76]}
+    - {id: l_sw60_sw78, endpoints: [sw60, sw78]}
+    - {id: l_sw61_sw62, endpoints: [sw61, sw62]}
+    - {id: l_sw61_sw77, endpoints: [sw61, sw77]}
+    - {id: l_sw62_sw63, endpoints: [sw62, sw63]}
+    - {id: l_sw62_sw78, endpoints: [sw62, sw78]}
+    - {id: l_sw63_sw64, endpoints: [sw63, sw64]}
+    - {id: l_sw63_sw79, endpoints: [sw63, sw79]}
+    - {id: l_sw64_sw66, endpoints: [sw64, sw66]}
+    - {id: l_sw64_sw80, endpoints: [sw64, sw80]}
+    - {id: l_sw65_sw66, endpoints: [sw65, sw66]}
+    - {id: l_sw66_sw67, endpoints: [sw66, sw67]}
+    - {id: l_sw67_sw68, endpoints: [sw67, sw68]}
+    - {id: l_sw68_sw69, endpoints: [sw68, sw69]}
+    - {id: l_sw69_sw70, endpoints: [sw69, sw70]}
+    - {id: l_sw70_sw71, endpoints: [sw70, sw71]}
+    - {id: l_sw71_sw72, endpoints: [sw71, sw72]}
+    - {id: l_sw72_sw73, endpoints: [sw72, sw73]}
+    - {id: l_sw73_sw74, endpoints: [sw73, sw74]}
+    - {id: l_sw74_sw75, endpoints: [sw74, sw75]}
+    - {id: l_sw75_sw76, endpoints: [sw75, sw76]}
+    - {id: l_sw76_sw77, endpoints: [sw76, sw77]}
+    - {id: l_sw77_sw78, endpoints: [sw77, sw78]}
+    - {id: l_sw78_sw79, endpoints: [sw78, sw79]}
+    - {id: l_sw79_sw80, endpoints: [sw79, sw80]}
+
+traffic:
+  tt_flows:
+    - {id: TT01, source: es01, destination: es22, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 0us, pcp: 4, traffic_class: 1}
+    - {id: TT02, source: es02, destination: es23, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 5us, pcp: 4, traffic_class: 1}
+    - {id: TT03, source: es03, destination: es24, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 10us, pcp: 4, traffic_class: 1}
+    - {id: TT04, source: es04, destination: es25, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 14us, pcp: 4, traffic_class: 1}
+    - {id: TT05, source: es05, destination: es26, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 19us, pcp: 4, traffic_class: 1}
+    - {id: TT06, source: es06, destination: es27, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 24us, pcp: 4, traffic_class: 1}
+    - {id: TT07, source: es07, destination: es28, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 29us, pcp: 4, traffic_class: 1}
+    - {id: TT08, source: es08, destination: es29, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 34us, pcp: 4, traffic_class: 1}
+    - {id: TT09, source: es09, destination: es30, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 38us, pcp: 4, traffic_class: 1}
+    - {id: TT10, source: es10, destination: es31, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 43us, pcp: 4, traffic_class: 1}
+    - {id: TT11, source: es11, destination: es32, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 48us, pcp: 4, traffic_class: 1}
+    - {id: TT12, source: es12, destination: es33, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 53us, pcp: 4, traffic_class: 1}
+    - {id: TT13, source: es13, destination: es34, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 58us, pcp: 4, traffic_class: 1}
+    - {id: TT14, source: es14, destination: es35, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 63us, pcp: 4, traffic_class: 1}
+    - {id: TT15, source: es15, destination: es36, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 67us, pcp: 4, traffic_class: 1}
+    - {id: TT16, source: es16, destination: es37, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 72us, pcp: 4, traffic_class: 1}
+    - {id: TT17, source: es17, destination: es38, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 77us, pcp: 4, traffic_class: 1}
+    - {id: TT18, source: es18, destination: es39, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 82us, pcp: 4, traffic_class: 1}
+    - {id: TT19, source: es19, destination: es40, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 87us, pcp: 4, traffic_class: 1}
+    - {id: TT20, source: es20, destination: es01, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 91us, pcp: 4, traffic_class: 1}
+    - {id: TT21, source: es21, destination: es02, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 96us, pcp: 4, traffic_class: 1}
+    - {id: TT22, source: es22, destination: es03, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 101us, pcp: 4, traffic_class: 1}
+    - {id: TT23, source: es23, destination: es04, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 106us, pcp: 4, traffic_class: 1}
+    - {id: TT24, source: es24, destination: es05, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 111us, pcp: 4, traffic_class: 1}
+    - {id: TT25, source: es25, destination: es06, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 115us, pcp: 4, traffic_class: 1}
+    - {id: TT26, source: es26, destination: es07, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 120us, pcp: 4, traffic_class: 1}
+    - {id: TT27, source: es27, destination: es08, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 125us, pcp: 4, traffic_class: 1}
+    - {id: TT28, source: es28, destination: es09, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 130us, pcp: 4, traffic_class: 1}
+    - {id: TT29, source: es29, destination: es10, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 135us, pcp: 4, traffic_class: 1}
+    - {id: TT30, source: es30, destination: es11, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 139us, pcp: 4, traffic_class: 1}
+    - {id: TT31, source: es31, destination: es12, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 144us, pcp: 4, traffic_class: 1}
+    - {id: TT32, source: es32, destination: es13, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 149us, pcp: 4, traffic_class: 1}
+    - {id: TT33, source: es33, destination: es14, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 154us, pcp: 4, traffic_class: 1}
+    - {id: TT34, source: es34, destination: es15, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 159us, pcp: 4, traffic_class: 1}
+    - {id: TT35, source: es35, destination: es16, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 164us, pcp: 4, traffic_class: 1}
+    - {id: TT36, source: es36, destination: es17, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 168us, pcp: 4, traffic_class: 1}
+    - {id: TT37, source: es37, destination: es18, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 173us, pcp: 4, traffic_class: 1}
+    - {id: TT38, source: es38, destination: es19, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 178us, pcp: 4, traffic_class: 1}
+    - {id: TT39, source: es39, destination: es20, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 183us, pcp: 4, traffic_class: 1}
+    - {id: TT40, source: es40, destination: es21, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 188us, pcp: 4, traffic_class: 1}
+    - {id: TT41, source: es01, destination: es23, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 192us, pcp: 4, traffic_class: 1}
+    - {id: TT42, source: es02, destination: es24, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 197us, pcp: 4, traffic_class: 1}
+    - {id: TT43, source: es03, destination: es25, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 202us, pcp: 4, traffic_class: 1}
+    - {id: TT44, source: es04, destination: es26, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 207us, pcp: 4, traffic_class: 1}
+    - {id: TT45, source: es05, destination: es27, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 212us, pcp: 4, traffic_class: 1}
+    - {id: TT46, source: es06, destination: es28, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 216us, pcp: 4, traffic_class: 1}
+    - {id: TT47, source: es07, destination: es29, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 221us, pcp: 4, traffic_class: 1}
+    - {id: TT48, source: es08, destination: es30, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 226us, pcp: 4, traffic_class: 1}
+    - {id: TT49, source: es09, destination: es31, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 231us, pcp: 4, traffic_class: 1}
+    - {id: TT50, source: es10, destination: es32, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 236us, pcp: 4, traffic_class: 1}
+    - {id: TT51, source: es11, destination: es33, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 241us, pcp: 4, traffic_class: 1}
+    - {id: TT52, source: es12, destination: es34, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 245us, pcp: 4, traffic_class: 1}
+    - {id: TT53, source: es13, destination: es35, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 250us, pcp: 4, traffic_class: 1}
+    - {id: TT54, source: es14, destination: es36, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 255us, pcp: 4, traffic_class: 1}
+    - {id: TT55, source: es15, destination: es37, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 260us, pcp: 4, traffic_class: 1}
+    - {id: TT56, source: es16, destination: es38, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 265us, pcp: 4, traffic_class: 1}
+    - {id: TT57, source: es17, destination: es39, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 269us, pcp: 4, traffic_class: 1}
+    - {id: TT58, source: es18, destination: es40, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 274us, pcp: 4, traffic_class: 1}
+    - {id: TT59, source: es19, destination: es01, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 279us, pcp: 4, traffic_class: 1}
+    - {id: TT60, source: es20, destination: es02, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 284us, pcp: 4, traffic_class: 1}
+    - {id: TT61, source: es21, destination: es03, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 289us, pcp: 4, traffic_class: 1}
+    - {id: TT62, source: es22, destination: es04, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 293us, pcp: 4, traffic_class: 1}
+    - {id: TT63, source: es23, destination: es05, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 298us, pcp: 4, traffic_class: 1}
+    - {id: TT64, source: es24, destination: es06, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 303us, pcp: 4, traffic_class: 1}
+    - {id: TT65, source: es25, destination: es07, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 308us, pcp: 4, traffic_class: 1}
+    - {id: TT66, source: es26, destination: es08, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 313us, pcp: 4, traffic_class: 1}
+    - {id: TT67, source: es27, destination: es09, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 317us, pcp: 4, traffic_class: 1}
+    - {id: TT68, source: es28, destination: es10, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 322us, pcp: 4, traffic_class: 1}
+    - {id: TT69, source: es29, destination: es11, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 327us, pcp: 4, traffic_class: 1}
+    - {id: TT70, source: es30, destination: es12, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 332us, pcp: 4, traffic_class: 1}
+    - {id: TT71, source: es31, destination: es13, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 337us, pcp: 4, traffic_class: 1}
+    - {id: TT72, source: es32, destination: es14, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 342us, pcp: 4, traffic_class: 1}
+    - {id: TT73, source: es33, destination: es15, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 346us, pcp: 4, traffic_class: 1}
+    - {id: TT74, source: es34, destination: es16, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 351us, pcp: 4, traffic_class: 1}
+    - {id: TT75, source: es35, destination: es17, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 356us, pcp: 4, traffic_class: 1}
+    - {id: TT76, source: es36, destination: es18, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 361us, pcp: 4, traffic_class: 1}
+    - {id: TT77, source: es37, destination: es19, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 366us, pcp: 4, traffic_class: 1}
+    - {id: TT78, source: es38, destination: es20, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 370us, pcp: 4, traffic_class: 1}
+    - {id: TT79, source: es39, destination: es21, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 375us, pcp: 4, traffic_class: 1}
+    - {id: TT80, source: es40, destination: es22, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 380us, pcp: 4, traffic_class: 1}
+  be_flows:
+    - {id: BE01, source: es01, destination: es22, packet_size: 1000B, interval: 500us, release_offset: 0us, pcp: 0, traffic_class: 0}
+    - {id: BE02, source: es03, destination: es24, packet_size: 1100B, interval: 500us, release_offset: 80us, pcp: 0, traffic_class: 0}
+    - {id: BE03, source: es05, destination: es26, packet_size: 1200B, interval: 500us, release_offset: 160us, pcp: 0, traffic_class: 0}
+    - {id: BE04, source: es07, destination: es28, packet_size: 1300B, interval: 500us, release_offset: 240us, pcp: 0, traffic_class: 0}
+    - {id: BE05, source: es09, destination: es30, packet_size: 1000B, interval: 500us, release_offset: 320us, pcp: 0, traffic_class: 0}
+    - {id: BE06, source: es11, destination: es32, packet_size: 1100B, interval: 500us, release_offset: 400us, pcp: 0, traffic_class: 0}
+    - {id: BE07, source: es13, destination: es34, packet_size: 1200B, interval: 500us, release_offset: 480us, pcp: 0, traffic_class: 0}
+    - {id: BE08, source: es15, destination: es36, packet_size: 1300B, interval: 500us, release_offset: 60us, pcp: 0, traffic_class: 0}
+    - {id: BE09, source: es17, destination: es38, packet_size: 1000B, interval: 500us, release_offset: 140us, pcp: 0, traffic_class: 0}
+    - {id: BE10, source: es19, destination: es40, packet_size: 1100B, interval: 500us, release_offset: 220us, pcp: 0, traffic_class: 0}
+    - {id: BE11, source: es21, destination: es02, packet_size: 1200B, interval: 500us, release_offset: 300us, pcp: 0, traffic_class: 0}
+    - {id: BE12, source: es23, destination: es04, packet_size: 1300B, interval: 500us, release_offset: 380us, pcp: 0, traffic_class: 0}
+    - {id: BE13, source: es25, destination: es06, packet_size: 1000B, interval: 500us, release_offset: 460us, pcp: 0, traffic_class: 0}
+    - {id: BE14, source: es27, destination: es08, packet_size: 1100B, interval: 500us, release_offset: 40us, pcp: 0, traffic_class: 0}
+    - {id: BE15, source: es29, destination: es10, packet_size: 1200B, interval: 500us, release_offset: 120us, pcp: 0, traffic_class: 0}
+    - {id: BE16, source: es31, destination: es12, packet_size: 1300B, interval: 500us, release_offset: 200us, pcp: 0, traffic_class: 0}
+
+faults:
+  model: single_link
+  candidate_selection:
+    mode: auto
+    scope: switch-switch
+    criterion: tt-primary-route-used

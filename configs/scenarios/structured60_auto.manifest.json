@@ -1,0 +1,24 @@
+{
+  "BE_count": 12,
+  "ES_count": 30,
+  "TT_count": 60,
+  "cols": 12,
+  "cross_link_policy": "one deterministic non-grid diagonal per column",
+  "deadline_policy": "fixed cyclic 900/920/940/950/930us v1",
+  "flow_generation_policy": "cyclic distributed endpoints v1",
+  "generator_parameters": {
+    "be_flows": 12,
+    "cols": 12,
+    "end_systems": 30,
+    "rows": 5,
+    "seed": 0,
+    "switches": 60,
+    "tt_flows": 60
+  },
+  "generator_version": "structured-redundant-mesh-v1",
+  "release_offset_policy": "uniform 0..380us inclusive v1",
+  "rows": 5,
+  "scenario_sha256": "e64a260cbcd287144dfc080c830943c11e4f73e58f079324f3ce9bd5594db478",
+  "switch_count": 60,
+  "topology_family": "structured-redundant-mesh"
+}

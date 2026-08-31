@@ -2,6 +2,7 @@
 #define __TSN_FAULT_RECOVERY_SCHEDULETYPES_H
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -79,6 +80,32 @@ struct ScheduleResult
     int64_t objectiveTicks = -1;
     double wallTimeSeconds = 0;
     std::string diagnostic;
+    std::string reasonUnknown;
+    double modelBuildWallSeconds = 0;
+    double z3CheckWallSeconds = 0;
+    double modelExtractWallSeconds = 0;
+    int activeTtFlowCount = 0;
+    int controlledHopCount = 0;
+    int egressCount = 0;
+    int contentedEgressCount = 0;
+    int sharedEgressCount = 0;
+    int maxFlowsPerEgress = 0;
+    double meanFlowsPerUsedEgress = 0;
+    int64_t contentionPairCount = 0;
+    int startTimeVarCount = 0;
+    int orderingBoolVarCount = 0;
+    int otherAuxVarCount = 0;
+    int totalSymbolicVarCount = 0;
+    int cycleBoundConstraintCount = 0;
+    int releaseConstraintCount = 0;
+    int hopPrecedenceConstraintCount = 0;
+    int deadlineConstraintCount = 0;
+    int nonOverlapConstraintCount = 0;
+    int otherHardConstraintCount = 0;
+    int totalHardConstraintCount = 0;
+    int objectiveCount = 0;
+    std::vector<int64_t> objectiveValues;
+    std::map<std::string, std::string> z3Statistics;
 };
 
 } // namespace tsn_fault_recovery
