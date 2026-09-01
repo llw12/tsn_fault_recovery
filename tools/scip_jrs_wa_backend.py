@@ -211,28 +211,36 @@ class ScipJrsWaBackend(RecoverySynthesisBackend):
         r: dict[tuple[str, tuple[int, int]], Any] = {}
         t: dict[tuple[str, tuple[int, int]], Any] = {}
         order: dict[tuple[str, str, tuple[int, int]], Any] = {}
+
+        def enforce_construction_memory_limit() -> None:
+            if model.getMemUsed() <= SCIP_MEMORY_LIMIT_MB * 1_000_000:
+                return
+            raise ScipModelMemoryLimit({
+                "num_variables": model.getNVars(), "num_binary_variables": len(r) + len(order),
+                "num_integer_time_variables": len(t), "num_route_variables": len(r),
+                "num_ordering_variables": len(order), "num_constraints": model.getNConss(),
+                "num_nonzeros": nonzeros, "constraint_family_counts": dict(family),
+                "directed_arc_count": len({a for values in spaces.values() for a in values}),
+                "flow_count": len(flows), "solver_memory_bytes": round(model.getMemUsed()),
+                "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
+                "model_build_ms": (time.perf_counter_ns() - started) / 1e6,
+            })
+
         for flow in flows:
             for arc in spaces[flow.flow_id]:
                 key = (flow.flow_id, arc)
                 r[key] = model.addVar(vtype="B", name=f"r_{flow.flow_id}_{arc[0]}_{arc[1]}")
                 t[key] = model.addVar(vtype="I", lb=0, ub=cycle, name=f"t_{flow.flow_id}_{arc[0]}_{arc[1]}")
+                if model.getNVars() % 5000 == 0:
+                    enforce_construction_memory_limit()
 
         def add(cons: Any, group: str, nz: int, suffix: str) -> None:
             nonlocal nonzeros
             model.addCons(cons, name=f"{group}_{suffix}")
             family[group] += 1
             nonzeros += nz
-            if model.getNConss() % 5000 == 0 and model.getMemUsed() > SCIP_MEMORY_LIMIT_MB * 1_000_000:
-                raise ScipModelMemoryLimit({
-                    "num_variables": model.getNVars(), "num_binary_variables": len(r) + len(order),
-                    "num_integer_time_variables": len(t), "num_route_variables": len(r),
-                    "num_ordering_variables": len(order), "num_constraints": model.getNConss(),
-                    "num_nonzeros": nonzeros, "constraint_family_counts": dict(family),
-                    "directed_arc_count": len({a for values in spaces.values() for a in values}),
-                    "flow_count": len(flows), "solver_memory_bytes": round(model.getMemUsed()),
-                    "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
-                    "model_build_ms": (time.perf_counter_ns() - started) / 1e6,
-                })
+            if model.getNConss() % 5000 == 0:
+                enforce_construction_memory_limit()
 
         for flow in flows:
             fid, space = flow.flow_id, spaces[flow.flow_id]
