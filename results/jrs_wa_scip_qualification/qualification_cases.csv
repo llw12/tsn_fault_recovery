@@ -1,0 +1,11 @@
+affected_flows,case_id,case_type,fault_or_group,forwarding_model,legacy_status,level,member_faults,route_scope,scenario,selection_rule
+TT1;TT2,Q00,stream-aware-micro,,stream-aware,LEGACY_FORWARDING_CONFLICT,,,all-reroute,stream_aware_micro,fixed qualification micro-case
+TT,Q01,representative-pf,l_s1_s2,stream-aware,SAT,,l_s1_s2,affected-only,diamond,lexicographically first route-affecting configured candidate
+TT1;TT2;TT7,Q02,representative-pf,l_sw2_sw5,stream-aware,SAT,,l_sw2_sw5,affected-only,mesh10,lexicographically first route-affecting configured candidate
+TT01;TT02;TT03;TT05;TT08;TT11;TT16;TT17,Q03,representative-pf,l_sw01_sw02,stream-aware,SAT,,l_sw01_sw02,affected-only,structured20_auto,lexicographically first route-affecting configured candidate
+TT01;TT02;TT10;TT13,Q04,legacy-sat-pf,l_sw01_sw02,stream-aware,SAT,R0_GRID,l_sw01_sw02,affected-only,exp12_r0_grid,lexicographically first two legacy BFS SAT PF rows
+TT02;TT13;TT21;TT29,Q05,legacy-sat-pf,l_sw01_sw09,stream-aware,SAT,R0_GRID,l_sw01_sw09,affected-only,exp12_r0_grid,lexicographically first two legacy BFS SAT PF rows
+TT05;TT06;TT14;TT17,Q06,legacy-forwarding-conflict-pf,l_sw09_sw10,stream-aware,FORWARDING_CONFLICT,R2_D4,l_sw09_sw10,affected-only,exp12_r2_d4,lexicographically first two legacy BFS FORWARDING_CONFLICT PF rows
+TT05;TT06;TT14;TT17,Q07,legacy-forwarding-conflict-pf,l_sw10_sw11,stream-aware,FORWARDING_CONFLICT,R2_D4,l_sw10_sw11,affected-only,exp12_r2_d4,lexicographically first two legacy BFS FORWARDING_CONFLICT PF rows
+TT01;TT05;TT12;TT16;TT24;TT28;TT32;TT36,Q08,legacy-shared-forwarding-conflict,l_sw07_sw15;l_sw15_sw23,stream-aware,FORWARDING_CONFLICT,R3_D5,l_sw07_sw15;l_sw15_sw23,affected-only,exp12_r3_d5,lexicographically first shared raw FORWARDING_CONFLICT group
+TT01;TT02;TT10;TT13;TT21;TT29,Q09,j020-topology-rescued-group,l_sw01_sw02;l_sw01_sw09;l_sw02_sw03,stream-aware,SHARED_SAT,R1_CURRENT,l_sw01_sw02;l_sw01_sw09;l_sw02_sw03,affected-only,exp12_r1_current,lexicographically first J020 RESCUED transition from R0 disconnected

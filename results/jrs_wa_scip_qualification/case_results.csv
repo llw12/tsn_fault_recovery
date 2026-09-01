@@ -1,0 +1,11 @@
+case_id,constraints,diagnostic,entered_solver,feasible,nonzeros,scenario,static_valid,status,variables
+Q00,152,OPTIMAL,True,True,498,stream_aware_micro,True,OPTIMAL,59
+Q01,41,OPTIMAL,True,True,110,diamond,True,OPTIMAL,16
+Q02,6169,OPTIMAL,True,True,25614,mesh10,True,OPTIMAL,2519
+Q03,43964,OPTIMAL,True,True,198240,structured20_auto,True,OPTIMAL,19420
+Q04,311456,OPTIMAL,True,True,1463704,exp12_r0_grid,True,OPTIMAL,144680
+Q05,311380,OPTIMAL,True,True,1463400,exp12_r0_grid,True,OPTIMAL,144680
+Q06,363540,OPTIMAL,True,True,1708752,exp12_r2_d4,True,OPTIMAL,167040
+Q07,363380,OPTIMAL,True,True,1708112,exp12_r2_d4,True,OPTIMAL,167040
+Q08,440456,OPTIMAL,True,True,2072880,exp12_r3_d5,True,OPTIMAL,199720
+Q09,335984,TIME_LIMIT_NO_INCUMBENT,True,False,1579852,exp12_r1_current,False,TIME_LIMIT_NO_INCUMBENT,155000

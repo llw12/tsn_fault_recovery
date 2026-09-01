@@ -1,0 +1,1 @@
+scenario,fault_id,endpoint_a,endpoint_b,affected_flow_count,affected_flow_ratio,healthy_route_use_count,sampling_bin,selected_for_campaign,selection_reason

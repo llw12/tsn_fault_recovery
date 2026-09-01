@@ -278,7 +278,10 @@ def main() -> int:
             projection_rows.append({"scenario": scale.scenario, "worker_count": workers, "serial_work_ms": actual_pf,
                                     "idealized_makespan_ms": makespan, "idealized_speedup": actual_pf / makespan if makespan else 0})
     write_csv(output / "scenario_catalog.csv", catalog); write_csv(output / "p0_results.csv", p0_rows)
-    write_csv(output / "p0_repeatability.csv", repeat_rows); write_csv(output / "candidate_faults.csv", candidate_rows)
+    write_csv(output / "p0_repeatability.csv", repeat_rows)
+    write_csv(output / "candidate_faults.csv", candidate_rows,
+              ["scenario","fault_id","endpoint_a","endpoint_b","affected_flow_count","affected_flow_ratio",
+               "healthy_route_use_count","sampling_bin","selected_for_campaign","selection_reason"])
     write_csv(output / "per_fault_results.csv", fault_rows, ["scenario_id","scale_id","fault_id","affected_flow_count","total_tt_count","candidate_fault_count","status","feasible","input_conversion_ms","route_space_build_ms","model_build_ms","solver_wall_ms","solution_extract_ms","profile_serialize_ms","total_backend_ms","timeout_s","model_total_vars","routing_binary_vars","ordering_binary_vars","timing_integer_vars","total_constraints","nonoverlap_constraints","SCIP_raw_status","semantic_valid","profile_hash","profile_bytes","compressed_profile_bytes","peak_solver_memory_bytes","subprocess_peak_rss_bytes","memory_measurement_method"])
     write_csv(output / "profile_storage.csv", storage_rows); write_csv(output / "scale_summary.csv", scale_rows)
     fixed_rows = [{"tt_flows": row["tt_flows"], "P0_status": next(p["status"] for p in p0_rows if p["scenario"] == row["scenario"]),

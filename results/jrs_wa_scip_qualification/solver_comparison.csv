@@ -1,0 +1,4 @@
+case_id,feasibility_parity,gurobi_static_valid,gurobi_status,same_route_required,same_semantic_hash,scip_static_valid,scip_status
+Q00,True,True,OPTIMAL,False,False,True,OPTIMAL
+Q01,True,True,OPTIMAL,False,False,True,OPTIMAL
+Q02,True,True,OPTIMAL,False,False,True,OPTIMAL

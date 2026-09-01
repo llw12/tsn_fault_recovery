@@ -1,0 +1,269 @@
+schema_version: 1
+name: exp14_s1
+forwardingModel: stream-aware
+
+simulation:
+  duration: 30ms
+  cycle_time: 1ms
+  time_quantum: 1ns
+  failure_time: 10ms
+  solver_delay: 0ms
+  random_seed: 1400
+
+network:
+  default_link:
+    bitrate: 1Gbps
+    propagation_delay: 0us
+
+scheduling:
+  ingress_margin: 25us
+  hop_margin: 3us
+  endpoint_budget: 300us
+  frame_overhead: 64B
+  be_traffic_class: 0
+
+topology:
+  end_systems:
+    - id: es0001
+    - id: es0002
+    - id: es0003
+    - id: es0004
+    - id: es0005
+    - id: es0006
+    - id: es0007
+    - id: es0008
+    - id: es0009
+    - id: es0010
+    - id: es0011
+    - id: es0012
+    - id: es0013
+    - id: es0014
+    - id: es0015
+    - id: es0016
+    - id: es0017
+    - id: es0018
+    - id: es0019
+    - id: es0020
+  switches:
+    - id: sw0001
+    - id: sw0002
+    - id: sw0003
+    - id: sw0004
+    - id: sw0005
+    - id: sw0006
+    - id: sw0007
+    - id: sw0008
+    - id: sw0009
+    - id: sw0010
+    - id: sw0011
+    - id: sw0012
+    - id: sw0013
+    - id: sw0014
+    - id: sw0015
+    - id: sw0016
+    - id: sw0017
+    - id: sw0018
+    - id: sw0019
+    - id: sw0020
+    - id: sw0021
+    - id: sw0022
+    - id: sw0023
+    - id: sw0024
+    - id: sw0025
+    - id: sw0026
+    - id: sw0027
+    - id: sw0028
+    - id: sw0029
+    - id: sw0030
+  links:
+    - {id: l_es0001_sw0001, endpoints: [es0001, sw0001]}
+    - {id: l_es0002_sw0002, endpoints: [es0002, sw0002]}
+    - {id: l_es0003_sw0004, endpoints: [es0003, sw0004]}
+    - {id: l_es0004_sw0005, endpoints: [es0004, sw0005]}
+    - {id: l_es0005_sw0007, endpoints: [es0005, sw0007]}
+    - {id: l_es0006_sw0008, endpoints: [es0006, sw0008]}
+    - {id: l_es0007_sw0010, endpoints: [es0007, sw0010]}
+    - {id: l_es0008_sw0011, endpoints: [es0008, sw0011]}
+    - {id: l_es0009_sw0013, endpoints: [es0009, sw0013]}
+    - {id: l_es0010_sw0014, endpoints: [es0010, sw0014]}
+    - {id: l_es0011_sw0016, endpoints: [es0011, sw0016]}
+    - {id: l_es0012_sw0017, endpoints: [es0012, sw0017]}
+    - {id: l_es0013_sw0019, endpoints: [es0013, sw0019]}
+    - {id: l_es0014_sw0020, endpoints: [es0014, sw0020]}
+    - {id: l_es0015_sw0022, endpoints: [es0015, sw0022]}
+    - {id: l_es0016_sw0023, endpoints: [es0016, sw0023]}
+    - {id: l_es0017_sw0025, endpoints: [es0017, sw0025]}
+    - {id: l_es0018_sw0026, endpoints: [es0018, sw0026]}
+    - {id: l_es0019_sw0028, endpoints: [es0019, sw0028]}
+    - {id: l_es0020_sw0029, endpoints: [es0020, sw0029]}
+    - {id: l_sw0001_sw0002, endpoints: [sw0001, sw0002]}
+    - {id: l_sw0001_sw0003, endpoints: [sw0001, sw0003]}
+    - {id: l_sw0001_sw0029, endpoints: [sw0001, sw0029]}
+    - {id: l_sw0001_sw0030, endpoints: [sw0001, sw0030]}
+    - {id: l_sw0002_sw0003, endpoints: [sw0002, sw0003]}
+    - {id: l_sw0002_sw0004, endpoints: [sw0002, sw0004]}
+    - {id: l_sw0002_sw0030, endpoints: [sw0002, sw0030]}
+    - {id: l_sw0003_sw0004, endpoints: [sw0003, sw0004]}
+    - {id: l_sw0003_sw0005, endpoints: [sw0003, sw0005]}
+    - {id: l_sw0004_sw0005, endpoints: [sw0004, sw0005]}
+    - {id: l_sw0004_sw0006, endpoints: [sw0004, sw0006]}
+    - {id: l_sw0005_sw0006, endpoints: [sw0005, sw0006]}
+    - {id: l_sw0005_sw0007, endpoints: [sw0005, sw0007]}
+    - {id: l_sw0006_sw0007, endpoints: [sw0006, sw0007]}
+    - {id: l_sw0006_sw0008, endpoints: [sw0006, sw0008]}
+    - {id: l_sw0007_sw0008, endpoints: [sw0007, sw0008]}
+    - {id: l_sw0007_sw0009, endpoints: [sw0007, sw0009]}
+    - {id: l_sw0008_sw0009, endpoints: [sw0008, sw0009]}
+    - {id: l_sw0008_sw0010, endpoints: [sw0008, sw0010]}
+    - {id: l_sw0009_sw0010, endpoints: [sw0009, sw0010]}
+    - {id: l_sw0009_sw0011, endpoints: [sw0009, sw0011]}
+    - {id: l_sw0010_sw0011, endpoints: [sw0010, sw0011]}
+    - {id: l_sw0010_sw0012, endpoints: [sw0010, sw0012]}
+    - {id: l_sw0011_sw0012, endpoints: [sw0011, sw0012]}
+    - {id: l_sw0011_sw0013, endpoints: [sw0011, sw0013]}
+    - {id: l_sw0012_sw0013, endpoints: [sw0012, sw0013]}
+    - {id: l_sw0012_sw0014, endpoints: [sw0012, sw0014]}
+    - {id: l_sw0013_sw0014, endpoints: [sw0013, sw0014]}
+    - {id: l_sw0013_sw0015, endpoints: [sw0013, sw0015]}
+    - {id: l_sw0014_sw0015, endpoints: [sw0014, sw0015]}
+    - {id: l_sw0014_sw0016, endpoints: [sw0014, sw0016]}
+    - {id: l_sw0015_sw0016, endpoints: [sw0015, sw0016]}
+    - {id: l_sw0015_sw0017, endpoints: [sw0015, sw0017]}
+    - {id: l_sw0016_sw0017, endpoints: [sw0016, sw0017]}
+    - {id: l_sw0016_sw0018, endpoints: [sw0016, sw0018]}
+    - {id: l_sw0017_sw0018, endpoints: [sw0017, sw0018]}
+    - {id: l_sw0017_sw0019, endpoints: [sw0017, sw0019]}
+    - {id: l_sw0018_sw0019, endpoints: [sw0018, sw0019]}
+    - {id: l_sw0018_sw0020, endpoints: [sw0018, sw0020]}
+    - {id: l_sw0019_sw0020, endpoints: [sw0019, sw0020]}
+    - {id: l_sw0019_sw0021, endpoints: [sw0019, sw0021]}
+    - {id: l_sw0020_sw0021, endpoints: [sw0020, sw0021]}
+    - {id: l_sw0020_sw0022, endpoints: [sw0020, sw0022]}
+    - {id: l_sw0021_sw0022, endpoints: [sw0021, sw0022]}
+    - {id: l_sw0021_sw0023, endpoints: [sw0021, sw0023]}
+    - {id: l_sw0022_sw0023, endpoints: [sw0022, sw0023]}
+    - {id: l_sw0022_sw0024, endpoints: [sw0022, sw0024]}
+    - {id: l_sw0023_sw0024, endpoints: [sw0023, sw0024]}
+    - {id: l_sw0023_sw0025, endpoints: [sw0023, sw0025]}
+    - {id: l_sw0024_sw0025, endpoints: [sw0024, sw0025]}
+    - {id: l_sw0024_sw0026, endpoints: [sw0024, sw0026]}
+    - {id: l_sw0025_sw0026, endpoints: [sw0025, sw0026]}
+    - {id: l_sw0025_sw0027, endpoints: [sw0025, sw0027]}
+    - {id: l_sw0026_sw0027, endpoints: [sw0026, sw0027]}
+    - {id: l_sw0026_sw0028, endpoints: [sw0026, sw0028]}
+    - {id: l_sw0027_sw0028, endpoints: [sw0027, sw0028]}
+    - {id: l_sw0027_sw0029, endpoints: [sw0027, sw0029]}
+    - {id: l_sw0028_sw0029, endpoints: [sw0028, sw0029]}
+    - {id: l_sw0028_sw0030, endpoints: [sw0028, sw0030]}
+    - {id: l_sw0029_sw0030, endpoints: [sw0029, sw0030]}
+
+traffic:
+  tt_flows:
+    - {id: TT0001, source: es0001, destination: es0012, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 0us, pcp: 4, traffic_class: 1}
+    - {id: TT0002, source: es0002, destination: es0013, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 4us, pcp: 4, traffic_class: 1}
+    - {id: TT0003, source: es0003, destination: es0014, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 8us, pcp: 4, traffic_class: 1}
+    - {id: TT0004, source: es0004, destination: es0015, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 12us, pcp: 4, traffic_class: 1}
+    - {id: TT0005, source: es0005, destination: es0016, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 15us, pcp: 4, traffic_class: 1}
+    - {id: TT0006, source: es0006, destination: es0017, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 19us, pcp: 4, traffic_class: 1}
+    - {id: TT0007, source: es0007, destination: es0018, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 23us, pcp: 4, traffic_class: 1}
+    - {id: TT0008, source: es0008, destination: es0019, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 27us, pcp: 4, traffic_class: 1}
+    - {id: TT0009, source: es0009, destination: es0020, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 31us, pcp: 4, traffic_class: 1}
+    - {id: TT0010, source: es0010, destination: es0001, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 35us, pcp: 4, traffic_class: 1}
+    - {id: TT0011, source: es0011, destination: es0002, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 38us, pcp: 4, traffic_class: 1}
+    - {id: TT0012, source: es0012, destination: es0003, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 42us, pcp: 4, traffic_class: 1}
+    - {id: TT0013, source: es0013, destination: es0004, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 46us, pcp: 4, traffic_class: 1}
+    - {id: TT0014, source: es0014, destination: es0005, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 50us, pcp: 4, traffic_class: 1}
+    - {id: TT0015, source: es0015, destination: es0006, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 54us, pcp: 4, traffic_class: 1}
+    - {id: TT0016, source: es0016, destination: es0007, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 58us, pcp: 4, traffic_class: 1}
+    - {id: TT0017, source: es0017, destination: es0008, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 61us, pcp: 4, traffic_class: 1}
+    - {id: TT0018, source: es0018, destination: es0009, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 65us, pcp: 4, traffic_class: 1}
+    - {id: TT0019, source: es0019, destination: es0010, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 69us, pcp: 4, traffic_class: 1}
+    - {id: TT0020, source: es0020, destination: es0011, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 73us, pcp: 4, traffic_class: 1}
+    - {id: TT0021, source: es0001, destination: es0013, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 77us, pcp: 4, traffic_class: 1}
+    - {id: TT0022, source: es0002, destination: es0014, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 81us, pcp: 4, traffic_class: 1}
+    - {id: TT0023, source: es0003, destination: es0015, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 84us, pcp: 4, traffic_class: 1}
+    - {id: TT0024, source: es0004, destination: es0016, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 88us, pcp: 4, traffic_class: 1}
+    - {id: TT0025, source: es0005, destination: es0017, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 92us, pcp: 4, traffic_class: 1}
+    - {id: TT0026, source: es0006, destination: es0018, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 96us, pcp: 4, traffic_class: 1}
+    - {id: TT0027, source: es0007, destination: es0019, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 100us, pcp: 4, traffic_class: 1}
+    - {id: TT0028, source: es0008, destination: es0020, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 104us, pcp: 4, traffic_class: 1}
+    - {id: TT0029, source: es0009, destination: es0001, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 107us, pcp: 4, traffic_class: 1}
+    - {id: TT0030, source: es0010, destination: es0002, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 111us, pcp: 4, traffic_class: 1}
+    - {id: TT0031, source: es0011, destination: es0003, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 115us, pcp: 4, traffic_class: 1}
+    - {id: TT0032, source: es0012, destination: es0004, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 119us, pcp: 4, traffic_class: 1}
+    - {id: TT0033, source: es0013, destination: es0005, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 123us, pcp: 4, traffic_class: 1}
+    - {id: TT0034, source: es0014, destination: es0006, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 127us, pcp: 4, traffic_class: 1}
+    - {id: TT0035, source: es0015, destination: es0007, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 131us, pcp: 4, traffic_class: 1}
+    - {id: TT0036, source: es0016, destination: es0008, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 134us, pcp: 4, traffic_class: 1}
+    - {id: TT0037, source: es0017, destination: es0009, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 138us, pcp: 4, traffic_class: 1}
+    - {id: TT0038, source: es0018, destination: es0010, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 142us, pcp: 4, traffic_class: 1}
+    - {id: TT0039, source: es0019, destination: es0011, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 146us, pcp: 4, traffic_class: 1}
+    - {id: TT0040, source: es0020, destination: es0012, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 150us, pcp: 4, traffic_class: 1}
+    - {id: TT0041, source: es0001, destination: es0014, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 154us, pcp: 4, traffic_class: 1}
+    - {id: TT0042, source: es0002, destination: es0015, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 157us, pcp: 4, traffic_class: 1}
+    - {id: TT0043, source: es0003, destination: es0016, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 161us, pcp: 4, traffic_class: 1}
+    - {id: TT0044, source: es0004, destination: es0017, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 165us, pcp: 4, traffic_class: 1}
+    - {id: TT0045, source: es0005, destination: es0018, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 169us, pcp: 4, traffic_class: 1}
+    - {id: TT0046, source: es0006, destination: es0019, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 173us, pcp: 4, traffic_class: 1}
+    - {id: TT0047, source: es0007, destination: es0020, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 177us, pcp: 4, traffic_class: 1}
+    - {id: TT0048, source: es0008, destination: es0001, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 180us, pcp: 4, traffic_class: 1}
+    - {id: TT0049, source: es0009, destination: es0002, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 184us, pcp: 4, traffic_class: 1}
+    - {id: TT0050, source: es0010, destination: es0003, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 188us, pcp: 4, traffic_class: 1}
+    - {id: TT0051, source: es0011, destination: es0004, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 192us, pcp: 4, traffic_class: 1}
+    - {id: TT0052, source: es0012, destination: es0005, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 196us, pcp: 4, traffic_class: 1}
+    - {id: TT0053, source: es0013, destination: es0006, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 200us, pcp: 4, traffic_class: 1}
+    - {id: TT0054, source: es0014, destination: es0007, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 203us, pcp: 4, traffic_class: 1}
+    - {id: TT0055, source: es0015, destination: es0008, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 207us, pcp: 4, traffic_class: 1}
+    - {id: TT0056, source: es0016, destination: es0009, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 211us, pcp: 4, traffic_class: 1}
+    - {id: TT0057, source: es0017, destination: es0010, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 215us, pcp: 4, traffic_class: 1}
+    - {id: TT0058, source: es0018, destination: es0011, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 219us, pcp: 4, traffic_class: 1}
+    - {id: TT0059, source: es0019, destination: es0012, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 223us, pcp: 4, traffic_class: 1}
+    - {id: TT0060, source: es0020, destination: es0013, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 226us, pcp: 4, traffic_class: 1}
+    - {id: TT0061, source: es0001, destination: es0015, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 230us, pcp: 4, traffic_class: 1}
+    - {id: TT0062, source: es0002, destination: es0016, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 234us, pcp: 4, traffic_class: 1}
+    - {id: TT0063, source: es0003, destination: es0017, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 238us, pcp: 4, traffic_class: 1}
+    - {id: TT0064, source: es0004, destination: es0018, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 242us, pcp: 4, traffic_class: 1}
+    - {id: TT0065, source: es0005, destination: es0019, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 246us, pcp: 4, traffic_class: 1}
+    - {id: TT0066, source: es0006, destination: es0020, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 249us, pcp: 4, traffic_class: 1}
+    - {id: TT0067, source: es0007, destination: es0001, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 253us, pcp: 4, traffic_class: 1}
+    - {id: TT0068, source: es0008, destination: es0002, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 257us, pcp: 4, traffic_class: 1}
+    - {id: TT0069, source: es0009, destination: es0003, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 261us, pcp: 4, traffic_class: 1}
+    - {id: TT0070, source: es0010, destination: es0004, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 265us, pcp: 4, traffic_class: 1}
+    - {id: TT0071, source: es0011, destination: es0005, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 269us, pcp: 4, traffic_class: 1}
+    - {id: TT0072, source: es0012, destination: es0006, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 273us, pcp: 4, traffic_class: 1}
+    - {id: TT0073, source: es0013, destination: es0007, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 276us, pcp: 4, traffic_class: 1}
+    - {id: TT0074, source: es0014, destination: es0008, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 280us, pcp: 4, traffic_class: 1}
+    - {id: TT0075, source: es0015, destination: es0009, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 284us, pcp: 4, traffic_class: 1}
+    - {id: TT0076, source: es0016, destination: es0010, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 288us, pcp: 4, traffic_class: 1}
+    - {id: TT0077, source: es0017, destination: es0011, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 292us, pcp: 4, traffic_class: 1}
+    - {id: TT0078, source: es0018, destination: es0012, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 296us, pcp: 4, traffic_class: 1}
+    - {id: TT0079, source: es0019, destination: es0013, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 299us, pcp: 4, traffic_class: 1}
+    - {id: TT0080, source: es0020, destination: es0014, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 303us, pcp: 4, traffic_class: 1}
+    - {id: TT0081, source: es0001, destination: es0016, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 307us, pcp: 4, traffic_class: 1}
+    - {id: TT0082, source: es0002, destination: es0017, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 311us, pcp: 4, traffic_class: 1}
+    - {id: TT0083, source: es0003, destination: es0018, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 315us, pcp: 4, traffic_class: 1}
+    - {id: TT0084, source: es0004, destination: es0019, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 319us, pcp: 4, traffic_class: 1}
+    - {id: TT0085, source: es0005, destination: es0020, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 322us, pcp: 4, traffic_class: 1}
+    - {id: TT0086, source: es0006, destination: es0001, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 326us, pcp: 4, traffic_class: 1}
+    - {id: TT0087, source: es0007, destination: es0002, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 330us, pcp: 4, traffic_class: 1}
+    - {id: TT0088, source: es0008, destination: es0003, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 334us, pcp: 4, traffic_class: 1}
+    - {id: TT0089, source: es0009, destination: es0004, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 338us, pcp: 4, traffic_class: 1}
+    - {id: TT0090, source: es0010, destination: es0005, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 342us, pcp: 4, traffic_class: 1}
+    - {id: TT0091, source: es0011, destination: es0006, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 345us, pcp: 4, traffic_class: 1}
+    - {id: TT0092, source: es0012, destination: es0007, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 349us, pcp: 4, traffic_class: 1}
+    - {id: TT0093, source: es0013, destination: es0008, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 353us, pcp: 4, traffic_class: 1}
+    - {id: TT0094, source: es0014, destination: es0009, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 357us, pcp: 4, traffic_class: 1}
+    - {id: TT0095, source: es0015, destination: es0010, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 361us, pcp: 4, traffic_class: 1}
+    - {id: TT0096, source: es0016, destination: es0011, packet_size: 180B, period: 1ms, deadline: 900us, release_offset: 365us, pcp: 4, traffic_class: 1}
+    - {id: TT0097, source: es0017, destination: es0012, packet_size: 220B, period: 1ms, deadline: 920us, release_offset: 368us, pcp: 4, traffic_class: 1}
+    - {id: TT0098, source: es0018, destination: es0013, packet_size: 260B, period: 1ms, deadline: 940us, release_offset: 372us, pcp: 4, traffic_class: 1}
+    - {id: TT0099, source: es0019, destination: es0014, packet_size: 300B, period: 1ms, deadline: 950us, release_offset: 376us, pcp: 4, traffic_class: 1}
+    - {id: TT0100, source: es0020, destination: es0015, packet_size: 340B, period: 1ms, deadline: 930us, release_offset: 380us, pcp: 4, traffic_class: 1}
+  be_flows: []
+
+faults:
+  model: single_link
+  candidate_selection:
+    mode: auto
+    scope: switch-switch
+    criterion: tt-primary-route-used

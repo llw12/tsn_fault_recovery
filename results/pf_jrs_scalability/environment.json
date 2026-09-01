@@ -1,0 +1,1 @@
+{"memory_limit_mb":8192,"omnet_invocations":0,"platform":"Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43","plot_artifacts":0,"pyscipopt":"6.2.1","python":"3.14.4","scale_budget_s":7200,"scip":"10.0.2","seed":1024,"threads":1,"timeout_s":30}
