@@ -28,7 +28,7 @@ from tools.jrs_scalability_utils import (
 from tools.jrs_wa_adapter import TSNKIT_COMMIT, TSNKIT_VERSION, canonical_json_bytes
 from tools.scenario_compiler import build_port_map
 from tools.scenario_model import load_scenario
-from tools.scip_jrs_wa_backend import SCIP_SEED, SCIP_THREADS, ScipJrsWaBackend
+from tools.scip_jrs_wa_backend import SCIP_MEMORY_LIMIT_MB, SCIP_SEED, SCIP_THREADS, ScipJrsWaBackend
 from tools.jrs_wa_static_checker import check_solution
 from tools.recovery_backend import RecoverySynthesisRequest
 
@@ -94,8 +94,9 @@ def worker(request_path: Path, response_path: Path) -> int:
 def run_subprocess(root: Path, request: dict[str, Any], work: Path) -> tuple[dict[str, Any], int | None, float]:
     request_path, response_path, memory_path = work / "request.json", work / "response.json", work / "time-v.txt"
     write_json(request_path, request)
-    command = ["/usr/bin/time", "-v", "-o", str(memory_path), sys.executable, "-m",
-               "tools.run_pf_jrs_scalability", "--worker", str(request_path), str(response_path)]
+    base_command = [sys.executable, "-m", "tools.run_pf_jrs_scalability", "--worker", str(request_path), str(response_path)]
+    command = (["/usr/bin/time", "-v", "-o", str(memory_path)] + base_command
+               if Path("/usr/bin/time").exists() else base_command)
     started = time.perf_counter_ns()
     process = subprocess.run(command, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     elapsed = (time.perf_counter_ns() - started) / 1e6
@@ -130,7 +131,9 @@ def base_result_row(scale: Scale, fault_id: str, affected_count: int, candidate_
             "nonoverlap_constraints": stats.get("constraint_family_counts", {}).get("LINK_NON_OVERLAP", ""),
             "SCIP_raw_status": stats.get("scip_status", ""), "semantic_valid": payload.get("static_checker", {}).get("valid", False),
             **profile, "peak_solver_memory_bytes": stats.get("solver_memory_bytes", rss or ""),
-            "subprocess_peak_rss_bytes": rss or "", "memory_measurement_method": "SCIP getMemUsed; /usr/bin/time -v subprocess RSS corroboration"}
+            "subprocess_peak_rss_bytes": rss or "",
+            "memory_measurement_method": ("SCIP getMemUsed; /usr/bin/time -v subprocess RSS corroboration"
+                                          if rss is not None else "SCIP getMemUsed")}
 
 
 def main() -> int:
@@ -301,6 +304,7 @@ def main() -> int:
     m = Model(); scip_version = f"{m.getMajorVersion()}.{m.getMinorVersion()}.{m.getTechVersion()}"
     environment = {"python": sys.version.split()[0], "platform": platform.platform(), "pyscipopt": pyscipopt.__version__,
                    "scip": scip_version, "threads": SCIP_THREADS, "seed": SCIP_SEED, "timeout_s": TIMEOUT_S,
+                   "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
                    "scale_budget_s": SCALE_BUDGET_S, "omnet_invocations": 0, "plot_artifacts": 0}
     write_json(output / "environment.json", environment)
     files = sorted(p for p in output.rglob("*") if p.is_file() and p.name != "analysis_manifest.json")
@@ -308,7 +312,8 @@ def main() -> int:
                "run_id": args.run_id, "implementation_commit": args.implementation_commit, "results_commit": args.results_commit,
                "SCIP_version": scip_version, "PySCIPOpt_version": pyscipopt.__version__, "Python_version": sys.version.split()[0],
                "TSNKit_version": TSNKIT_VERSION, "TSNKit_commit": TSNKIT_COMMIT,
-               "solver_params": {"threads": 1, "timeout_s": TIMEOUT_S, "seed": SCIP_SEED, "parallel_mode": 0},
+               "solver_params": {"threads": 1, "timeout_s": TIMEOUT_S, "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
+                                 "seed": SCIP_SEED, "parallel_mode": 0},
                "scenario_generator_version": GENERATOR_VERSION,
                "scenario_SHAs": {r["scenario"]: r["scenario_sha256"] for r in catalog},
                "workload_SHAs": {r["scenario"]: r["workload_sha256"] for r in catalog},

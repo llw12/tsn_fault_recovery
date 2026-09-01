@@ -19,7 +19,7 @@ from tools.jrs_wa_adapter import TsnkitJrsWaBackend, TSNKIT_COMMIT, TSNKIT_VERSI
 from tools.jrs_wa_static_checker import check_solution
 from tools.run_jrs_wa_qualification import select_cases
 from tools.scenario_compiler import compile_scenario
-from tools.scip_jrs_wa_backend import SCIP_SEED, SCIP_THREADS, ScipJrsWaBackend
+from tools.scip_jrs_wa_backend import SCIP_MEMORY_LIMIT_MB, SCIP_SEED, SCIP_THREADS, ScipJrsWaBackend
 from tools.recovery_backend import RecoverySynthesisRequest
 
 EXP13_CAMPAIGN_SHA256 = "2bb4fbf6c5a39b5b0d873165c661ad847d965eb13570aea112a36385ae80e5c3"
@@ -70,6 +70,7 @@ def main() -> int:
                    "pyscipopt_pin": "PySCIPOpt==6.2.1", "scip_license": "Apache-2.0",
                    "tsnkit_version": TSNKIT_VERSION, "tsnkit_commit": TSNKIT_COMMIT,
                    "threads": SCIP_THREADS, "seed": SCIP_SEED, "timeout_s": 30,
+                   "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
                    "parallel_mode": 0, "omnet_invocations": 0}
     write_json(output / "environment.json", environment)
     scip, gurobi = ScipJrsWaBackend(), TsnkitJrsWaBackend()

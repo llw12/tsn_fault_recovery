@@ -25,6 +25,7 @@ from tools.recovery_backend import (
 
 SCIP_SEED = 1024
 SCIP_THREADS = 1
+SCIP_MEMORY_LIMIT_MB = 8192
 
 
 @dataclass(frozen=True)
@@ -36,6 +37,12 @@ class FlowData:
     deadline_ns: int
     release_ns: int
     tx_ns: int
+
+
+class ScipModelMemoryLimit(AdapterError):
+    def __init__(self, statistics: dict[str, Any]):
+        super().__init__(f"SCIP model memory exceeded {SCIP_MEMORY_LIMIT_MB} MB during construction")
+        self.statistics = statistics
 
 
 def _reachable(start: int, adjacency: dict[int, list[int]]) -> set[int]:
@@ -113,13 +120,20 @@ class ScipJrsWaBackend(RecoverySynthesisBackend):
             timings["route_space_build"] = (time.perf_counter_ns() - at) / 1e6
             model, variables, audit = self._build_model(prepared, request, flows, spaces, propagation)
             timings["model_build"] = audit.pop("model_build_ms")
+        except ScipModelMemoryLimit as error:
+            timings["model_build"] = error.statistics.pop("model_build_ms")
+            timings["total_backend"] = (time.perf_counter_ns() - started) / 1e6
+            return RecoverySynthesisResult(self.name, BackendStatus.MEMORY_LIMIT,
+                                           diagnostic=str(error), statistics=error.statistics, timings_ms=timings)
         except (AdapterError, ValueError, KeyError, ImportError) as error:
             timings["total_backend"] = (time.perf_counter_ns() - started) / 1e6
-            return RecoverySynthesisResult(self.name, BackendStatus.MODEL_BUILD_ERROR,
+            status = BackendStatus.MEMORY_LIMIT if "memory" in str(error).lower() else BackendStatus.MODEL_BUILD_ERROR
+            return RecoverySynthesisResult(self.name, status,
                                            diagnostic=f"{type(error).__name__}: {error}", timings_ms=timings)
         except Exception as error:
             timings["total_backend"] = (time.perf_counter_ns() - started) / 1e6
-            return RecoverySynthesisResult(self.name, BackendStatus.MODEL_BUILD_ERROR,
+            status = BackendStatus.MEMORY_LIMIT if "memory" in str(error).lower() else BackendStatus.MODEL_BUILD_ERROR
+            return RecoverySynthesisResult(self.name, status,
                                            diagnostic=f"{type(error).__name__}: {error}", timings_ms=timings)
 
         try:
@@ -175,6 +189,7 @@ class ScipJrsWaBackend(RecoverySynthesisBackend):
         model = Model("jrs_wa_scip")
         model.hideOutput(True)
         model.setRealParam("limits/time", float(request.solver_timeout_s))
+        model.setRealParam("limits/memory", float(SCIP_MEMORY_LIMIT_MB))
         model.setIntParam("parallel/maxnthreads", SCIP_THREADS)
         model.setIntParam("parallel/minnthreads", SCIP_THREADS)
         model.setIntParam("lp/threads", SCIP_THREADS)
@@ -207,6 +222,17 @@ class ScipJrsWaBackend(RecoverySynthesisBackend):
             model.addCons(cons, name=f"{group}_{suffix}")
             family[group] += 1
             nonzeros += nz
+            if model.getNConss() % 5000 == 0 and model.getMemUsed() > SCIP_MEMORY_LIMIT_MB * 1_000_000:
+                raise ScipModelMemoryLimit({
+                    "num_variables": model.getNVars(), "num_binary_variables": len(r) + len(order),
+                    "num_integer_time_variables": len(t), "num_route_variables": len(r),
+                    "num_ordering_variables": len(order), "num_constraints": model.getNConss(),
+                    "num_nonzeros": nonzeros, "constraint_family_counts": dict(family),
+                    "directed_arc_count": len({a for values in spaces.values() for a in values}),
+                    "flow_count": len(flows), "solver_memory_bytes": round(model.getMemUsed()),
+                    "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
+                    "model_build_ms": (time.perf_counter_ns() - started) / 1e6,
+                })
 
         for flow in flows:
             fid, space = flow.flow_id, spaces[flow.flow_id]
@@ -290,6 +316,7 @@ class ScipJrsWaBackend(RecoverySynthesisBackend):
             "num_nonzeros": nonzeros, "constraint_family_counts": family,
             "directed_arc_count": len({a for values in spaces.values() for a in values}),
             "flow_count": len(flows), "model_build_ms": (time.perf_counter_ns() - started) / 1e6,
+            "memory_limit_mb": SCIP_MEMORY_LIMIT_MB,
         }
         return model, {"r": r, "t": t}, audit
 
