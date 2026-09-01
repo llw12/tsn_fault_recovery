@@ -13,7 +13,7 @@ from tools.h2s_pf_backend import reachable_nodes, semantic_profile_hash
 from tools.jrs_wa_adapter import canonical_json_bytes
 from tools.recovery_backend import BackendStatus
 from tools.run_h2s_pf_scalability import (EXPECTED_EXP15_CAMPAIGN, PFQ_IDS, QUICK_PFQ,
-    discover_candidates, lpt_makespan, make_pf_case, pearson, percentile, quantile_bins,
+    discover_candidates, include_required_samples, lpt_makespan, make_pf_case, pearson, percentile, quantile_bins,
     ranks, select_pilots, spearman, stratified_sample, verdict_for)
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -173,3 +173,8 @@ class TestKAnalysisHelpers(PfFixture):
         rows = [{"scenario_id": s, "success_coverage_observed": 1, "estimated_full_profile_bytes": 1,
                  "estimated_serial_work_ms": 1, "timeouts": 0, "memory_limits": 0} for s in ("S3", "S4", "S5", "S6")]
         self.assertEqual(verdict_for(rows), "PF_CHEAP_AND_HIGH_COVERAGE")
+    def test_extra_pilots_in_sample_without_growth(self):
+        rows = [{"fault_id": f"f{i:03}", "affected_flow_count": i % 23 + 1} for i in range(200)]
+        binned = quantile_bins(rows); selected = stratified_sample(binned); pilots = select_pilots(binned)
+        merged = include_required_samples(selected, pilots)
+        self.assertEqual(len(merged), len(selected)); self.assertTrue({p["fault_id"] for p in pilots} <= {p["fault_id"] for p in merged})

@@ -91,6 +91,18 @@ def stratified_sample(candidates: list[dict[str, Any]], maximum_per_bin: int = 8
     return selected[:40]
 
 
+def include_required_samples(selected: list[dict[str, Any]], required: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Insert pilots without exceeding eight per bin or forty total samples."""
+    result = list(selected); required_ids = {row["fault_id"] for row in required}
+    for row in required:
+        if row["fault_id"] in {item["fault_id"] for item in result}: continue
+        same_bin = [index for index, item in enumerate(result)
+                    if item["quantile_bin"] == row["quantile_bin"] and item["fault_id"] not in required_ids]
+        if not same_bin: raise RuntimeError("cannot include required pilot within sampling cap")
+        result[same_bin[-1]] = row
+    return sorted(result, key=lambda item: (item["quantile_bin"], item["affected_flow_count"], item["fault_id"]))
+
+
 def select_pilots(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
     ordered = sorted(candidates, key=lambda row: (row["affected_flow_count"], row["fault_id"]))
     if not ordered: return []
@@ -292,6 +304,7 @@ def run_fault(scale_id: str, scenario_path: Path, candidate: dict[str, Any], hea
         "peak_rss_bytes": max([a.get("peak_rss_bytes", 0) for a in attempts] or [0]),
         "profile_bytes": len(payload), "gzip_bytes": len(gzip.compress(payload, mtime=0)) if payload else 0,
         "profile_hash": hashlib.sha256(payload).hexdigest() if payload else "",
+        "semantic_profile_hash": result.profile.get("semantic_profile_hash", "") if result.profile else "",
         "pf_to_p0_runtime_ratio": result.timings_ms.get("total_backend", 0) / p0_ms if p0_ms else "",
         "diagnostic": result.diagnostic}
 
@@ -432,7 +445,7 @@ def main() -> int:
         if not qualified: return 2
         if args.mode == "qualification": return 0
         scale_ids = ["S1"] if args.mode == "quick" else SCALE_IDS
-        discovery_rows, fault_rows, summary_rows = [], [], []
+        discovery_rows, fault_rows, summary_rows, repeatability_rows = [], [], [], []
         p0_reuse_rows, contexts = [], []
         # Discovery and provenance are completed for every scale before the first formal PF subprocess.
         for scale_id in scale_ids:
@@ -459,7 +472,8 @@ def main() -> int:
             elif len(candidates) <= 128 and projected_s <= SCENARIO_BUDGET_S:
                 selected, selection = candidates, "FULL"
             else:
-                selected, selection = stratified_sample(candidates), "STRATIFIED_5Q_MAX8"
+                selected = include_required_samples(stratified_sample(candidates), pilots)
+                selection = "STRATIFIED_5Q_MAX8"
             selected_ids = {row["fault_id"] for row in selected}
             discovery_rows.extend(dict(row, scenario_id=scale_id,
                 selected_for_campaign=row["fault_id"] in selected_ids,
@@ -476,14 +490,25 @@ def main() -> int:
                 rows.append(run_fault(scale_id, scenario_path, item, healthy, RESULTS / "raw_backend_output", RESULTS / "profiles", p0_ms))
             if scale_id == "S1" and rows and args.mode == "full":
                 for representative in pilots:
+                    baseline = next(row for row in rows if row["fault_id"] == representative["fault_id"])
                     for repeat in (2, 3):
                         repeated = run_fault(scale_id, scenario_path, representative, healthy,
                             RESULTS / f"raw_backend_output/repeat{repeat}", RESULTS / "profiles", p0_ms)
                         repeated["repeat"] = repeat; fault_rows.append(repeated)
+                        repeatability_rows.append({"scenario_id": scale_id, "fault_id": representative["fault_id"],
+                            "affected_flow_count": representative["affected_flow_count"], "repeat": repeat,
+                            "baseline_status": baseline["status"], "repeat_status": repeated["status"],
+                            "status_stable": baseline["status"] == repeated["status"],
+                            "baseline_coverage": baseline["scheduled_flow_ratio"], "repeat_coverage": repeated["scheduled_flow_ratio"],
+                            "coverage_stable": baseline["scheduled_flow_ratio"] == repeated["scheduled_flow_ratio"],
+                            "baseline_semantic_hash": baseline["semantic_profile_hash"],
+                            "repeat_semantic_hash": repeated["semantic_profile_hash"],
+                            "nondeterministic_solution": baseline["semantic_profile_hash"] != repeated["semantic_profile_hash"]})
             fault_rows.extend(rows)
             summary, _ = summarize_scenario(scale_id, candidates, rows, selection, p0_row, scenario); summary_rows.append(summary)
         write_csv(RESULTS / "candidate_faults.csv", discovery_rows)
         write_csv(RESULTS / "per_fault_results.csv", fault_rows)
+        write_csv(RESULTS / "s1_repeatability.csv", repeatability_rows)
         write_csv(RESULTS / "scale_summary.csv", summary_rows)
         write_csv(RESULTS / "p0_provenance.csv", p0_reuse_rows)
         write_csv(RESULTS / "profile_storage.csv", [{key: row[key] for key in row if "bytes" in key or key == "scenario_id"} for row in summary_rows])
