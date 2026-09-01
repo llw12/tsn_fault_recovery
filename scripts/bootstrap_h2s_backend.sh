@@ -6,6 +6,7 @@ UPSTREAM_REPOSITORY="https://github.com/gepperho/AdvancedFlowScheduler.git"
 UPSTREAM_COMMIT="650a9665e7bafb70fcf19c9f0a247e1d7b885ffd"
 CHECKOUT="$ROOT/.external/AdvancedFlowScheduler"
 PATCH="$ROOT/third_party_patches/advanced_flow_scheduler/exp15_semantics.patch"
+ROUTE_LOCK_PATCH="$ROOT/third_party_patches/advanced_flow_scheduler/exp16_route_lock.patch"
 CMAKE="$ROOT/.venv-h2s/bin/cmake"
 
 if [[ ! -x "$CMAKE" ]]; then
@@ -20,6 +21,8 @@ git -C "$CHECKOUT" reset --hard "$UPSTREAM_COMMIT"
 git -C "$CHECKOUT" clean -fdx
 git -C "$CHECKOUT" apply --check "$PATCH"
 git -C "$CHECKOUT" apply "$PATCH"
+git -C "$CHECKOUT" apply --check "$ROUTE_LOCK_PATCH"
+git -C "$CHECKOUT" apply "$ROUTE_LOCK_PATCH"
 H2S_CMAKE_EXTRA=()
 if [[ -d "$CHECKOUT/build-release/_deps/nlohmann_json-src" &&
       -d "$CHECKOUT/build-release/_deps/namedtype-src" &&
@@ -30,4 +33,4 @@ fi
 "$CMAKE" -S "$CHECKOUT" -B "$CHECKOUT/build-release" -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF "${H2S_CMAKE_EXTRA[@]}"
 "$CMAKE" --build "$CHECKOUT/build-release" --parallel 2
 test "$(git -C "$CHECKOUT" rev-parse HEAD)" = "$UPSTREAM_COMMIT"
-sha256sum "$PATCH" "$CHECKOUT/build-release/AdvancedFlowSchedulerExec"
+sha256sum "$PATCH" "$ROUTE_LOCK_PATCH" "$CHECKOUT/build-release/AdvancedFlowSchedulerExec"

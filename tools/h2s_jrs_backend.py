@@ -95,9 +95,16 @@ class H2sPreparedInputs:
     scenario_path: Path
     quantization_rows: list[dict[str, Any]]
     port_map: dict[str, Any] | None
+    disabled_links: tuple[str, ...] = ()
+    healthy_primary_routes: dict[str, dict[str, Any]] | None = None
+    affected_flow_ids: tuple[str, ...] = ()
+    queue_by_arc: dict[tuple[int, int], int] | None = None
 
 
-def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: int = DEFAULT_QUANTUM_NS) -> H2sPreparedInputs:
+def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: int = DEFAULT_QUANTUM_NS,
+                       *, disabled_links: tuple[str, ...] = (),
+                       healthy_primary_routes: dict[str, dict[str, Any]] | None = None,
+                       affected_flow_ids: tuple[str, ...] = ()) -> H2sPreparedInputs:
     scenario = json.loads(scenario_path.read_text(encoding="utf-8"))
     required = {"scenario_name", "forwarding_model", "nodes", "links", "tt_flows", "scheduling", "simulation"}
     missing = required - scenario.keys()
@@ -115,6 +122,10 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
         raise H2sAdapterError("duplicate node ID")
     node_map = {node: index for index, node in enumerate(nodes)}
     reverse_node_map = {index: node for node, index in node_map.items()}
+    disabled = set(disabled_links)
+    known_links = {link["id"] for link in scenario["links"]}
+    if not disabled <= known_links:
+        raise H2sAdapterError(f"unknown disabled links: {sorted(disabled - known_links)}")
     arc_to_link: dict[tuple[int, int], str] = {}
     edge_rows = []
     for link in sorted(scenario["links"], key=lambda item: item["id"]):
@@ -125,8 +136,18 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
         a, b = node_map[link["endpoint_a"]], node_map[link["endpoint_b"]]
         if a == b or (a, b) in arc_to_link or (b, a) in arc_to_link:
             raise H2sAdapterError("parallel links and self-loops are unsupported")
-        arc_to_link[(a, b)] = arc_to_link[(b, a)] = link["id"]
-        edge_rows.append(f"{a} {b}\n")
+        if link["id"] not in disabled:
+            arc_to_link[(a, b)] = arc_to_link[(b, a)] = link["id"]
+            edge_rows.append(f"{a} {b}\n")
+    adjacency: dict[int, list[int]] = {index: [] for index in reverse_node_map}
+    for a, b in arc_to_link:
+        adjacency[a].append(b)
+    queue_by_arc: dict[tuple[int, int], int] = {}
+    queue_id = 0
+    for source in sorted(adjacency):
+        for destination in sorted(adjacency[source]):
+            queue_by_arc[(source, destination)] = queue_id
+            queue_id += 1
     flows = sorted(scenario["tt_flows"], key=lambda item: item["id"])
     if not flows:
         raise H2sAdapterError("at least one TT flow is required")
@@ -136,16 +157,35 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
     overhead = int(scenario["scheduling"]["frame_overhead_bytes"])
     qrows = [quantize_flow(flow, overhead, 1_000_000_000, quantum_ns) for flow in flows]
     q_by_id = {row["flow_id"]: row for row in qrows}
+    healthy_routes = healthy_primary_routes or {}
+    affected = set(affected_flow_ids)
+    if bool(disabled) != bool(healthy_primary_routes is not None):
+        raise H2sAdapterError("PF conversion requires both disabled_links and healthy_primary_routes")
+    if not affected <= set(flow_map):
+        raise H2sAdapterError(f"unknown affected flows: {sorted(affected - set(flow_map))}")
     upstream_flows = []
     for flow in flows:
         row = q_by_id[flow["id"]]
-        upstream_flows.append({
+        upstream_flow = {
             "flowID": flow_map[flow["id"]], "package size": row["upstream_equivalent_bytes"],
             "period": row["period_ticks"], "release offset": row["release_ticks"],
             "deadline": row["deadline_ticks"], "source": node_map[flow["source"]],
             "destination": node_map[flow["destination"]], "propagation delay": 0,
             "processing delay": 0, "fixed release": True,
-        })
+        }
+        if disabled:
+            if flow["id"] not in healthy_routes:
+                raise H2sAdapterError(f"healthy route missing for {flow['id']}")
+            if flow["id"] not in affected:
+                nodes_on_route = healthy_routes[flow["id"]].get("node_path", [])
+                try:
+                    upstream_flow["fixed path"] = [queue_by_arc[(node_map[a], node_map[b])]
+                                                   for a, b in zip(nodes_on_route, nodes_on_route[1:])]
+                except KeyError as error:
+                    raise H2sAdapterError(f"locked route for {flow['id']} uses disabled or unknown arc") from error
+                if not upstream_flow["fixed path"]:
+                    raise H2sAdapterError(f"locked route for {flow['id']} is empty")
+        upstream_flows.append(upstream_flow)
     output_directory.mkdir(parents=True, exist_ok=True)
     topology_path = output_directory / "network.txt"
     upstream_scenario_path = output_directory / "scenario.json"
@@ -164,10 +204,17 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
         "scenario_sha256": hashlib.sha256(upstream_scenario_path.read_bytes()).hexdigest(),
         "quantization": qrows,
     }
+    if disabled:
+        manifest.update({"disabled_physical_links": sorted(disabled),
+                         "affected_flow_ids": sorted(affected),
+                         "route_scope": "affected-only",
+                         "unaffected_route_lock_count": len(flows) - len(affected)})
     (output_directory / "input_manifest.json").write_bytes(canonical_json_bytes(manifest))
     return H2sPreparedInputs(scenario, node_map, reverse_node_map, flow_map,
                              {v: k for k, v in flow_map.items()}, arc_to_link,
-                             topology_path, upstream_scenario_path, qrows, port_map)
+                             topology_path, upstream_scenario_path, qrows, port_map,
+                             tuple(sorted(disabled)), healthy_routes or None,
+                             tuple(sorted(affected)), queue_by_arc)
 
 
 def parse_backend_output(text: str) -> dict[str, Any]:
@@ -289,6 +336,28 @@ def check_h2s_solution(prepared: H2sPreparedInputs, normalized: dict[str, Any]) 
                          ("FRAME_SERIALIZATION_DURATION", duration_ok), ("QUANTIZATION_SAFE", quant_safe),
                          ("NO_DUPLICATE_DISCONNECTED_SEGMENTS", duplicates_ok)):
         record(name, passed, "PASS" if passed else "violation")
+    return {"valid": not failures, "failure_count": len(failures), "failures": failures, "checks": checks}
+
+
+def check_h2s_pf_solution(prepared: H2sPreparedInputs, normalized: dict[str, Any]) -> dict[str, Any]:
+    """Extend the independent exp15 checker with PF fault and route-lock invariants."""
+    report = check_h2s_solution(prepared, normalized)
+    checks = list(report["checks"]); failures = list(report["failures"])
+    routes = {route["flow_id"]: route for route in normalized["logical_routes"]}
+    disabled = set(prepared.disabled_links)
+    affected = set(prepared.affected_flow_ids)
+    healthy = prepared.healthy_primary_routes or {}
+    failed_absent = all(not (disabled & set(route.get("link_path", []))) for route in routes.values())
+    locked_exact = all(routes.get(flow_id, {}).get("node_path") == route.get("node_path") and
+                       routes.get(flow_id, {}).get("link_path") == route.get("link_path")
+                       for flow_id, route in healthy.items() if flow_id not in affected)
+    for name, passed, detail in (
+        ("FAILED_PHYSICAL_LINK_REMOVED_BOTH_DIRECTIONS", failed_absent, sorted(disabled)),
+        ("UNAFFECTED_ROUTES_EXACTLY_LOCKED", locked_exact, f"locked={len(healthy) - len(affected)}"),
+        ("AFFECTED_ONLY_ROUTE_SCOPE", set(routes) == set(healthy), f"routes={len(routes)} healthy={len(healthy)}"),
+    ):
+        checks.append({"check": name, "passed": bool(passed), "detail": detail})
+        if not passed: failures.append(f"{name}: {detail}")
     return {"valid": not failures, "failure_count": len(failures), "failures": failures, "checks": checks}
 
 

@@ -1,0 +1,36 @@
+diff --git a/include/graph/GraphStructs.h b/include/graph/GraphStructs.h
+--- a/include/graph/GraphStructs.h
++++ b/include/graph/GraphStructs.h
+@@ -24,6 +24,7 @@ struct Flow
+     common::NetworkNodeID destination;
+ 
+     std::vector<common::ConfigurationNodeID> configurations;
++    std::vector<common::NetworkQueueID> fixed_path;
+     std::size_t release_offset = 0; // in scheduler ticks
+     std::size_t deadline = 0; // relative deadline; zero preserves the stock period deadline
+     std::size_t propagation_delay = 1;
+@@ -58,6 +59,10 @@ inline void from_json(const json& j, Flow& f)
+     f.propagation_delay = j.value("propagation delay", std::size_t{1});
+     f.processing_delay = j.value("processing delay", std::size_t{4});
+     f.fixed_release = j.value("fixed release", false);
++    for (const auto queue : j.value("fixed path", std::vector<std::size_t>{}))
++    {
++        f.fixed_path.emplace_back(queue);
++    }
+     j.at("source").get_to(temp);
+     f.source = common::NetworkNodeID{temp};
+     j.at("destination").get_to(temp);
+diff --git a/src/scenario/ScenarioManager.cpp b/src/scenario/ScenarioManager.cpp
+--- a/src/scenario/ScenarioManager.cpp
++++ b/src/scenario/ScenarioManager.cpp
+@@ -207,7 +207,9 @@ auto ScenarioManager::updateGraph(MultiLayeredGraph& graph,
+     // add flows
+     robin_hood::unordered_set<common::FlowNodeID> req_f;
+     std::ranges::for_each(time_step.add_flows, [&](auto& flow) {
+-        auto routes = navigator->findRoutes(flow.source, flow.destination, graph, no_candidate_paths);
++        auto routes = flow.fixed_path.empty()
++                          ? navigator->findRoutes(flow.source, flow.destination, graph, no_candidate_paths)
++                          : std::vector<std::vector<common::NetworkQueueID>>{flow.fixed_path};
+         auto flow_id = flow.id;
+         graph.addFlow(std::move(flow));
+         req_f.insert(flow_id);
