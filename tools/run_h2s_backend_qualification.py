@@ -178,24 +178,35 @@ def run_scale(scale_id: str, temp_root: Path, raw_root: Path, profiles: Path) ->
     write_attempt_logs(raw_root / scale_id, result)
     stats = result.statistics; payload = canonical_json_bytes(result.profile) if result.profile else b""
     if payload: (profiles / f"{scale_id}_P0.json").write_bytes(payload)
+    scheduled_count = stats.get("scheduled_flow_count", max((a.get("scheduled_flow_count", 0) for a in stats.get("attempts", [])), default=0))
     row = {"scenario_id": scale_id, "switches": sum(n["type"] == "switch" for n in scenario["nodes"]),
            "end_systems": sum(n["type"] == "end_system" for n in scenario["nodes"]), "total_nodes": len(scenario["nodes"]),
            "tt_flows": len(scenario["tt_flows"]), "algorithm_used": stats.get("algorithm_used", ""),
            "primary_h2s_success": stats.get("primary_h2s_success", False), "celf_fallback_used": stats.get("celf_fallback_used", False),
            "status": result.status.value, "all_flows_scheduled": stats.get("all_flows_scheduled", False),
-           "scheduled_flow_ratio": stats.get("scheduled_flow_ratio", 0), "semantic_valid": stats.get("semantic_valid", False),
+           "scheduled_flow_count": scheduled_count, "scheduled_flow_ratio": stats.get("scheduled_flow_ratio", 0),
+           "semantic_valid": stats.get("semantic_valid", False),
            "upstream_verifier_pass": stats.get("upstream_verifier_pass", False),
            "project_static_checker_pass": stats.get("project_static_checker_pass", False),
+           "conversion_ms": result.timings_ms.get("conversion", 0),
+           "candidate_route_generation_ms": result.timings_ms.get("candidate_route_generation", stats.get("candidate_route_generation_ms", 0)),
+           "scheduling_ms": result.timings_ms.get("scheduling", 0),
+           "verification_ms": result.timings_ms.get("verification", 0),
+           "profile_normalization_ms": result.timings_ms.get("profile_normalization", 0),
            "total_backend_ms": result.timings_ms.get("total_backend", 0),
-           "peak_memory_bytes": max([a.get("peak_rss_bytes") or 0 for a in stats.get("attempts", [])] or [0]),
+           "peak_rss_bytes": max([a.get("peak_rss_bytes") or 0 for a in stats.get("attempts", [])] or [0]),
            "mean_hops": stats.get("mean_hops", 0), "median_hops": stats.get("median_hops", 0), "p95_hops": stats.get("p95_hops", 0), "max_hops": stats.get("max_hops", 0),
            "mean_wait_ns": stats.get("mean_wait_ns", 0), "median_wait_ns": stats.get("median_wait_ns", 0), "p95_wait_ns": stats.get("p95_wait_ns", 0), "max_wait_ns": stats.get("max_wait_ns", 0),
-           "candidate_path_count": DEFAULT_CANDIDATE_PATHS, "routing_algorithm": "DIJKSTRA_OVERLAP",
+           "candidate_paths_k": DEFAULT_CANDIDATE_PATHS, "routing_policy": "DIJKSTRA_OVERLAP",
+           "backend_quantum_ns": FORMAL_QUANTUM_NS,
            "mean_candidate_paths_per_flow": stats.get("mean_candidate_paths_per_flow", 0),
            "min_candidate_paths": stats.get("min_candidate_paths", 0), "max_candidate_paths": stats.get("max_candidate_paths", 0),
-           "candidate_route_generation_ms": stats.get("candidate_route_generation_ms", 0),
-           "canonical_profile_bytes": len(payload), "gzip_bytes": len(gzip.compress(payload, mtime=0)) if payload else 0,
-           "profile_hash": hashlib.sha256(payload).hexdigest() if payload else "", "exp14_scenario_byte_sha256": source_hash}
+           "mean_candidate_hops": "not_exposed_by_minimal_upstream_patch",
+           "max_e2e_latency_ns": stats.get("max_e2e_latency_ns", 0),
+           "profile_bytes": len(payload), "canonical_profile_bytes": len(payload),
+           "gzip_bytes": len(gzip.compress(payload, mtime=0)) if payload else 0,
+           "profile_hash": hashlib.sha256(payload).hexdigest() if payload else "",
+           "diagnostic": result.diagnostic, "exp14_scenario_byte_sha256": source_hash}
     return row, result
 
 
@@ -309,8 +320,8 @@ def main() -> int:
             old = exp14.get(row["scenario_id"], {})
             comparisons.append({"scenario": row["scenario_id"], "JRS_WA_status": old.get("status", old.get("P0_status", "")),
                 "JRS_WA_total_backend_ms": old.get("total_backend_ms", old.get("solver_ms", "")), "JRS_WA_vars": old.get("vars", ""),
-                "JRS_WA_constraints": old.get("constraints", ""), "JRS_WA_peak_memory": old.get("peak_memory_bytes", ""),
-                "H2S_status": row["status"], "H2S_total_backend_ms": row["total_backend_ms"], "H2S_peak_memory": row["peak_memory_bytes"],
+                "JRS_WA_constraints": old.get("constraints", ""), "JRS_WA_peak_memory": old.get("peak_memory", ""),
+                "H2S_status": row["status"], "H2S_total_backend_ms": row["total_backend_ms"], "H2S_peak_memory": row["peak_rss_bytes"],
                 "H2S_scheduled_ratio": row["scheduled_flow_ratio"], "H2S_semantic_valid": row["semantic_valid"],
                 "speedup_if_comparable": "", "memory_ratio_if_comparable": ""})
         write_csv(RESULTS / "jrs_wa_vs_h2s_p0.csv", comparisons)
@@ -337,14 +348,48 @@ def main() -> int:
             "scope": ["release/deadline schema and propagation", "fixed source release", "verifier window", "schedule JSON export",
                       "zero exp14 propagation/switching delay", "Release bfd linker fallback"],
             "h2s_core_ordering_scoring_candidate_routing_modified": False})
-        assessment = "H2S_SCALABLE_AND_VALID" if screen else "H2S_SEMANTIC_GAP" if not qualified else "INCONCLUSIVE"
-        (RESULTS / "summary.md").write_text("# exp15 H2S backend qualification\n\n" +
-            f"Research Direction Assessment: **{assessment}**.\n\n" +
-            "H2S/CELF are constructive heuristics: HEURISTIC_NOT_FOUND is not an infeasibility proof. "
-            "JRS-WA is an exact feasibility formulation only when its solver completes a proof. "
-            "The comparison is a backend runtime comparison under identical scenario semantics, not an exact-solver speedup claim.\n",
-            encoding="utf-8")
+        compute_frontier = next((r["scenario_id"] for r in scale_rows if r["status"] in {BackendStatus.TIME_LIMIT.value, BackendStatus.MEMORY_LIMIT.value}), "NONE")
+        quality_frontier = next((r["scenario_id"] for r in scale_rows if float(r["scheduled_flow_ratio"]) < .8), "NONE")
+        semantic_frontier = next((r["scenario_id"] for r in scale_rows if r["status"] in {s.value for s in SUCCESS} and not r["semantic_valid"]), "NONE")
+        verdict.update({"COMPUTE_FRONTIER": compute_frontier, "QUALITY_FRONTIER": quality_frontier,
+                        "SEMANTIC_FRONTIER": semantic_frontier,
+                        "SCALABILITY_FRONTIER_REACHED": any(value != "NONE" for value in (compute_frontier, quality_frontier, semantic_frontier))})
+        write_json(RESULTS / "qualification_verdict.json", verdict)
+        assessment = "H2S_SCALABLE_AND_VALID" if screen and large else "H2S_SEMANTIC_GAP" if not qualified else "H2S_SCALABLE_BUT_QUALITY_LIMITED" if quality_frontier != "NONE" else "H2S_COMPUTE_LIMITED" if compute_frontier != "NONE" else "INCONCLUSIVE"
+        scale_table = "\n".join(f"| {r['scenario_id']} | {r['tt_flows']} | {r['status']} | {int(r['scheduled_flow_count'])}/{r['tt_flows']} | {float(r['total_backend_ms']):.3f} | {int(r['peak_rss_bytes'])} | {r['semantic_valid']} |" for r in scale_rows)
+        primary_successes = sum(r["status"] == BackendStatus.SUCCESS_H2S.value for r in scale_rows)
+        fallback_successes = sum(r["status"] == BackendStatus.SUCCESS_CELF_FALLBACK.value for r in scale_rows)
+        s1 = next((r for r in scale_rows if r["scenario_id"] == "S1"), None)
+        s1_text = (f"H2S scheduled {int(s1['scheduled_flow_count'])}/{s1['tt_flows']} TT flows in {float(s1['total_backend_ms']):.3f} ms "
+                   f"with {int(s1['peak_rss_bytes'])} bytes measured peak RSS; semantic validation was `{s1['semantic_valid']}`.") if s1 else "S1 was not run in this mode."
+        summary = f"""# exp15 H2S backend qualification
+
+Research Direction Assessment: **{assessment}**.
+
+## Qualification
+
+The QH00-QH10 gate is `{qualified}`. Release offsets, independent deadline budgets, wait-allowed forwarding, on-wire frame serialization, conservative time quantization, stream-aware same-destination routing, deterministic outcome, and upstream/project verifier parity are recorded in `qualification_verdict.json`. The formal quantum is {FORMAL_QUANTUM_NS} ns, routing is DIJKSTRA_OVERLAP, K={DEFAULT_CANDIDATE_PATHS}, and the fixed seed is {FORMAL_SEED}.
+
+## P0 scalability
+
+| Scenario | TT | Status | Scheduled | Total backend ms | Peak RSS bytes | Semantic valid |
+|---|---:|---|---:|---:|---:|---|
+{scale_table}
+
+S1 is the key identical-workload comparison: exp14 JRS-WA reached 804,200 variables and 1,653,600 constraints and returned `MEMORY_LIMIT`. {s1_text} This is a backend runtime comparison under identical scenario semantics, not an exact-solver speedup claim.
+
+H2S primary successes: {primary_successes}/{len(scale_rows)}. CELF successful fallback contributions: {fallback_successes}. Compute frontier: `{compute_frontier}`. Quality frontier: `{quality_frontier}`. Semantic frontier: `{semantic_frontier}`.
+
+## Interpretation
+
+JRS-WA is an exact feasibility formulation and may report `INFEASIBLE` only after a solver proof. H2S and CELF are constructive heuristics; `HEURISTIC_NOT_FOUND` is not an infeasibility proof. The tested heuristic exhibits better empirical scalability where it returns valid schedules, without establishing an algorithmic complexity result or superiority over an exact formulation.
+
+The recommended next step for `H2S_SCALABLE_AND_VALID` is a separate rerun of PF precomputation scalability with H2S primary and CELF fallback. No PF campaign is started by exp15.
+"""
+        (RESULTS / "summary.md").write_text(summary, encoding="utf-8")
         files = sorted(path for path in RESULTS.rglob("*") if path.is_file() and path.name != "analysis_manifest.json")
+        artifact_sha = {str(p.relative_to(RESULTS)): sha256_file(p) for p in files}
+        campaign_sha = hashlib.sha256(canonical_json_bytes(artifact_sha)).hexdigest()
         manifest = {"schema_version": 1, "experiment": "exp15_h2s_backend_qualification", "mode": args.mode,
             "implementation_commit": args.implementation_commit, "results_commit": args.results_commit,
             "upstream_repo": UPSTREAM_REPOSITORY, "upstream_commit": UPSTREAM_COMMIT, "upstream_license": UPSTREAM_LICENSE,
@@ -353,7 +398,8 @@ def main() -> int:
             "candidate_paths_k": DEFAULT_CANDIDATE_PATHS, "backend_quantum_ns": FORMAL_QUANTUM_NS, "seed": FORMAL_SEED,
             "thread_count": FORMAL_THREADS, "timeout_s": TIMEOUT_S, "memory_limit_mb": FORMAL_MEMORY_LIMIT_MB,
             "scenario_sha": {p.stem: sha256_file(p) for p in SCENARIOS.glob("*.yaml")},
-            "artifact_sha256": {str(p.relative_to(RESULTS)): sha256_file(p) for p in files}}
+            "exp14_scenario_sha": {p.stem: sha256_file(p) for p in SCENARIOS.glob("*.yaml")},
+            "campaign_sha256": campaign_sha, "verdict": assessment, "artifact_sha256": artifact_sha}
         write_json(RESULTS / "analysis_manifest.json", manifest)
     return 0 if qualified else 2
 

@@ -6,8 +6,8 @@ import hashlib
 import json
 import math
 import os
-import re
 import resource
+import signal
 import statistics
 import subprocess
 import time
@@ -325,24 +325,42 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         def limits() -> None:
             limit = self.memory_limit_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
-        started = time.perf_counter_ns()
-        try:
-            completed = subprocess.run(command, text=True, capture_output=True, timeout=timeout_s,
-                                       preexec_fn=limits, env={**os.environ, "OMP_NUM_THREADS": "1"})
-        except subprocess.TimeoutExpired as error:
-            return BackendStatus.TIME_LIMIT, None, {"command": command, "stdout": error.stdout or "", "stderr": error.stderr or "",
-                                                    "wall_ms": (time.perf_counter_ns() - started) / 1e6, "peak_rss_bytes": None}
+        started = time.perf_counter_ns(); deadline = time.monotonic() + timeout_s
+        process = subprocess.Popen(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   preexec_fn=limits, env={**os.environ, "OMP_NUM_THREADS": "1"}, start_new_session=True)
+        peak_rss_bytes = 0; timed_out = memory_killed = False
+        stdout = stderr = ""
+        while True:
+            try:
+                status_text = Path(f"/proc/{process.pid}/status").read_text(encoding="utf-8")
+                rss_line = next((line for line in status_text.splitlines() if line.startswith("VmRSS:")), "")
+                if rss_line: peak_rss_bytes = max(peak_rss_bytes, int(rss_line.split()[1]) * 1024)
+            except (FileNotFoundError, PermissionError, StopIteration, ValueError):
+                pass
+            if peak_rss_bytes >= self.memory_limit_mb * 1024 * 1024 and process.poll() is None:
+                memory_killed = True; os.killpg(process.pid, signal.SIGKILL)
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 and process.poll() is None:
+                timed_out = True; os.killpg(process.pid, signal.SIGKILL)
+            try:
+                stdout, stderr = process.communicate(timeout=max(0.001, min(0.005, remaining)))
+                break
+            except subprocess.TimeoutExpired:
+                continue
         wall_ms = (time.perf_counter_ns() - started) / 1e6
-        child_usage = resource.getrusage(resource.RUSAGE_CHILDREN)
-        meta = {"command": command, "stdout": completed.stdout, "stderr": completed.stderr,
-                "returncode": completed.returncode, "wall_ms": wall_ms,
-                "peak_rss_bytes": int(child_usage.ru_maxrss) * 1024,
-                "memory_measurement_method": "RUSAGE_CHILDREN maximum RSS"}
-        if completed.returncode != 0:
-            memory = "bad_alloc" in completed.stderr or "Cannot allocate memory" in completed.stderr or completed.returncode in {-9, 137}
+        meta = {"command": command, "stdout": stdout, "stderr": stderr,
+                "returncode": process.returncode, "wall_ms": wall_ms,
+                "peak_rss_bytes": peak_rss_bytes,
+                "memory_measurement_method": "per-process /proc VmRSS polling"}
+        if timed_out:
+            return BackendStatus.TIME_LIMIT, None, meta
+        if memory_killed:
+            return BackendStatus.MEMORY_LIMIT, None, meta
+        if process.returncode != 0:
+            memory = "bad_alloc" in stderr or "Cannot allocate memory" in stderr or process.returncode in {-9, 137}
             return (BackendStatus.MEMORY_LIMIT if memory else BackendStatus.BACKEND_ERROR), None, meta
         try:
-            return None, parse_backend_output(completed.stdout), meta
+            return None, parse_backend_output(stdout), meta
         except (H2sAdapterError, json.JSONDecodeError) as error:
             meta["parse_error"] = str(error); return BackendStatus.OUTPUT_INVALID, None, meta
 
@@ -353,10 +371,12 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         if request.forwarding_model != "stream-aware":
             return RecoverySynthesisResult(self.name, BackendStatus.UNSUPPORTED, diagnostic="stream-aware forwarding required")
         output = request.output_directory or request.scenario_path.parent / "h2s_input"
+        conversion_started = time.perf_counter_ns()
         try:
             prepared = prepare_h2s_inputs(request.scenario_path, output, self.quantum_ns)
         except (H2sAdapterError, KeyError, TypeError, json.JSONDecodeError) as error:
             return RecoverySynthesisResult(self.name, BackendStatus.INVALID_INPUT, diagnostic=str(error))
+        conversion_ms = (time.perf_counter_ns() - conversion_started) / 1e6
         attempts = []
         last_invalid = False
         for algorithm in ("H2S", "CELF"):
@@ -367,9 +387,13 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                     return RecoverySynthesisResult(self.name, run_status, statistics={"attempts": attempts}, diagnostic=f"{algorithm} resource limit")
                 last_invalid |= run_status == BackendStatus.OUTPUT_INVALID
                 continue
+            normalization_started = time.perf_counter_ns()
             try:
                 normalized = normalize_schedule(prepared, raw, self.quantum_ns)
+                normalization_ms = (time.perf_counter_ns() - normalization_started) / 1e6
+                verification_started = time.perf_counter_ns()
                 checker = check_h2s_solution(prepared, normalized)
+                verification_ms = (time.perf_counter_ns() - verification_started) / 1e6
             except H2sAdapterError as error:
                 attempts[-1]["normalization_error"] = str(error); last_invalid = True; continue
             all_scheduled = raw["scheduled_flow_count"] == raw["requested_flow_count"] == len(prepared.flow_map)
@@ -390,12 +414,21 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                          "max_candidate_paths": max(candidate_counts, default=0),
                          "candidate_route_generation_ms": float(raw.get("candidate_route_generation_seconds", 0)) * 1000,
                          "seed": FORMAL_SEED, "threads": FORMAL_THREADS, "memory_limit_mb": self.memory_limit_mb,
-                         **route_metrics(normalized), "route_schedule": normalized["route_schedule"],
+                         **route_metrics(normalized),
+                         "max_e2e_latency_ns": max((rows[-1]["end_ns"] - rows[0]["start_ns"]
+                             for flow_id in prepared.flow_map
+                             if (rows := sorted((row for row in normalized["route_schedule"] if row["flow_id"] == flow_id),
+                                                key=lambda row: row["hop_index"]))), default=0),
+                         "route_schedule": normalized["route_schedule"],
                          "quantization_audit": prepared.quantization_rows}
                 return RecoverySynthesisResult(self.name, status, feasible=True,
                     logical_routes=normalized["logical_routes"], schedule_windows=normalized["schedule_windows"],
                     profile=normalized["profile"], statistics=stats,
-                    timings_ms={"total_backend": (time.perf_counter_ns() - started) / 1e6,
+                    timings_ms={"conversion": conversion_ms,
+                                "candidate_route_generation": float(raw.get("candidate_route_generation_seconds", 0)) * 1000,
+                                "scheduling": max(0.0, attempts[-1]["wall_ms"] - float(raw.get("candidate_route_generation_seconds", 0)) * 1000),
+                                "verification": verification_ms, "profile_normalization": normalization_ms,
+                                "total_backend": (time.perf_counter_ns() - started) / 1e6,
                                 "h2s_wall": attempts[0]["wall_ms"],
                                 "celf_wall": attempts[1]["wall_ms"] if len(attempts) > 1 else 0})
             last_invalid |= all_scheduled and not checker["valid"]

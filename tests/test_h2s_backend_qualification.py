@@ -141,8 +141,10 @@ class TestGScalabilityRunner(H2sFixture):
     def test_57_no_candidate_fault_discovery(self): self.assertNotIn("prepare_fault_dataset", self.source())
     def test_58_no_omnet_command(self): self.assertNotIn("opp_run", self.source())
     def test_59_no_plot_artifact(self): self.assertNotIn("matplotlib", self.source())
-    def test_60_subprocess_timeout_works(self): self.assertIn("timeout=timeout_s", (ROOT / "tools/h2s_jrs_backend.py").read_text())
-    def test_61_subprocess_rss_limit_works(self): self.assertIn("RLIMIT_AS", (ROOT / "tools/h2s_jrs_backend.py").read_text())
+    def test_60_subprocess_timeout_works(self): self.assertIn("deadline = time.monotonic() + timeout_s", (ROOT / "tools/h2s_jrs_backend.py").read_text())
+    def test_61_subprocess_rss_limit_works(self):
+        source = (ROOT / "tools/h2s_jrs_backend.py").read_text()
+        self.assertIn("RLIMIT_AS", source); self.assertIn('/proc/{process.pid}/status', source)
     def test_62_exp14_scenario_reused_byte_identically(self): self.assertTrue(all((SCENARIOS / f"{sid}.yaml").is_file() for sid in SCALE_IDS))
     def test_63_jrs_comparison_row_generated(self): self.assertIn("jrs_wa_vs_h2s_p0.csv", self.source())
     def test_64_failed_p0_has_no_fake_profile(self): self.assertIn("if payload:", self.source())
