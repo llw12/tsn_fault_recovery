@@ -10,6 +10,7 @@ import resource
 import signal
 import statistics
 import subprocess
+import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass
@@ -319,9 +320,12 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         self.candidate_paths = candidate_paths; self.memory_limit_mb = memory_limit_mb
 
     def _run(self, prepared: H2sPreparedInputs, algorithm: str, timeout_s: int) -> tuple[BackendStatus | None, dict[str, Any] | None, dict[str, Any]]:
-        command = [str(self.executable), "-n", str(prepared.topology_path),
-                   "-s", str(prepared.scenario_path), "-a", algorithm, "--routing", "DIJKSTRA_OVERLAP",
-                   "--candidate-paths", str(self.candidate_paths), "-p", "0", "--verify-schedule", "-r"]
+        backend_command = [str(self.executable), "-n", str(prepared.topology_path),
+                           "-s", str(prepared.scenario_path), "-a", algorithm, "--routing", "DIJKSTRA_OVERLAP",
+                           "--candidate-paths", str(self.candidate_paths), "-p", "0", "--verify-schedule", "-r"]
+        rss_marker = "__H2S_MAX_RSS_KB__="
+        runner = Path(__file__).with_name("h2s_process_runner.py")
+        command = [sys.executable, str(runner), str(self.memory_limit_mb), "--", *backend_command]
         def limits() -> None:
             limit = self.memory_limit_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
@@ -348,16 +352,21 @@ class H2sJrsBackend(RecoverySynthesisBackend):
             except subprocess.TimeoutExpired:
                 continue
         wall_ms = (time.perf_counter_ns() - started) / 1e6
-        meta = {"command": command, "stdout": stdout, "stderr": stderr,
+        for line in stderr.splitlines():
+            if line.startswith(rss_marker):
+                try: peak_rss_bytes = max(peak_rss_bytes, int(line.removeprefix(rss_marker)) * 1024)
+                except ValueError: pass
+        clean_stderr = "\n".join(line for line in stderr.splitlines() if not line.startswith(rss_marker))
+        meta = {"command": backend_command, "stdout": stdout, "stderr": clean_stderr,
                 "returncode": process.returncode, "wall_ms": wall_ms,
                 "peak_rss_bytes": peak_rss_bytes,
-                "memory_measurement_method": "per-process /proc VmRSS polling"}
+                "memory_measurement_method": "isolated RUSAGE_CHILDREN max RSS with /proc polling cross-check"}
         if timed_out:
             return BackendStatus.TIME_LIMIT, None, meta
         if memory_killed:
             return BackendStatus.MEMORY_LIMIT, None, meta
         if process.returncode != 0:
-            memory = "bad_alloc" in stderr or "Cannot allocate memory" in stderr or process.returncode in {-9, 137}
+            memory = "bad_alloc" in clean_stderr or "Cannot allocate memory" in clean_stderr or process.returncode in {-9, 137}
             return (BackendStatus.MEMORY_LIMIT if memory else BackendStatus.BACKEND_ERROR), None, meta
         try:
             return None, parse_backend_output(stdout), meta

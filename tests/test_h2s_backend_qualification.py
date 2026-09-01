@@ -145,6 +145,8 @@ class TestGScalabilityRunner(H2sFixture):
     def test_61_subprocess_rss_limit_works(self):
         source = (ROOT / "tools/h2s_jrs_backend.py").read_text()
         self.assertIn("RLIMIT_AS", source); self.assertIn('/proc/{process.pid}/status', source)
+        self.assertIn("__H2S_MAX_RSS_KB__", source)
+        self.assertIn("RUSAGE_CHILDREN", (ROOT / "tools/h2s_process_runner.py").read_text())
     def test_62_exp14_scenario_reused_byte_identically(self): self.assertTrue(all((SCENARIOS / f"{sid}.yaml").is_file() for sid in SCALE_IDS))
     def test_63_jrs_comparison_row_generated(self): self.assertIn("jrs_wa_vs_h2s_p0.csv", self.source())
     def test_64_failed_p0_has_no_fake_profile(self): self.assertIn("if payload:", self.source())
