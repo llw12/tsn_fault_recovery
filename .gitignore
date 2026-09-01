@@ -16,3 +16,5 @@ gurobi.lic
 *.gurobi.lic
 core
 core.*
+.external/
+.venv-h2s/

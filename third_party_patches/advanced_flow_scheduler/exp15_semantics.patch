@@ -1,0 +1,227 @@
+diff --git a/cmake/flags.cmake b/cmake/flags.cmake
+index c9d78a7..d9a0b0d 100644
+--- a/cmake/flags.cmake
++++ b/cmake/flags.cmake
+@@ -11,8 +11,6 @@ function(setup_linker target)
+         if (GNU_GOLD)
+             message(STATUS "found GNU gold linker, using it as linker")
+             target_link_options(${target} PUBLIC -fuse-ld=gold;LINKER:--threads,--thread-count=${HOST_PROC_COUNT})
+-        elseif (CMAKE_BUILD_TYPE MATCHES "Release")
+-            message(FATAL_ERROR "Gold or lld linker must be installed for building in Release mode.")
+         else ()
+             message(STATUS "LLD and Gold not available, using the system linker.")
+         endif ()
+diff --git a/include/graph/GraphStructs.h b/include/graph/GraphStructs.h
+index ec4ceb4..4c370bd 100644
+--- a/include/graph/GraphStructs.h
++++ b/include/graph/GraphStructs.h
+@@ -22,6 +22,11 @@ struct Flow
+     common::NetworkNodeID destination;
+ 
+     std::vector<common::ConfigurationNodeID> configurations;
++    std::size_t release_offset = 0; // in scheduler ticks
++    std::size_t deadline = 0; // relative deadline; zero preserves the stock period deadline
++    std::size_t propagation_delay = 1;
++    std::size_t processing_delay = 4;
++    bool fixed_release = false;
+ };
+ 
+ 
+@@ -30,6 +35,11 @@ struct Flow
+     j = json{{"flowID", f.id.get()},
+              {"frame size", f.frame_size},
+              {"period", f.period},
++             {"release offset", f.release_offset},
++             {"deadline", f.deadline},
++             {"propagation delay", f.propagation_delay},
++             {"processing delay", f.processing_delay},
++             {"fixed release", f.fixed_release},
+              {"source", f.source.get()},
+              {"destination", f.destination.get()}};
+ }
+@@ -41,6 +51,11 @@ struct Flow
+     f.id = common::FlowNodeID{temp};
+     j.at("package size").get_to(f.frame_size);
+     j.at("period").get_to(f.period);
++    j.at("release offset").get_to(f.release_offset);
++    j.at("deadline").get_to(f.deadline);
++    f.propagation_delay = j.value("propagation delay", std::size_t{1});
++    f.processing_delay = j.value("processing delay", std::size_t{4});
++    f.fixed_release = j.value("fixed release", false);
+     j.at("source").get_to(temp);
+     f.source = common::NetworkNodeID{temp};
+     j.at("destination").get_to(temp);
+diff --git a/include/graph/MultiLayeredGraph.h b/include/graph/MultiLayeredGraph.h
+index fe59830..882ade0 100644
+--- a/include/graph/MultiLayeredGraph.h
++++ b/include/graph/MultiLayeredGraph.h
+@@ -45,6 +45,8 @@ public:
+ 
+     [[nodiscard]] auto getEgressQueues() const -> std::span<const graph_structs::EgressQueue>;
+ 
++    [[nodiscard]] auto getSourceNodeOfQueue(common::NetworkQueueID queue_id) const -> common::NetworkNodeID;
++
+     /**
+      * Adds a network device node in the network layer csr with the according edges.
+      *
+diff --git a/src/graph/MultiLayeredGraph.cpp b/src/graph/MultiLayeredGraph.cpp
+index 726ddd8..52242bc 100644
+--- a/src/graph/MultiLayeredGraph.cpp
++++ b/src/graph/MultiLayeredGraph.cpp
+@@ -69,6 +69,18 @@ auto MultiLayeredGraph::getEgressQueues() const -> std::span<const graph_structs
+     return complete;
+ }
+ 
++auto MultiLayeredGraph::getSourceNodeOfQueue(const common::NetworkQueueID queue_id) const -> common::NetworkNodeID
++{
++    for(std::size_t node = 0; node < getNumberOfNetworkNodes(); ++node) {
++        for(const auto& queue : getEgressQueuesOf(common::NetworkNodeID{node})) {
++            if(queue.id == queue_id) {
++                return common::NetworkNodeID{node};
++            }
++        }
++    }
++    throw std::out_of_range("Unknown egress queue");
++}
++
+ auto MultiLayeredGraph::addFlow(graph_structs::Flow f) -> void
+ {
+     flows_[f.id] = std::move(f);
+diff --git a/src/scenario/ScenarioManager.cpp b/src/scenario/ScenarioManager.cpp
+index ecfe74f..fbf3e5d 100644
+--- a/src/scenario/ScenarioManager.cpp
++++ b/src/scenario/ScenarioManager.cpp
+@@ -5,6 +5,7 @@
+ #include <IO/OutputLogger.h>
+ #include <graph/GraphStructOperations.h>
+ #include <util/Timer.h>
++#include <nlohmann/json.hpp>
+ 
+ auto ScenarioManager::runScenario(const ProgramOptions& options,
+                                   MultiLayeredGraph& graph,
+@@ -122,6 +123,11 @@ auto ScenarioManager::runScenario(const ProgramOptions& options,
+             .avg_scheduling_table_size = util::get_average_value(scheduling_table_sizes),
+             .max_scheduling_table_size = *std::ranges::max_element(scheduling_table_sizes)};
+ 
++        const auto requested_flow_count = graph.getNumberOfFlows();
++        nlohmann::json candidate_path_counts = nlohmann::json::object();
++        for(const auto& [flow_id, flow] : graph.getFlows()) {
++            candidate_path_counts[std::to_string(flow_id.get())] = flow.configurations.size();
++        }
+         if(active_f_.size() < graph.getNumberOfFlows()) {
+             // remove rejected flows
+             removeRejectedFlows(graph);
+@@ -140,6 +146,31 @@ auto ScenarioManager::runScenario(const ProgramOptions& options,
+             verifySchedule(currently_active_utilization_, graph, hyper_cycle);
+         }
+ 
++        currently_active_utilization_.sortReservedEgressSlots();
++        nlohmann::json exported{{"upstream_verifier_pass", options.isVerifySchedule()},
++                                {"requested_flow_count", requested_flow_count},
++                                {"scheduled_flow_count", active_f_.size()},
++                                {"candidate_path_counts", candidate_path_counts},
++                                {"candidate_route_generation_seconds", total_insert_config_time_},
++                                {"hyper_cycle_ticks", hyper_cycle},
++                                {"slots", nlohmann::json::array()}};
++        const auto& reserved = currently_active_utilization_.getReservedEgressSlots();
++        for(std::size_t queue_index = 0; queue_index < reserved.size(); ++queue_index) {
++            const auto queue_id = common::NetworkQueueID{queue_index};
++            const auto source = graph.getSourceNodeOfQueue(queue_id);
++            const auto destination = graph.getEgressQueue(queue_id).destination;
++            for(const auto& slot : reserved[queue_index]) {
++                exported["slots"].push_back({{"queue_id", queue_index},
++                                             {"source", source.get()},
++                                             {"destination", destination.get()},
++                                             {"start_tick", slot.start_time},
++                                             {"end_tick", slot.next_slot_start},
++                                             {"flow_id", slot.flow_id.get()},
++                                             {"config_id", slot.config_id.get()}});
++            }
++        }
++        fmt::print("H2S_SCHEDULE_JSON:{}\n", exported.dump());
++
+ 
+ 
+         /*
+diff --git a/src/solver/Placement.cpp b/src/solver/Placement.cpp
+index cca3523..08577ab 100644
+--- a/src/solver/Placement.cpp
++++ b/src/solver/Placement.cpp
+@@ -33,8 +33,10 @@ auto placement::placeConfigASAP(const graph_structs::Configuration& current_conf
+     required_slots.reserve(frames_per_hyper_cycle);
+ 
+     const auto success = std::ranges::all_of(std::views::iota(std::size_t{0}, frames_per_hyper_cycle), [&](const std::size_t frame_index) {
+-        const auto reserve_slots = utilizationList.searchTransmissionOpportunities(current_config, current_flow, frame_index * current_flow.period, (frame_index + 1) * current_flow.period);
+-        if(reserve_slots.empty()) {
++        const auto release = current_flow.release_offset + frame_index * current_flow.period;
++        const auto deadline = release + (current_flow.deadline == 0 ? current_flow.period : current_flow.deadline);
++        const auto reserve_slots = utilizationList.searchTransmissionOpportunities(current_config, current_flow, release, deadline);
++        if(reserve_slots.empty() or (current_flow.fixed_release and reserve_slots.front().start_time != release)) {
+             return false;
+         }
+         required_slots.push_back(reserve_slots);
+diff --git a/src/solver/UtilizationList.cpp b/src/solver/UtilizationList.cpp
+index bc7ded2..530cc0c 100644
+--- a/src/solver/UtilizationList.cpp
++++ b/src/solver/UtilizationList.cpp
+@@ -42,7 +42,7 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+     auto running_arrival_time = first_release_time;
+ 
+     const auto current_transmission_delay = util::calculate_transmission_delay(current_flow.frame_size);
+-    const auto effective_deadline = deadline - current_transmission_delay - constant::propagation_delay;
++    const auto effective_deadline = deadline - current_transmission_delay - current_flow.propagation_delay;
+ 
+     const auto constraint_arrival_to_slot_end_large_enough = [current_transmission_delay, &running_arrival_time](const auto& slot) {
+         // slot has not ended before the package could be sent
+@@ -80,7 +80,7 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+ 
+         required_slots.emplace_back(network_link_id, earliest_send_time, earliest_send_time + current_transmission_delay, running_arrival_time);
+         // adding the transmission delay here makes it store-and-forward switching. Replace it by some realistic constant for cut-through.
+-        running_arrival_time = earliest_send_time + current_transmission_delay + constant::propagation_delay + constant::processing_delay;
++        running_arrival_time = earliest_send_time + current_transmission_delay + current_flow.propagation_delay + current_flow.processing_delay;
+ 
+         // for the frame a slot was found in each network segment
+         return true;
+diff --git a/src/util/ScheduleVerifier.cpp b/src/util/ScheduleVerifier.cpp
+index 508a830..07111e4 100644
+--- a/src/util/ScheduleVerifier.cpp
++++ b/src/util/ScheduleVerifier.cpp
+@@ -257,8 +257,8 @@ auto create_flow_tracker(const std::size_t hyper_cycle_len, const graph_structs:
+     new_flow_tracker.strands = std::vector(number_of_strands, StrandTracker());
+     for(size_t strand_index = 0; strand_index < number_of_strands; ++strand_index) {
+         StrandTracker &current_strand = new_flow_tracker.strands[strand_index];
+-        current_strand.first_strand_tick = strand_index * current_flow.period;
+-        current_strand.last_strand_tick = ((strand_index + 1) * current_flow.period) - 1;
++        current_strand.first_strand_tick = current_flow.release_offset + strand_index * current_flow.period;
++        current_strand.last_strand_tick = current_strand.first_strand_tick + (current_flow.deadline == 0 ? current_flow.period : current_flow.deadline) - 1;
+         current_strand.path_taken = std::vector<common::NetworkNodeID>();
+         current_strand.previous_frame_last_tick = 0;
+     }
+@@ -380,6 +380,9 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+         }
+ 
+         if(current_flow_tracker.state == FlowTrackerState::STRAND_CLOSED) {
++            if(current_flow.fixed_release and current_slot.start_time != current_strand_tracker.first_strand_tick) {
++                throw validationError("Source transmission does not equal fixed release offset");
++            }
+             // Check correct source node
+             if(current_flow.source != current_port_source) {
+                 fmt::print(stderr,
+@@ -417,7 +420,7 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+                     last_node_in_path.get());
+                 throw validationError("A frame got forwarded by a node different from the node that last received the frame");
+             }
+-            const std::size_t earliest_frame_availability = current_strand_tracker.previous_frame_last_tick + constant::propagation_delay + constant::processing_delay + 1;
++            const std::size_t earliest_frame_availability = current_strand_tracker.previous_frame_last_tick + current_flow.propagation_delay + current_flow.processing_delay + 1;
+             if(earliest_frame_availability > current_slot.start_time) {
+                 fmt::print(stderr,
+                     "The schedule verifier found an inconsistency in the schedule.\n"
+@@ -465,7 +468,7 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+         // Check whether this is the destination
+         if(current_port_destination == current_flow.destination) {
+             // Deadline check
+-            const std::size_t true_arrival_time = current_slot.next_slot_start + constant::propagation_delay - 1;
++            const std::size_t true_arrival_time = current_slot.next_slot_start + current_flow.propagation_delay - 1;
+             if(current_strand_tracker.last_strand_tick < true_arrival_time) {
+                 fmt::print(
+                     "The schedule verifier found an inconsistency in the schedule.\n"
