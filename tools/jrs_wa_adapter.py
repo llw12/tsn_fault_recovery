@@ -410,6 +410,7 @@ class TsnkitJrsWaBackend(RecoverySynthesisBackend):
         port_map = json.loads(port_map_path.read_text(encoding="utf-8"))
         flow_defs = {flow["id"]: flow for flow in scenario["tt_flows"]}
         windows = []
+        route_schedule = []
         logical_routes = []
         forwarding = []
         for stream in engine.task:
@@ -431,6 +432,10 @@ class TsnkitJrsWaBackend(RecoverySynthesisBackend):
                 start_ns = int(round(float(engine.t[stream][link].X)))
                 end_ns = start_ns + int(stream.t_trans_1g)
                 logical_source = prepared.reverse_node_map[arc[0]]
+                route_schedule.append({"flow_id": flow_id, "logical_link": logical_link,
+                                       "source": logical_source,
+                                       "destination": prepared.reverse_node_map[arc[1]],
+                                       "start_ns": start_ns, "end_ns": end_ns})
                 if any(node["id"] == logical_source and node["type"] == "switch" for node in scenario["nodes"]):
                     binding = _port_binding(port_map, logical_link, logical_source)
                     windows.append({"flow_id": flow_id, "logical_link": logical_link,
@@ -472,4 +477,5 @@ class TsnkitJrsWaBackend(RecoverySynthesisBackend):
                                                          ("forwarding_model", "logical_routes", "routes", "gate_schedules")})
         result.logical_routes = profile["logical_routes"]
         result.schedule_windows = sorted(windows, key=lambda item: (item["egress_path"], item["start_ns"], item["flow_id"]))
+        result.statistics["route_schedule"] = sorted(route_schedule, key=lambda item: (item["flow_id"], item["start_ns"]))
         result.profile = profile

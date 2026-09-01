@@ -1,0 +1,2 @@
+# Open-source JRS-WA solver backend.  PySCIPOpt 6.2.1 wheels bundle SCIP 10.0.2.
+PySCIPOpt==6.2.1
