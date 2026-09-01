@@ -1,0 +1,1 @@
+{"allowed_verdicts":["PF_CHEAP_AND_HIGH_COVERAGE","PF_COMPUTE_PRESSURE","PF_STORAGE_PRESSURE","PF_COVERAGE_LIMITED","PF_COMPUTE_AND_COVERAGE_PRESSURE","PF_COMPUTE_AND_STORAGE_PRESSURE","INCONCLUSIVE"],"basis":"joint assessment of scale, fault count, runtime, LPT projections, coverage, storage, and memory","verdict":"PF_COVERAGE_LIMITED"}

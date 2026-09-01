@@ -1,0 +1,1 @@
+{"inet_invocations":0,"memory_limit_mb":8192,"omnet_invocations":0,"pf_grouping_invocations":0,"platform":"Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43","plot_artifacts":0,"python":"3.14.4","scenario_budget_s":7200,"seed":1024,"threads_per_solver":1,"timeout_per_algorithm_s":30}

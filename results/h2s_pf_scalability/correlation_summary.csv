@@ -1,0 +1,13 @@
+interpretation,pearson_affected_runtime,scenario_id,spearman_affected_runtime
+association only; no causal claim,0.38574069866521987,S1,0.5892317030029749
+association only; no causal claim,0.4093545291397422,S2,0.6431317894155754
+association only; no causal claim,,S3,
+association only; no causal claim,0.4669801301236162,S4,0.796581453787699
+association only; no causal claim,0.9396920288095418,S5,0.643498380482032
+association only; no causal claim,0.8196033658667572,S6,0.5604548509471415
+association only; no causal claim,0.41233791421397936,S7,0.0748944240134217
+association only; no causal claim,,F150_TT100,
+association only; no causal claim,,F150_TT250,
+association only; no causal claim,,F150_TT500,
+association only; no causal claim,0.6179082913477375,F150_TT750,0.7194896311779784
+association only; no causal claim,0.8985154495798594,F150_TT1000,0.6599820275953542
