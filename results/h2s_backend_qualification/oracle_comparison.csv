@@ -1,0 +1,4 @@
+HEURISTIC_FALSE_NEGATIVE_ON_REFERENCE,case_id,h2s_static_valid,h2s_status,oracle_backend,oracle_feasible,oracle_static_valid,oracle_status
+False,QH00,True,SUCCESS_H2S,JRS-WA Gurobi,True,True,OPTIMAL
+False,QH01,True,SUCCESS_H2S,JRS-WA Gurobi,True,True,OPTIMAL
+False,QH02,True,SUCCESS_H2S,JRS-WA Gurobi,True,True,OPTIMAL

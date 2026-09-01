@@ -1,0 +1,1 @@
+{"logical_to_directed_arcs":{"l_a_s":[{"destination":2,"source":0,"state":"enabled"},{"destination":0,"source":2,"state":"enabled"}],"l_s_d":[{"destination":1,"source":2,"state":"enabled"},{"destination":2,"source":1,"state":"enabled"}]}}
