@@ -146,10 +146,14 @@ def pearson(xs: list[float], ys: list[float]) -> float | None:
 
 def ranks(values: list[float]) -> list[float]:
     result = [0.0] * len(values)
-    for value in sorted(set(values)):
-        indices = [i for i, item in enumerate(values) if item == value]
-        rank = 1 + (indices[0] + indices[-1]) / 2
-        for index in indices: result[index] = rank
+    ordered = sorted(enumerate(values), key=lambda item: (item[1], item[0]))
+    start = 0
+    while start < len(ordered):
+        end = start
+        while end + 1 < len(ordered) and ordered[end + 1][1] == ordered[start][1]: end += 1
+        rank = 1 + (start + end) / 2
+        for position in range(start, end + 1): result[ordered[position][0]] = rank
+        start = end + 1
     return result
 
 

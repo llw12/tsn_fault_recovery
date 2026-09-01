@@ -167,6 +167,7 @@ class TestKAnalysisHelpers(PfFixture):
     def test_extra_pearson(self): self.assertAlmostEqual(pearson([1, 2, 3], [2, 4, 6]), 1)
     def test_extra_spearman(self): self.assertAlmostEqual(spearman([3, 1, 2], [30, 10, 20]), 1)
     def test_extra_ranks(self): self.assertEqual(ranks([2, 2, 4]), [1.5, 1.5, 3])
+    def test_extra_unsorted_tied_ranks(self): self.assertEqual(ranks([4, 2, 4, 1]), [3.5, 2, 3.5, 1])
     def test_extra_pfq_count(self): self.assertEqual(len(PFQ_IDS), 16)
     def test_extra_quick_subset(self): self.assertEqual(len(QUICK_PFQ), 6)
     def test_extra_allowed_verdict(self):
