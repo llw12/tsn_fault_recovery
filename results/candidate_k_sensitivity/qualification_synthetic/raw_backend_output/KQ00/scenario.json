@@ -1,0 +1,1 @@
+{"time_steps":[{"addFlows":[{"deadline":5000,"destination":8,"fixed release":true,"flowID":0,"package size":1375,"period":10000,"processing delay":0,"propagation delay":0,"release offset":0,"source":9}],"removeFlows":[],"time":0}]}

@@ -1,0 +1,7 @@
+actual_candidate_count,candidate_count_leq_K,candidate_vector_sha256,command_has_dijkstra_overlap,command_has_requested_K,command_keeps_priority_zero,default_request,qualification_id,raw_manifest_requested_K,raw_manifest_routing_algorithm,requested_K,status
+5,True,dfe61cb3db754e745c5e2dddeb377955136e2275ea3c5ac87fa474ce00b889a2,True,True,True,True,KQ00,5,DIJKSTRA_OVERLAP,5,SUCCESS_H2S
+5,True,dfe61cb3db754e745c5e2dddeb377955136e2275ea3c5ac87fa474ce00b889a2,True,True,True,False,KQ01,5,DIJKSTRA_OVERLAP,5,SUCCESS_H2S
+8,True,70f80d2db75dd93dd1a100f1163a20a7055876444d5ca237da4fd6729eeda986,True,True,True,False,KQ02,8,DIJKSTRA_OVERLAP,8,SUCCESS_H2S
+8,True,70f80d2db75dd93dd1a100f1163a20a7055876444d5ca237da4fd6729eeda986,True,True,True,False,KQ03,12,DIJKSTRA_OVERLAP,12,SUCCESS_H2S
+8,True,70f80d2db75dd93dd1a100f1163a20a7055876444d5ca237da4fd6729eeda986,True,True,True,False,KQ04,16,DIJKSTRA_OVERLAP,16,SUCCESS_H2S
+increase observed,True,,True,True,True,,KQ05-KQ10,all verified,DIJKSTRA_OVERLAP,5/8/12/16,PASS
