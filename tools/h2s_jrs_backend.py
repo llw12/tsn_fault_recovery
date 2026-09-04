@@ -103,10 +103,13 @@ class H2sPreparedInputs:
 
 
 def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: int = DEFAULT_QUANTUM_NS,
+                       candidate_path_budget: int = DEFAULT_CANDIDATE_PATHS,
                        *, disabled_links: tuple[str, ...] = (),
                        healthy_primary_routes: dict[str, dict[str, Any]] | None = None,
                        affected_flow_ids: tuple[str, ...] = (),
                        route_scope: str = "affected-only") -> H2sPreparedInputs:
+    if candidate_path_budget < 1:
+        raise H2sAdapterError("candidate_path_budget must be positive")
     if route_scope not in {"affected-only", "all-reroute"}:
         raise H2sAdapterError(f"unknown PF route scope: {route_scope}")
     scenario = json.loads(scenario_path.read_text(encoding="utf-8"))
@@ -202,6 +205,7 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
     manifest = {
         "upstream_repository": UPSTREAM_REPOSITORY, "upstream_commit": UPSTREAM_COMMIT,
         "upstream_license": UPSTREAM_LICENSE, "backend_quantum_ns": quantum_ns,
+        "routing_algorithm": "DIJKSTRA_OVERLAP", "requested_candidate_route_budget": candidate_path_budget,
         "node_map": node_map, "flow_map": flow_map,
         "stream_handles": deterministic_stream_handles(list(flow_map)),
         "topology_sha256": hashlib.sha256(topology_path.read_bytes()).hexdigest(),
@@ -427,6 +431,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
 
     def __init__(self, executable: Path, *, quantum_ns: int = DEFAULT_QUANTUM_NS,
                  candidate_paths: int = DEFAULT_CANDIDATE_PATHS, memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB):
+        if candidate_paths < 1:
+            raise H2sAdapterError("candidate_paths must be positive")
         self.executable = Path(executable); self.quantum_ns = quantum_ns
         self.candidate_paths = candidate_paths; self.memory_limit_mb = memory_limit_mb
 
@@ -493,7 +499,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         output = request.output_directory or request.scenario_path.parent / "h2s_input"
         conversion_started = time.perf_counter_ns()
         try:
-            prepared = prepare_h2s_inputs(request.scenario_path, output, self.quantum_ns)
+            prepared = prepare_h2s_inputs(request.scenario_path, output, self.quantum_ns, self.candidate_paths)
         except (H2sAdapterError, KeyError, TypeError, json.JSONDecodeError) as error:
             return RecoverySynthesisResult(self.name, BackendStatus.INVALID_INPUT, diagnostic=str(error))
         conversion_ms = (time.perf_counter_ns() - conversion_started) / 1e6
@@ -528,7 +534,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                          "scheduled_flow_ratio": 1.0, "semantic_valid": True,
                          "upstream_verifier_pass": True, "project_static_checker_pass": True,
                          "semantic_checks": checker, "attempts": attempts, "backend_quantum_ns": self.quantum_ns,
-                         "candidate_path_count": self.candidate_paths, "routing_algorithm": "DIJKSTRA_OVERLAP",
+                         "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
+                         "routing_algorithm": "DIJKSTRA_OVERLAP",
                          "mean_candidate_paths_per_flow": statistics.mean(candidate_counts) if candidate_counts else 0,
                          "min_candidate_paths": min(candidate_counts, default=0),
                          "max_candidate_paths": max(candidate_counts, default=0),
@@ -556,6 +563,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         ratios = [a.get("scheduled_flow_count", 0) / max(a.get("requested_flow_count", len(prepared.flow_map)), 1) for a in attempts]
         return RecoverySynthesisResult(self.name, status, statistics={"attempts": attempts,
             "scheduled_flow_ratio": max(ratios, default=0), "semantic_valid": False,
-            "candidate_path_count": self.candidate_paths, "backend_quantum_ns": self.quantum_ns},
+            "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
+            "routing_algorithm": "DIJKSTRA_OVERLAP", "backend_quantum_ns": self.quantum_ns},
             timings_ms={"total_backend": (time.perf_counter_ns() - started) / 1e6},
             diagnostic="constructive heuristics did not produce an all-flow static-valid schedule")
