@@ -288,8 +288,13 @@ def load_scenario(path: str | Path) -> ScenarioModel:
             release = parse_time(item.get("release_offset", "0us"), allow_zero=True)
         except (KeyError, UnitError) as error:
             raise ScenarioValidationError(f"flow {flow_id}: {error}") from error
-        if abs(period - simulation.cycle_time_s) > 1e-15:
-            raise ScenarioValidationError(f"flow {flow_id} period != cycle_time: unsupported by scheduler v1")
+        # A scenario cycle is the scheduling hyperperiod, not a common TT
+        # period.  Mixed-period workloads are valid when every period divides
+        # that hyperperiod; this keeps periodic instance accounting exact.
+        if simulation.cycle_time_s / period != round(simulation.cycle_time_s / period):
+            raise ScenarioValidationError(f"flow {flow_id} period must divide cycle_time")
+        if deadline > period:
+            raise ScenarioValidationError(f"flow {flow_id} deadline exceeds period")
         if release < 0 or release >= period:
             raise ScenarioValidationError(f"flow {flow_id} has invalid release offset")
         budget = deadline - scheduling.endpoint_budget_s

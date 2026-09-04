@@ -265,16 +265,39 @@ def normalize_schedule(prepared: H2sPreparedInputs, raw: dict[str, Any], quantum
     logical_routes, windows = [], []
     switch_ids = {node["id"] for node in prepared.scenario["nodes"] if node["type"] == "switch"}
     for flow_id, rows in sorted(by_flow.items()):
-        ordered = sorted(rows, key=lambda row: (row["start_ns"], row["queue_id"]))
-        node_path = [ordered[0]["source"]] + [row["destination"] for row in ordered]
+        qrow = qrows[flow_id]
+        # The upstream output contains one slot per hop *and per hyperperiod
+        # instance.  Group by the source release period before deriving the
+        # static forwarding path; treating all instances as hops is valid only
+        # for the historical common-period (one-instance) workloads.
+        instances: dict[int, list[dict[str, Any]]] = defaultdict(list)
+        for row in rows:
+            period_ns = qrow["period_ticks"] * quantum_ns
+            index = (row["start_ns"] - qrow["release_ticks"] * quantum_ns) // period_ns
+            if index < 0:
+                raise H2sAdapterError(f"{flow_id} slot precedes its release")
+            row["instance_index"] = int(index); instances[int(index)].append(row)
+        ordered_instances = [sorted(instances[index], key=lambda row: (row["start_ns"], row["queue_id"]))
+                             for index in sorted(instances)]
+        if not ordered_instances or any(not value for value in ordered_instances):
+            raise H2sAdapterError(f"{flow_id} has no complete schedule instances")
+        first = ordered_instances[0]
+        node_path = [first[0]["source"]] + [row["destination"] for row in first]
+        canonical_links = [row["logical_link"] for row in first]
+        for ordered in ordered_instances:
+            candidate_nodes = [ordered[0]["source"]] + [row["destination"] for row in ordered]
+            if candidate_nodes != node_path or [row["logical_link"] for row in ordered] != canonical_links:
+                raise H2sAdapterError(f"{flow_id} uses non-static forwarding across hyperperiod instances")
         logical_routes.append({"flow_id": flow_id, "node_path": node_path,
-                               "link_path": [row["logical_link"] for row in ordered]})
-        for hop, row in enumerate(ordered):
-            row["hop_index"] = hop
-            if row["source"] in switch_ids:
-                windows.append({"flow_id": flow_id, "hop_index": hop, "logical_link": row["logical_link"],
-                                "egress_path": _egress_path(prepared, row["logical_link"], row["source"]),
-                                "start_ns": row["start_ns"], "end_ns": row["end_ns"]})
+                               "link_path": canonical_links})
+        for ordered in ordered_instances:
+            for hop, row in enumerate(ordered):
+                row["hop_index"] = hop
+                if row["source"] in switch_ids:
+                    windows.append({"flow_id": flow_id, "instance_index": row["instance_index"],
+                                    "hop_index": hop, "logical_link": row["logical_link"],
+                                    "egress_path": _egress_path(prepared, row["logical_link"], row["source"]),
+                                    "start_ns": row["start_ns"], "end_ns": row["end_ns"]})
     cycle_ns = int(raw["hyper_cycle_ticks"]) * quantum_ns
     tt_class = int(prepared.scenario["tt_flows"][0].get("traffic_class", 1))
     be_class = int(prepared.scenario["scheduling"].get("be_traffic_class", 0))
@@ -286,9 +309,10 @@ def normalize_schedule(prepared: H2sPreparedInputs, raw: dict[str, Any], quantum
                                 "destination": flows[fid]["destination"]} for fid in sorted(flows)],
         "release_offsets_ns": {fid: seconds_to_ns(flows[fid]["release_offset_s"], f"{fid}.release") for fid in sorted(flows)},
         "gate_schedules": gate_schedules, "schedule_windows": windows,
+        "hyper_cycle_ns": cycle_ns,
     }
     return {"logical_routes": logical_routes, "schedule_windows": windows, "profile": profile,
-            "route_schedule": route_schedule, "quantization": list(qrows.values())}
+            "route_schedule": route_schedule, "quantization": list(qrows.values()), "hyper_cycle_ns": cycle_ns}
 
 
 def check_h2s_solution(prepared: H2sPreparedInputs, normalized: dict[str, Any]) -> dict[str, Any]:
@@ -299,35 +323,42 @@ def check_h2s_solution(prepared: H2sPreparedInputs, normalized: dict[str, Any]) 
     scenario = prepared.scenario
     flows = {flow["id"]: flow for flow in scenario["tt_flows"]}
     routes = {route["flow_id"]: route for route in normalized["logical_routes"]}
-    schedules: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for row in normalized["route_schedule"]: schedules[row["flow_id"]].append(row)
+    schedules: dict[str, dict[int, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
+    for row in normalized["route_schedule"]:
+        schedules[row["flow_id"]][int(row.get("instance_index", 0))].append(row)
     qrows = {row["flow_id"]: row for row in prepared.quantization_rows}
     record("ALL_TT_FLOWS_SCHEDULED", set(schedules) == set(flows), f"{len(schedules)}/{len(flows)}")
     record("ALL_TT_ROUTES_PRESENT", set(routes) == set(flows), f"{len(routes)}/{len(flows)}")
     intervals: dict[tuple[str, str], list[tuple[int, int, str]]] = defaultdict(list)
-    cycle_ns = seconds_to_ns(scenario["simulation"]["cycle_time_s"], "cycle")
+    cycle_ns = int(normalized.get("hyper_cycle_ns", seconds_to_ns(scenario["simulation"]["cycle_time_s"], "cycle")))
+    if seconds_to_ns(scenario["simulation"]["cycle_time_s"], "cycle") % cycle_ns:
+        record("HYPERCYCLE_DIVIDES_SCENARIO_CYCLE", False, "backend hypercycle does not divide scenario cycle")
     continuity_ok = loop_ok = links_ok = release_ok = precedence_ok = waiting_ok = deadline_ok = bounds_ok = duration_ok = duplicates_ok = True
     for flow_id, flow in flows.items():
-        route = routes.get(flow_id, {}); rows = sorted(schedules.get(flow_id, []), key=lambda r: (r["start_ns"], r["queue_id"]))
+        route = routes.get(flow_id, {}); instances = schedules.get(flow_id, {})
         nodes, link_path = route.get("node_path", []), route.get("link_path", [])
-        continuity_ok &= bool(nodes) and len(nodes) == len(link_path) + 1 and nodes[0] == flow["source"] and nodes[-1] == flow["destination"]
+        expected_instances = cycle_ns // (qrows[flow_id]["period_ticks"] * qrows[flow_id]["backend_quantum_ns"])
+        continuity_ok &= bool(nodes) and len(nodes) == len(link_path) + 1 and nodes[0] == flow["source"] and nodes[-1] == flow["destination"] and len(instances) == expected_instances
         loop_ok &= len(nodes) == len(set(nodes))
-        duplicates_ok &= (len(nodes) == len(set(nodes)) and
-                          len(link_path) == len(set(zip(nodes, nodes[1:]))) and
-                          len({row["config_id"] for row in rows}) <= 1)
-        links_ok &= len(rows) == len(link_path) and all(row["logical_link"] in {link["id"] for link in scenario["links"]} for row in rows)
         release_ns = seconds_to_ns(flow["release_offset_s"], f"{flow_id}.release")
         quantized_release = qrows[flow_id]["release_ticks"] * qrows[flow_id]["backend_quantum_ns"]
-        release_ok &= bool(rows) and rows[0]["start_ns"] == quantized_release and rows[0]["start_ns"] >= release_ns
-        for left, right in zip(rows, rows[1:]):
-            precedence_ok &= right["start_ns"] >= left["end_ns"]
-            waiting_ok &= right["start_ns"] - left["end_ns"] >= 0
-        deadline_abs = release_ns + seconds_to_ns(flow["schedule_deadline_budget_s"], f"{flow_id}.deadline")
-        deadline_ok &= bool(rows) and rows[-1]["end_ns"] <= deadline_abs
-        bounds_ok &= all(0 <= row["start_ns"] < row["end_ns"] <= cycle_ns for row in rows)
-        duration_ok &= all(row["end_ns"] - row["start_ns"] == qrows[flow_id]["tx_ticks"] * qrows[flow_id]["backend_quantum_ns"] and
-                           row["end_ns"] - row["start_ns"] >= qrows[flow_id]["tx_ns"] for row in rows)
-        for row in rows: intervals[(row["logical_link"], row["source"])].append((row["start_ns"], row["end_ns"], flow_id))
+        period_ns = qrows[flow_id]["period_ticks"] * qrows[flow_id]["backend_quantum_ns"]
+        deadline_ns = seconds_to_ns(flow["schedule_deadline_budget_s"], f"{flow_id}.deadline")
+        for instance, values in instances.items():
+            rows = sorted(values, key=lambda r: (r["start_ns"], r["queue_id"]))
+            release_at_instance = quantized_release + instance * period_ns
+            release_ok &= bool(rows) and rows[0]["start_ns"] == release_at_instance and rows[0]["start_ns"] >= release_ns
+            duplicates_ok &= (len(nodes) == len(set(nodes)) and len(rows) == len(link_path) and
+                              len(link_path) == len(set(zip(nodes, nodes[1:]))) and
+                              len({row["config_id"] for row in rows}) <= 1)
+            links_ok &= len(rows) == len(link_path) and all(row["logical_link"] in {link["id"] for link in scenario["links"]} for row in rows)
+            for left, right in zip(rows, rows[1:]):
+                precedence_ok &= right["start_ns"] >= left["end_ns"]
+                waiting_ok &= right["start_ns"] - left["end_ns"] >= 0
+            deadline_ok &= bool(rows) and rows[-1]["end_ns"] <= release_at_instance + deadline_ns
+            bounds_ok &= all(0 <= row["start_ns"] < row["end_ns"] <= cycle_ns for row in rows)
+            duration_ok &= all(row["end_ns"] - row["start_ns"] == qrows[flow_id]["tx_ticks"] * qrows[flow_id]["backend_quantum_ns"] and row["end_ns"] - row["start_ns"] >= qrows[flow_id]["tx_ns"] for row in rows)
+            for row in rows: intervals[(row["logical_link"], row["source"])].append((row["start_ns"], row["end_ns"], flow_id))
     overlap_ok = True
     for values in intervals.values():
         ordered = sorted(values)
