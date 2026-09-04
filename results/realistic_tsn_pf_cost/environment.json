@@ -1,0 +1,1 @@
+{"backend_quantum_ns":100,"candidate_paths_k":5,"memory_limit_mb":8192,"platform":"Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43","seed":1024,"threads":1,"timeout_s":30,"upstream_commit":"650a9665e7bafb70fcf19c9f0a247e1d7b885ffd"}

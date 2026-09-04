@@ -1,0 +1,13 @@
+backend,exact_equal,intersection,jaccard,missing_a,missing_b,scale,topology_a,topology_b,union
+H2S,True,4,1.0,4,4,M,RING,REDSTAR,4
+H2S,True,4,1.0,4,4,M,RING,ROR,4
+H2S,True,4,1.0,4,4,M,REDSTAR,ROR,4
+CELF,True,4,1.0,4,4,M,RING,REDSTAR,4
+CELF,True,4,1.0,4,4,M,RING,ROR,4
+CELF,True,4,1.0,4,4,M,REDSTAR,ROR,4
+H2S,True,14,1.0,14,14,L,RING,REDSTAR,14
+H2S,True,14,1.0,14,14,L,RING,ROR,14
+H2S,True,14,1.0,14,14,L,REDSTAR,ROR,14
+CELF,True,14,1.0,14,14,L,RING,REDSTAR,14
+CELF,True,14,1.0,14,14,L,RING,ROR,14
+CELF,True,14,1.0,14,14,L,REDSTAR,ROR,14

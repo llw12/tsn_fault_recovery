@@ -1,0 +1,7 @@
+P0_celf_ms,P0_h2s_ms,P0_ms,P0_scheduled_flow_count,P0_scheduled_flow_ratio,P0_semantic_valid,P0_status,diagnostic,profile_path,profile_sha256,scale,scenario_id,topology_type
+0,0,307.892497,0,0.9886363636363636,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,M,M_RING,RING
+0,0,497.386647,0,0.9886363636363636,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,M,M_REDSTAR,REDSTAR
+0,0,379.347373,0,0.9886363636363636,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,M,M_ROR,ROR
+0,0,1491.080261,0,0.9849137931034483,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,L,L_RING,RING
+0,0,2709.870598,0,0.9849137931034483,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,L,L_REDSTAR,REDSTAR
+0,0,1896.608978,0,0.9849137931034483,False,HEURISTIC_NOT_FOUND,constructive heuristics did not produce an all-flow static-valid schedule,,,L,L_ROR,ROR
