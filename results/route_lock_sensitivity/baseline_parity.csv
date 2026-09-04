@@ -1,0 +1,4 @@
+baseline_scheduled_ratio,baseline_status,fault_id,parity_pass,rerun_scheduled_ratio,rerun_status,scenario_id
+0.99,HEURISTIC_NOT_FOUND,l_sw0011_sw0013,True,0.99,HEURISTIC_NOT_FOUND,F150_TT1000
+0.924,HEURISTIC_NOT_FOUND,l_sw0001_sw0003,True,0.924,HEURISTIC_NOT_FOUND,S5
+0.8865,HEURISTIC_NOT_FOUND,l_sw0007_sw0009,True,0.8865,HEURISTIC_NOT_FOUND,S7
