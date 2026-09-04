@@ -57,9 +57,9 @@ class H2sPfBackend(H2sJrsBackend):
 
     def synthesize(self, request: RecoverySynthesisRequest) -> RecoverySynthesisResult:
         started = time.perf_counter_ns()
-        if request.forwarding_model != "stream-aware" or request.route_scope != "affected-only":
+        if request.forwarding_model != "stream-aware" or request.route_scope not in {"affected-only", "all-reroute"}:
             return RecoverySynthesisResult(self.name, BackendStatus.UNSUPPORTED,
-                                           diagnostic="PF requires stream-aware affected-only mode")
+                                           diagnostic="PF requires stream-aware affected-only or all-reroute mode")
         if len(request.disabled_links) != 1 or not request.healthy_primary_routes:
             return RecoverySynthesisResult(self.name, BackendStatus.INVALID_INPUT,
                                            diagnostic="PF requires one physical fault and healthy P0 routes")
@@ -88,7 +88,7 @@ class H2sPfBackend(H2sJrsBackend):
                 request.scenario_path, output, self.quantum_ns,
                 disabled_links=request.disabled_links,
                 healthy_primary_routes=request.healthy_primary_routes,
-                affected_flow_ids=request.affected_flow_ids)
+                affected_flow_ids=request.affected_flow_ids, route_scope=request.route_scope)
         except (H2sAdapterError, KeyError, TypeError, json.JSONDecodeError) as error:
             return RecoverySynthesisResult(self.name, BackendStatus.INVALID_INPUT, diagnostic=str(error))
         conversion_ms = (time.perf_counter_ns() - conversion_started) / 1e6
@@ -119,7 +119,7 @@ class H2sPfBackend(H2sJrsBackend):
                 profile = normalized["profile"]
                 fault_id = request.disabled_links[0]
                 profile.update({"profile_id": f"PF_{fault_id}", "fault_id": fault_id,
-                    "disabled_physical_links": [fault_id], "route_scope": "affected-only",
+                    "disabled_physical_links": [fault_id], "route_scope": request.route_scope,
                     "affected_flow_ids": sorted(affected), "backend": self.name})
                 profile["semantic_profile_hash"] = semantic_profile_hash(profile)
                 candidates = [int(value) for value in raw.get("candidate_path_counts", {}).values()]
@@ -130,6 +130,7 @@ class H2sPfBackend(H2sJrsBackend):
                     "upstream_verifier_pass": True, "project_static_checker_pass": True,
                     "semantic_checks": checker, "attempts": attempts, "affected_flow_count": len(affected),
                     "unaffected_flow_count": len(prepared.flow_map) - len(affected),
+                    "route_scope": request.route_scope,
                     "backend_quantum_ns": self.quantum_ns, "candidate_path_count": self.candidate_paths,
                     "routing_algorithm": "DIJKSTRA_OVERLAP", "seed": FORMAL_SEED,
                     "threads": FORMAL_THREADS, "memory_limit_mb": self.memory_limit_mb,

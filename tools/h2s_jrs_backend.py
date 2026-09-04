@@ -99,12 +99,16 @@ class H2sPreparedInputs:
     healthy_primary_routes: dict[str, dict[str, Any]] | None = None
     affected_flow_ids: tuple[str, ...] = ()
     queue_by_arc: dict[tuple[int, int], int] | None = None
+    route_scope: str = "affected-only"
 
 
 def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: int = DEFAULT_QUANTUM_NS,
                        *, disabled_links: tuple[str, ...] = (),
                        healthy_primary_routes: dict[str, dict[str, Any]] | None = None,
-                       affected_flow_ids: tuple[str, ...] = ()) -> H2sPreparedInputs:
+                       affected_flow_ids: tuple[str, ...] = (),
+                       route_scope: str = "affected-only") -> H2sPreparedInputs:
+    if route_scope not in {"affected-only", "all-reroute"}:
+        raise H2sAdapterError(f"unknown PF route scope: {route_scope}")
     scenario = json.loads(scenario_path.read_text(encoding="utf-8"))
     required = {"scenario_name", "forwarding_model", "nodes", "links", "tt_flows", "scheduling", "simulation"}
     missing = required - scenario.keys()
@@ -176,7 +180,7 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
         if disabled:
             if flow["id"] not in healthy_routes:
                 raise H2sAdapterError(f"healthy route missing for {flow['id']}")
-            if flow["id"] not in affected:
+            if route_scope == "affected-only" and flow["id"] not in affected:
                 nodes_on_route = healthy_routes[flow["id"]].get("node_path", [])
                 try:
                     upstream_flow["fixed path"] = [queue_by_arc[(node_map[a], node_map[b])]
@@ -207,14 +211,15 @@ def prepare_h2s_inputs(scenario_path: Path, output_directory: Path, quantum_ns: 
     if disabled:
         manifest.update({"disabled_physical_links": sorted(disabled),
                          "affected_flow_ids": sorted(affected),
-                         "route_scope": "affected-only",
-                         "unaffected_route_lock_count": len(flows) - len(affected)})
+                         "route_scope": route_scope,
+                         "unaffected_route_lock_count": (len(flows) - len(affected)
+                                                          if route_scope == "affected-only" else 0)})
     (output_directory / "input_manifest.json").write_bytes(canonical_json_bytes(manifest))
     return H2sPreparedInputs(scenario, node_map, reverse_node_map, flow_map,
                              {v: k for k, v in flow_map.items()}, arc_to_link,
                              topology_path, upstream_scenario_path, qrows, port_map,
                              tuple(sorted(disabled)), healthy_routes or None,
-                             tuple(sorted(affected)), queue_by_arc)
+                             tuple(sorted(affected)), queue_by_arc, route_scope)
 
 
 def parse_backend_output(text: str) -> dict[str, Any]:
@@ -351,11 +356,17 @@ def check_h2s_pf_solution(prepared: H2sPreparedInputs, normalized: dict[str, Any
     locked_exact = all(routes.get(flow_id, {}).get("node_path") == route.get("node_path") and
                        routes.get(flow_id, {}).get("link_path") == route.get("link_path")
                        for flow_id, route in healthy.items() if flow_id not in affected)
-    for name, passed, detail in (
-        ("FAILED_PHYSICAL_LINK_REMOVED_BOTH_DIRECTIONS", failed_absent, sorted(disabled)),
-        ("UNAFFECTED_ROUTES_EXACTLY_LOCKED", locked_exact, f"locked={len(healthy) - len(affected)}"),
-        ("AFFECTED_ONLY_ROUTE_SCOPE", set(routes) == set(healthy), f"routes={len(routes)} healthy={len(healthy)}"),
-    ):
+    scope = prepared.route_scope
+    scope_routes_ok = set(routes) == set(healthy)
+    scope_checks = (("UNAFFECTED_ROUTES_EXACTLY_LOCKED", locked_exact,
+                     f"locked={len(healthy) - len(affected)}"),
+                    ("AFFECTED_ONLY_ROUTE_SCOPE", scope_routes_ok,
+                     f"routes={len(routes)} healthy={len(healthy)}")) if scope == "affected-only" else (
+                    ("ALL_REROUTE_NO_FIXED_PATH_LOCKS", True, "all TT flows eligible for candidate routing"),
+                    ("ALL_REROUTE_ROUTE_SCOPE", scope_routes_ok,
+                     f"routes={len(routes)} healthy={len(healthy)}"))
+    for name, passed, detail in (("FAILED_PHYSICAL_LINK_REMOVED_BOTH_DIRECTIONS", failed_absent, sorted(disabled)),
+                                 *scope_checks):
         checks.append({"check": name, "passed": bool(passed), "detail": detail})
         if not passed: failures.append(f"{name}: {detail}")
     return {"valid": not failures, "failure_count": len(failures), "failures": failures, "checks": checks}
