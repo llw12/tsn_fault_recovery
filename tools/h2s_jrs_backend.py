@@ -432,14 +432,21 @@ class H2sJrsBackend(RecoverySynthesisBackend):
     def __init__(self, executable: Path, *, quantum_ns: int = DEFAULT_QUANTUM_NS,
                  candidate_paths: int = DEFAULT_CANDIDATE_PATHS, memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB,
                  h2s_tiebreak_mode: str = "BASELINE", h2s_tiebreak_seed: int = 0,
+                 h2s_flow_sorting: int = 4,
                  attempt_celf_fallback: bool = True):
         if candidate_paths < 1:
             raise H2sAdapterError("candidate_paths must be positive")
         if h2s_tiebreak_mode not in {"BASELINE", "SEEDED_TIEBREAK"} or h2s_tiebreak_seed < 0:
             raise H2sAdapterError("invalid H2S tie-break configuration")
+        if h2s_flow_sorting not in {0, 1, 2, 3, 4}:
+            raise H2sAdapterError("unsupported upstream H2S flow-sorting policy")
         self.executable = Path(executable); self.quantum_ns = quantum_ns
         self.candidate_paths = candidate_paths; self.memory_limit_mb = memory_limit_mb
         self.h2s_tiebreak_mode = h2s_tiebreak_mode; self.h2s_tiebreak_seed = h2s_tiebreak_seed
+        # This is the upstream `-f/--flow-sorting` enum.  Four is its pinned
+        # default (LOW_PERIOD_FLOWS_FIRST), so historical callers retain their
+        # behavior while experiments can explicitly select a built-in policy.
+        self.h2s_flow_sorting = h2s_flow_sorting
         self.attempt_celf_fallback = attempt_celf_fallback
 
     def _run(self, prepared: H2sPreparedInputs, algorithm: str, timeout_s: int) -> tuple[BackendStatus | None, dict[str, Any] | None, dict[str, Any]]:
@@ -447,7 +454,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                            "-s", str(prepared.scenario_path), "-a", algorithm, "--routing", "DIJKSTRA_OVERLAP",
                            "--candidate-paths", str(self.candidate_paths), "-p", "0", "--verify-schedule", "-r"]
         if algorithm == "H2S":
-            backend_command += ["--h2s-tiebreak-mode", self.h2s_tiebreak_mode,
+            backend_command += ["--flow-sorting", str(self.h2s_flow_sorting),
+                                "--h2s-tiebreak-mode", self.h2s_tiebreak_mode,
                                 "--h2s-tiebreak-seed", str(self.h2s_tiebreak_seed)]
         rss_marker = "__H2S_MAX_RSS_KB__="
         runner = Path(__file__).with_name("h2s_process_runner.py")
@@ -546,6 +554,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                          "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
                          "routing_algorithm": "DIJKSTRA_OVERLAP", "h2s_tiebreak_mode": self.h2s_tiebreak_mode,
                          "h2s_tiebreak_seed": self.h2s_tiebreak_seed,
+                         "h2s_flow_sorting": self.h2s_flow_sorting,
                          "mean_candidate_paths_per_flow": statistics.mean(candidate_counts) if candidate_counts else 0,
                          "min_candidate_paths": min(candidate_counts, default=0),
                          "max_candidate_paths": max(candidate_counts, default=0),
@@ -575,6 +584,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
             "scheduled_flow_ratio": max(ratios, default=0), "semantic_valid": False,
             "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
             "routing_algorithm": "DIJKSTRA_OVERLAP", "h2s_tiebreak_mode": self.h2s_tiebreak_mode,
-            "h2s_tiebreak_seed": self.h2s_tiebreak_seed, "backend_quantum_ns": self.quantum_ns},
+            "h2s_tiebreak_seed": self.h2s_tiebreak_seed, "h2s_flow_sorting": self.h2s_flow_sorting,
+            "backend_quantum_ns": self.quantum_ns},
             timings_ms={"total_backend": (time.perf_counter_ns() - started) / 1e6},
             diagnostic="constructive heuristics did not produce an all-flow static-valid schedule")
