@@ -325,14 +325,16 @@ def reports(output: Path, *, quick: bool, parent_commit: str, implementation_com
     write_audit(output / "built_in_policy_audit.md", audit); write_csv(output / "baseline_parity.csv", baseline); write_csv(output / "policy_runs.csv", rows)
     if quick:
         verdict_name = "INCONCLUSIVE"; repeats = []; repeat_ok = False; failures: set[tuple[str, str]] = set(); summary = []
+        identity_changed = False; cross_topology_invariant = False
     else:
         repeats, repeat_ok, failures = repeatability(rows); write_csv(output / "repeatability.csv", repeats)
         summary = policy_summary(rows, failures); write_csv(output / "policy_summary.csv", summary)
         complete_matrix = len(rows) == len(ORDER) * len(FORMAL_POLICIES) * 2
         comparison: list[dict[str, Any]] = []
+        cross_rows: list[dict[str, Any]] = []
         if complete_matrix:
             hnf, comparison = pairwise_hnf(rows, observations); write_csv(output / "hnf_by_policy.csv", hnf); write_csv(output / "hnf_policy_comparison.csv", comparison)
-            write_csv(output / "flow_policy_trajectory.csv", flow_trajectory(observations)); write_csv(output / "cross_topology_policy_sets.csv", cross_topology(observations))
+            write_csv(output / "flow_policy_trajectory.csv", flow_trajectory(observations)); cross_rows = cross_topology(observations); write_csv(output / "cross_topology_policy_sets.csv", cross_rows)
             matrix = []
             for policy in FORMAL_POLICIES:
                 values = {row["scenario"]: row for row in summary if row["policy_tag"] == policy.tag}
@@ -345,6 +347,7 @@ def reports(output: Path, *, quick: bool, parent_commit: str, implementation_com
         baseline_counts = {row["scenario"]: row["scheduled_count"] for row in summary if row["policy_tag"] == "LOW_PERIOD"}
         improved = any(row["scheduled_count"] > baseline_counts[row["scenario"]] for row in summary if row["policy_tag"] != "LOW_PERIOD")
         identity_changed = any(not row["exact_equal"] for row in comparison)
+        cross_topology_invariant = bool(cross_rows) and all(row["exact_equal"] for row in cross_rows)
         if not qualification_verdict["policy_parameter_qualified"]:
             verdict_name = "POLICY_PARAMETER_NOT_EFFECTIVE"
         elif not baseline_ok:
@@ -379,15 +382,39 @@ def reports(output: Path, *, quick: bool, parent_commit: str, implementation_com
                "next_stage_recommendation": "REALISTIC_PF_COST_WITH_QUALIFIED_H2S_POLICY" if eligible else "REVIEW_POLICY_RESULT_BEFORE_WORKLOAD_CALIBRATION" if verdict_name == "BUILTIN_POLICY_PARTIAL_RECOVERY" else "TT_WORKLOAD_DENSITY_CALIBRATION"}
     write_json(output / "verdict.json", verdict)
     content = ["# exp18f: Built-in H2S primary policy sensitivity", "",
-               "This experiment returns to the byte-identical original exp18 scenarios and deadlines. It does not continue deadline relaxation because exp18e found no P0 improvement through D=T. The sole intervention is the pre-existing upstream H2S flow sorter; topology, roles, flow population, periods, deadlines, releases, payloads, routing, K, seed, quantum, threads, timeouts, memory, CELF settings, and every other H2S knob remain fixed.", "",
-               f"LOW_PERIOD historical baseline parity: **{'PASS' if baseline_ok else 'FAIL'}**. Policy propagation qualification: **{'PASS' if qualification_verdict['policy_parameter_qualified'] else 'FAIL'}**. Formal verdict: **`{verdict_name}`**.", "",
-               "H2S-only completeness is distinct from CELF fallback completeness. A partial heuristic result is not an infeasibility proof, and a successful built-in policy would demonstrate a constructed complete P0 rather than prove LOW_PERIOD is the unique historical cause.", ""]
+               "## Research answers", "",
+               "1. This experiment tests only whether an already built-in upstream H2S sorter can construct a complete healthy P0 on the frozen realistic workload; it is not a new scheduling-algorithm design study.", "",
+               "2. It returns to the byte-identical original exp18 scenarios and original deadlines so any success would apply directly to the original realistic workload.", "",
+               "3. Deadline relaxation stops here because exp18e found no P0 improvement even through D=T.", "",
+               "4. The preregistered built-in sorters are LOW_PERIOD_FLOWS_FIRST, LOWEST_TRAFFIC_FLOWS_FIRST, LOWEST_ID_FIRST, and SOURCE_NODE_SORTING.", "",
+               "5. LOW_PERIOD is period-ascending, then larger-frame-first, then deterministic ID; LOWEST_TRAFFIC is ascending frame-size/period; LOWEST_ID is numeric-ID ascending; SOURCE_NODE prioritizes source fan-out, then destination, traffic, and ID. The full source audit and read fields are in `built_in_policy_audit.md`.", "",
+               "6. The sole formal intervention is the upstream H2S `--flow-sorting` policy value.", "",
+               "7. Topology, workload roles and population, periods, original deadlines and releases, payloads, route scope, DIJKSTRA_OVERLAP, K=5, 100 ns quantum, seed 1024, one thread, 30 s per heuristic, 8192 MB, CELF behavior, and all other H2S knobs are fixed.", "",
+               f"8. LOW_PERIOD historical baseline parity is **{'PASS' if baseline_ok else 'FAIL'}**: counts, HNF identities, instance completion, and H2S candidate vectors match the frozen reference.", "",
+               f"9. The policies {'did' if qualification_verdict['at_least_two_orders_differ'] else 'did not'} produce distinct actual H2S orders; qualification passed before the formal matrix.", "",
+               f"10. Candidate vectors {'remained invariant' if candidate_invariant else 'did not remain invariant'} across policies for each scenario.", "",
+               "11. The per-policy, per-scenario scheduled-flow results are:", ""]
     if summary:
         content += ["| policy | M_RING | M_REDSTAR | M_ROR | L_RING | L_REDSTAR | L_ROR |", "|---|---:|---:|---:|---:|---:|---:|"]
         for policy in FORMAL_POLICIES:
             values = {row["scenario"]: row for row in summary if row["policy_tag"] == policy.tag}
             content.append("| " + policy.tag + " | " + " | ".join(f"{values[sid]['scheduled_count']}/{values[sid]['total_flows']}" for sid in ORDER) + " |")
-    content += ["", "No PF, fault enumeration, Profile Store study, parallel campaign, OMNeT++, or INET simulation is run by exp18f. The experiment stops after this policy matrix and awaits manual direction."]
+    eligible_text = ", ".join(eligible) if eligible else "none"
+    fallback_text = ", ".join(fallback) if fallback else "none"
+    complete_scenario_text = "At least one H2S policy reaches complete P0 in this matrix" if any(h2s_complete.values()) else "No H2S policy reaches complete P0 in this matrix"
+    content += ["", f"12. {complete_scenario_text}; H2S complete-scenario counts are {h2s_complete}.", "",
+               f"13. There {'is' if eligible else 'is no'} policy with 6/6 H2S-complete scenarios.", "",
+               f"14. PF-eligible H2S policies: {eligible_text}.", "",
+               f"15. Policies with only 6/6 CELF-fallback completeness: {fallback_text}; none is counted as an H2S success.", "",
+               f"16. Different policies {'do' if identity_changed else 'do not'} change HNF identity in at least one same-scenario pair.", "",
+               f"17. The matrix {'does' if verdict_name == 'BUILTIN_POLICY_PARTIAL_RECOVERY' else 'does not'} improve scheduled-flow cardinality over LOW_PERIOD.", "",
+               f"18. Cross-topology HNF-set invariance {'remains' if cross_topology_invariant else 'does not remain'} for every tested scale-policy comparison.", "",
+               f"19. Repeatability {'passes' if repeat_ok else 'does not pass'} for order SHA, candidate vector, scheduled count, HNF set, and instance completion.", "",
+               "20. These heuristic results cannot prove that the original workload is infeasible.", "",
+               "21. No policy constructed 6/6 complete P0 here; if one had done so with the upstream verifier and independent static checker passing, it would demonstrate that the original frozen workload has a complete P0.", "",
+               "22. The result cannot establish LOW_PERIOD as the unique root cause of historical HNF.", "",
+               f"23. Recommended next stage: `{verdict['next_stage_recommendation']}`; do not automatically start it.", "",
+               "No PF, fault enumeration, Profile Store study, parallel campaign, OMNeT++, or INET simulation is run by exp18f. The experiment stops after this policy matrix and awaits manual direction."]
     (output / "summary.md").write_text("\n".join(content) + "\n", encoding="utf-8")
     artifacts = {str(path.relative_to(output)): sha256_file(path) for path in output.rglob("*") if path.is_file() and path.name != "analysis_manifest.json"}
     write_json(output / "analysis_manifest.json", {"experiment": "exp18f_h2s_primary_policy_sensitivity", "parent_commit": parent_commit,
