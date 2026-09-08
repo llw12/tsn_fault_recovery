@@ -1,0 +1,17 @@
+active_TT_destination_ES_count,active_TT_source_ES_count,cells_with_retained_TT_flows,density_tag,machines_with_retained_TT_flows,scale
+128,128,8,D100,24,M
+123,127,8,D095,24,M
+118,127,8,D090,24,M
+113,127,8,D085,24,M
+108,126,8,D080,24,M
+98,119,8,D070,24,M
+88,115,8,D060,24,M
+79,106,8,D050,24,M
+336,336,16,D100,64,L
+323,336,16,D095,64,L
+310,334,16,D090,64,L
+297,330,16,D085,64,L
+284,325,16,D080,64,L
+259,313,16,D070,64,L
+233,294,16,D060,64,L
+207,267,16,D050,64,L

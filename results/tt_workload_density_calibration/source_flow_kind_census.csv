@@ -1,0 +1,15 @@
+flow_kind,original_count,scale
+ControlCommand,96,M
+InterCellNext,8,M
+InterCellPrevious,8,M
+MachineCoordination,24,M
+MachineStatus,24,M
+SensorCyclic,96,M
+SensorFast,96,M
+ControlCommand,256,L
+InterCellNext,16,L
+InterCellPrevious,16,L
+MachineCoordination,64,L
+MachineStatus,64,L
+SensorCyclic,256,L
+SensorFast,256,L
