@@ -349,6 +349,16 @@ def reports(output: Path, *, quick: bool, parent: str, implementation: str, froz
                              if selected else "not applicable")
     fallback_scenarios = sorted(f"{row['scenario']}:{row['density_tag']}" for row in rows if row["CELF_complete"] and not row["H2S_complete"])
     monotonicity = any(row.get("heuristic_monotonicity_violated", False) for row in global_rows)
+    summary_by = {(row["scale"], row["density_tag"]): row for row in summary}
+    medium_flow_counts = ", ".join(f"{density.tag}={summary_by[('M', density.tag)]['retained_TT_count']}" for density in DENSITIES) if summary else "not evaluated"
+    large_flow_counts = ", ".join(f"{density.tag}={summary_by[('L', density.tag)]['retained_TT_count']}" for density in DENSITIES) if summary else "not evaluated"
+    instance_counts = ", ".join(f"{density.tag}=M{summary_by[('M', density.tag)]['packet_instances']}/L{summary_by[('L', density.tag)]['packet_instances']}" for density in DENSITIES) if summary else "not evaluated"
+    byte_counts = ", ".join(f"{density.tag}=M{summary_by[('M', density.tag)]['on_wire_bytes_per_hyperperiod']}/L{summary_by[('L', density.tag)]['on_wire_bytes_per_hyperperiod']}" for density in DENSITIES) if summary else "not evaluated"
+    h2s_complete_counts = ", ".join(f"{density.tag}=M{sum(row['H2S_complete'] for row in rows if row['density_tag'] == density.tag and row['scale'] == 'M' and row['repeat'] == 1)}/3,L{sum(row['H2S_complete'] for row in rows if row['density_tag'] == density.tag and row['scale'] == 'L' and row['repeat'] == 1)}/3" for density in DENSITIES) if rows else "not evaluated"
+    celf_attempts = ", ".join(f"{density.tag}=M{summary_by[('M', density.tag)]['CELF_fallback_count']}/3,L{summary_by[('L', density.tag)]['CELF_fallback_count']}/3" for density in DENSITIES) if summary else "not evaluated"
+    global_completion = ", ".join(f"{row['density_tag']}={row['M_complete_count']}+{row['L_complete_count']}" for row in global_rows) if global_rows else "not evaluated"
+    selected_benchmark_text = ("It retains original topology, mixed-period timing, roles, and all retained-flow semantics while the fixed backend constructs complete healthy P0 at the highest qualified point."
+                               if selected else "No PF benchmark workload was selected because no preregistered density achieved 6/6 formal-backend complete P0.")
     content = ["# exp18g: Deterministic role-stratified TT workload density calibration", "", "## Research answers", "",
                "1. The full-density workload remained P0-incomplete after the preregistered backend checks, so this stage calibrates a transparent PF benchmark workload.", "",
                "2. H2S tuning stops because K, deadlines, tie-breaks, and all official built-in sorters had already been tested without cardinality improvement.", "",
@@ -362,13 +372,16 @@ def reports(output: Path, *, quick: bool, parent: str, implementation: str, froz
                "10. Role stratification preserves approximate proportional representation of every canonical traffic role rather than selecting globally.", "",
                f"11. Cross-topology retained-flow identity: {'PASS' if cross_ok else 'FAIL'}.", "",
                f"12. Per-role nestedness: {'PASS' if nested_ok else 'FAIL'}.", "",
-               "13–15. Retained logical flows and exact recomputed packet instances are:", "", *count_table, "",
-               "16. On-wire-byte census is in `density_traffic_census.csv`, calculated from retained instances and the unchanged frame-overhead accounting.", "",
+               f"13. Medium retained logical-flow counts: {medium_flow_counts}.", "",
+               f"14. Large retained logical-flow counts: {large_flow_counts}.", "",
+               f"15. Exact recomputed packet instances: {instance_counts}.", "",
+               f"16. On-wire bytes per hyperperiod (Medium/Large): {byte_counts}; they are calculated from retained instances and unchanged frame-overhead accounting.", "",
+               "For compact comparison, the retained logical-flow and exact instance census is:", "", *count_table, "",
                f"17. D100 baseline parity: {'PASS' if baseline_ok else 'FAIL'}.", "",
                "18. The per-density six-scenario P0 scheduled counts are:", "", *scheduled, "",
-               "19. H2S-only completion is separately recorded by `H2S_complete` in `p0_density_results.csv`; CELF fallback is never relabeled as H2S success.", "",
-               f"20. Scenarios completed only through CELF fallback: {', '.join(fallback_scenarios) if fallback_scenarios else 'none'}.", "",
-               f"21. Density-level 6/6 formal-backend qualification is recorded in `density_global_qualification.csv`; selected point: {rho_text}.", "",
+               f"19. H2S-alone complete counts: {h2s_complete_counts}. CELF fallback is never relabeled as H2S success.", "",
+               f"20. CELF fallback attempts (M/L): {celf_attempts}; scenarios completed only through CELF fallback: {', '.join(fallback_scenarios) if fallback_scenarios else 'none'}.", "",
+               f"21. Formal-backend complete counts by density (M/3 + L/3): {global_completion}; selected point: {rho_text}.", "",
                f"22. Highest qualified preregistered density rho*: {rho_text}.", "",
                f"23. The selected Medium actual global density is {selected_density_text}.", "",
                f"24. Per-role selected retained counts: {selected_classes_text}.", "",
@@ -377,7 +390,7 @@ def reports(output: Path, *, quick: bool, parent: str, implementation: str, froz
                "27. It is not a real factory trace.", "",
                "28. It is a deterministically density-calibrated, literature-grounded, role-based synthetic industrial workload.", "",
                "29. This experiment does not prove the original full-density workload mathematically infeasible; it only reports the fixed qualified heuristic backend's construction outcome.", "",
-               "30. A selected workload is a PF-cost benchmark because it retains the original topology, mixed-period timing, roles, and semantics while the fixed backend constructs complete healthy P0 at the highest qualified tested density.", "",
+               f"30. {selected_benchmark_text}", "",
                f"31. Next stage: `{verdict['next_stage_recommendation']}` using the exact selected scenario bytes if qualified; this experiment does not start it.", "",
                "No PF, fault enumeration, Profile Store, parallel PF, OMNeT++, or INET run is performed."]
     (output / "summary.md").write_text("\n".join(content) + "\n", encoding="utf-8")
