@@ -1,0 +1,5 @@
+Policy,M_RING,M_REDSTAR,M_ROR,L_RING,L_REDSTAR,L_ROR
+LOW_PERIOD,348/352; complete=False,348/352; complete=False,348/352; complete=False,914/928; complete=False,914/928; complete=False,914/928; complete=False
+LOWEST_TRAFFIC,348/352; complete=False,348/352; complete=False,348/352; complete=False,914/928; complete=False,914/928; complete=False,914/928; complete=False
+LOWEST_ID,348/352; complete=False,348/352; complete=False,348/352; complete=False,914/928; complete=False,914/928; complete=False,914/928; complete=False
+SOURCE_NODE,348/352; complete=False,348/352; complete=False,348/352; complete=False,914/928; complete=False,914/928; complete=False,914/928; complete=False
