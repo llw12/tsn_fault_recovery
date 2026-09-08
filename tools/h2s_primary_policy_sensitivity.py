@@ -157,6 +157,12 @@ def audit_pinned_upstream() -> dict[str, Any]:
         "LOWEST_ID": "priority queue top: numeric flow ID ascending. Reads flow ID only.",
         "SOURCE_NODE": "priority queue top: source fan-out descending; destination numeric ID descending; traffic estimate descending; flow ID descending. Reads source, destination, frame_size, period, flow ID.",
     }
+    ordering_inputs = {
+        "LOW_PERIOD": ["period", "frame_size", "flow_id"],
+        "LOWEST_TRAFFIC": ["traffic_estimate(frame_size/period)", "frame_size", "period", "flow_id"],
+        "LOWEST_ID": ["flow_id"],
+        "SOURCE_NODE": ["source_node_fan_out", "destination", "traffic_estimate(frame_size/period)", "frame_size", "period", "flow_id"],
+    }
     token_requirements = {
         "LOW_PERIOD": ("period", "frame_size", "id"), "LOWEST_TRAFFIC": ("frame_size", "period", "id"),
         "LOWEST_ID": ("lhs > rhs",), "SOURCE_NODE": ("flow_starts_", "destination", "frame_size", "period", "id"),
@@ -171,7 +177,7 @@ def audit_pinned_upstream() -> dict[str, Any]:
             raise RuntimeError(f"comparator audit tokens missing for {policy.enum_name}")
         rows.append({"tag": policy.tag, "enum_name": policy.enum_name, "cli_value": policy.cli_value,
                      "source_file": files[policy.tag], "class_name": policy.class_name,
-                     "comparator_semantics": semantic[policy.tag]})
+                     "comparator_semantics": semantic[policy.tag], "ordering_inputs": ordering_inputs[policy.tag]})
     all_policies = [{"enum_name": name, "cli_value": value, "formal": name in required}
                     for name, value in sorted(enum_pairs.items(), key=lambda item: item[1])]
     return {"upstream_commit": actual_commit, "formal_policies": rows,

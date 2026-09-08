@@ -312,8 +312,8 @@ def archive_logs(output: Path) -> None:
 def write_audit(path: Path, audit: dict[str, Any]) -> None:
     lines = ["# Built-in H2S primary policy audit", "", f"Pinned upstream commit: `{audit['upstream_commit']}`.", "",
              "The upstream `-f,--flow-sorting` option is an integer enum. `LOW_PERIOD_FLOWS_FIRST` (4) is the historical default. `HIGHEST_TRAFFIC_FLOWS_FIRST` (0) was discovered but is intentionally recorded-only: it is not part of the preregistered formal matrix.", "",
-             "| tag | enum | CLI | class | audited comparator semantics |", "|---|---|---:|---|---|"]
-    lines += [f"| {row['tag']} | {row['enum_name']} | {row['cli_value']} | {row['class_name']} | {row['comparator_semantics']} |" for row in audit["formal_policies"]]
+             "| tag | enum | CLI | class | audited comparator semantics | ordering inputs read |", "|---|---|---:|---|---|---|"]
+    lines += [f"| {row['tag']} | {row['enum_name']} | {row['cli_value']} | {row['class_name']} | {row['comparator_semantics']} | {', '.join(row['ordering_inputs'])} |" for row in audit["formal_policies"]]
     lines += ["", "Fixed but not swept: configuration rating 1, placement 0, offensive planning false, DIJKSTRA_OVERLAP routing, and candidate-path budget 5.", "",
              "The existing exp18d tie-break extension remains in the local upstream worktree solely for order export and its conditional seeded mode. Every exp18f H2S command explicitly supplies `--h2s-tiebreak-mode BASELINE --h2s-tiebreak-seed 0`; therefore no seeded comparator path is selected. No upstream source file is changed by this experiment."]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -337,7 +337,7 @@ def reports(output: Path, *, quick: bool, parent_commit: str, implementation_com
             for policy in FORMAL_POLICIES:
                 values = {row["scenario"]: row for row in summary if row["policy_tag"] == policy.tag}
                 matrix.append({"Policy": policy.tag, **{scenario_id: f"{values[scenario_id]['scheduled_count']}/{values[scenario_id]['total_flows']}; complete={values[scenario_id]['H2S_complete']}" for scenario_id in ORDER}})
-            write_csv(output / "policy_matrix.csv", matrix)
+            write_csv(output / "policy_matrix.csv", matrix, ["Policy", *ORDER])
         h2s_complete = {policy.tag: sum(row["H2S_complete"] for row in summary if row["policy_tag"] == policy.tag) for policy in FORMAL_POLICIES}
         formal_complete = {policy.tag: sum(row["formal_backend_complete"] for row in summary if row["policy_tag"] == policy.tag) for policy in FORMAL_POLICIES}
         eligible = [policy.tag for policy in FORMAL_POLICIES if h2s_complete[policy.tag] == 6 and all((scenario_id, policy.tag) not in failures for scenario_id in ORDER)]
