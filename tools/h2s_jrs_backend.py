@@ -430,16 +430,25 @@ class H2sJrsBackend(RecoverySynthesisBackend):
     name = "h2s-jrs"
 
     def __init__(self, executable: Path, *, quantum_ns: int = DEFAULT_QUANTUM_NS,
-                 candidate_paths: int = DEFAULT_CANDIDATE_PATHS, memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB):
+                 candidate_paths: int = DEFAULT_CANDIDATE_PATHS, memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB,
+                 h2s_tiebreak_mode: str = "BASELINE", h2s_tiebreak_seed: int = 0,
+                 attempt_celf_fallback: bool = True):
         if candidate_paths < 1:
             raise H2sAdapterError("candidate_paths must be positive")
+        if h2s_tiebreak_mode not in {"BASELINE", "SEEDED_TIEBREAK"} or h2s_tiebreak_seed < 0:
+            raise H2sAdapterError("invalid H2S tie-break configuration")
         self.executable = Path(executable); self.quantum_ns = quantum_ns
         self.candidate_paths = candidate_paths; self.memory_limit_mb = memory_limit_mb
+        self.h2s_tiebreak_mode = h2s_tiebreak_mode; self.h2s_tiebreak_seed = h2s_tiebreak_seed
+        self.attempt_celf_fallback = attempt_celf_fallback
 
     def _run(self, prepared: H2sPreparedInputs, algorithm: str, timeout_s: int) -> tuple[BackendStatus | None, dict[str, Any] | None, dict[str, Any]]:
         backend_command = [str(self.executable), "-n", str(prepared.topology_path),
                            "-s", str(prepared.scenario_path), "-a", algorithm, "--routing", "DIJKSTRA_OVERLAP",
                            "--candidate-paths", str(self.candidate_paths), "-p", "0", "--verify-schedule", "-r"]
+        if algorithm == "H2S":
+            backend_command += ["--h2s-tiebreak-mode", self.h2s_tiebreak_mode,
+                                "--h2s-tiebreak-seed", str(self.h2s_tiebreak_seed)]
         rss_marker = "__H2S_MAX_RSS_KB__="
         runner = Path(__file__).with_name("h2s_process_runner.py")
         command = [sys.executable, str(runner), str(self.memory_limit_mb), "--", *backend_command]
@@ -505,7 +514,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         conversion_ms = (time.perf_counter_ns() - conversion_started) / 1e6
         attempts = []
         last_invalid = False
-        for algorithm in ("H2S", "CELF"):
+        for algorithm in (("H2S", "CELF") if self.attempt_celf_fallback else ("H2S",)):
             run_status, raw, meta = self._run(prepared, algorithm, request.solver_timeout_s)
             attempts.append({"algorithm": algorithm, **meta})
             if run_status is not None:
@@ -535,7 +544,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                          "upstream_verifier_pass": True, "project_static_checker_pass": True,
                          "semantic_checks": checker, "attempts": attempts, "backend_quantum_ns": self.quantum_ns,
                          "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
-                         "routing_algorithm": "DIJKSTRA_OVERLAP",
+                         "routing_algorithm": "DIJKSTRA_OVERLAP", "h2s_tiebreak_mode": self.h2s_tiebreak_mode,
+                         "h2s_tiebreak_seed": self.h2s_tiebreak_seed,
                          "mean_candidate_paths_per_flow": statistics.mean(candidate_counts) if candidate_counts else 0,
                          "min_candidate_paths": min(candidate_counts, default=0),
                          "max_candidate_paths": max(candidate_counts, default=0),
@@ -564,6 +574,7 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         return RecoverySynthesisResult(self.name, status, statistics={"attempts": attempts,
             "scheduled_flow_ratio": max(ratios, default=0), "semantic_valid": False,
             "candidate_path_count": self.candidate_paths, "requested_candidate_route_budget": self.candidate_paths,
-            "routing_algorithm": "DIJKSTRA_OVERLAP", "backend_quantum_ns": self.quantum_ns},
+            "routing_algorithm": "DIJKSTRA_OVERLAP", "h2s_tiebreak_mode": self.h2s_tiebreak_mode,
+            "h2s_tiebreak_seed": self.h2s_tiebreak_seed, "backend_quantum_ns": self.quantum_ns},
             timings_ms={"total_backend": (time.perf_counter_ns() - started) / 1e6},
             diagnostic="constructive heuristics did not produce an all-flow static-valid schedule")

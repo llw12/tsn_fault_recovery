@@ -1,0 +1,300 @@
+diff --git a/include/IO/ProgramOptions.h b/include/IO/ProgramOptions.h
+index 091a5b9..e84fae5 100644
+--- a/include/IO/ProgramOptions.h
++++ b/include/IO/ProgramOptions.h
+@@ -3,6 +3,7 @@
+ #include "solver/Placement.h"
+ #include <solver/FlowSorting/FlowSorterFactory.h>
+ #include <string>
++#include <cstdint>
+ 
+ 
+ class ProgramOptions
+@@ -21,6 +22,8 @@ public:
+     auto getPlacementType() const -> placement::ConfigPlacementTypes;
+     auto getCandidatePaths() const -> std::size_t;
+     auto isVerifySchedule() const -> bool;
++    auto isSeededH2sTieBreak() const -> bool;
++    auto getH2sTieBreakSeed() const -> std::uint64_t;
+ 
+ private:
+     std::string network_path_;
+@@ -34,4 +37,6 @@ private:
+     bool use_offensive_planning_ = false;
+     placement::ConfigPlacementTypes placement_type_ = placement::ConfigPlacementTypes::BALANCED;
+     bool verify_schedule = false;
+-};
+\ No newline at end of file
++    std::string h2s_tiebreak_mode_ = "BASELINE";
++    std::uint64_t h2s_tiebreak_seed_ = 0;
++};
+diff --git a/include/solver/FlowSorting/FlowSorterFactory.h b/include/solver/FlowSorting/FlowSorterFactory.h
+index 03de2ee..46b9fe0 100644
+--- a/include/solver/FlowSorting/FlowSorterFactory.h
++++ b/include/solver/FlowSorting/FlowSorterFactory.h
+@@ -2,6 +2,7 @@
+ 
+ #include "AbstractFlowSorter.h"
+ #include "graph/MultiLayeredGraph.h"
++#include <cstdint>
+ 
+ 
+ namespace flow_sorting {
+@@ -19,6 +20,7 @@ enum class FlowSorterTypes {
+     return static_cast<int>(type);
+ }
+ 
+-[[nodiscard]] auto get_flow_sorter(MultiLayeredGraph& graph, FlowSorterTypes type) -> std::unique_ptr<AbstractFlowSorter>;
++[[nodiscard]] auto get_flow_sorter(MultiLayeredGraph& graph, FlowSorterTypes type,
++                                   bool seeded_tiebreak = false, std::uint64_t tiebreak_seed = 0) -> std::unique_ptr<AbstractFlowSorter>;
+ 
+-} // namespace flow_sorting
+\ No newline at end of file
++} // namespace flow_sorting
+diff --git a/include/solver/FlowSorting/LowPeriodFlowsFirst.h b/include/solver/FlowSorting/LowPeriodFlowsFirst.h
+index 8bf7b9f..89ae95d 100644
+--- a/include/solver/FlowSorting/LowPeriodFlowsFirst.h
++++ b/include/solver/FlowSorting/LowPeriodFlowsFirst.h
+@@ -1,12 +1,27 @@
+ #pragma once
+ 
+ #include "solver/FlowSorting/AbstractFlowSorter.h"
++#include <cstdint>
++
++namespace flow_sorting {
++[[nodiscard]] inline auto stable_seeded_tiebreak_key(const std::uint64_t seed, const std::uint64_t flow_id) -> std::uint64_t
++{
++    auto value = seed ^ flow_id;
++    value += 0x9e3779b97f4a7c15ULL;
++    value = (value ^ (value >> 30U)) * 0xbf58476d1ce4e5b9ULL;
++    value = (value ^ (value >> 27U)) * 0x94d049bb133111ebULL;
++    return value ^ (value >> 31U);
++}
++} // namespace flow_sorting
+ 
+ class LowPeriodFlowsFirst final : public AbstractFlowSorter
+ {
+ public:
+-    explicit LowPeriodFlowsFirst(MultiLayeredGraph& graph)
+-        : graph_(graph)
++    explicit LowPeriodFlowsFirst(MultiLayeredGraph& graph, const bool seeded_tiebreak = false,
++                                 const std::uint64_t tiebreak_seed = 0)
++        : graph_(graph),
++          seeded_tiebreak_(seeded_tiebreak),
++          tiebreak_seed_(tiebreak_seed)
+     {}
+ 
+     auto toString() -> std::string_view override
+@@ -26,10 +41,19 @@ public:
+             // long transmissions
+             return lhs_flow.frame_size < rhs_flow.frame_size;
+         }
++        if(seeded_tiebreak_) {
++            const auto lhs_key = flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, lhs_flow.id.get());
++            const auto rhs_key = flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, rhs_flow.id.get());
++            if(lhs_key != rhs_key) {
++                return lhs_key > rhs_key;
++            }
++        }
+         return lhs_flow.id > rhs_flow.id;
+     }
+ 
+ 
+ private:
+     MultiLayeredGraph& graph_;
+-};
+\ No newline at end of file
++    bool seeded_tiebreak_ = false;
++    std::uint64_t tiebreak_seed_ = 0;
++};
+diff --git a/include/solver/scheduler/HierarchicalHeuristicScheduling.h b/include/solver/scheduler/HierarchicalHeuristicScheduling.h
+index 49f1da2..384c9b6 100644
+--- a/include/solver/scheduler/HierarchicalHeuristicScheduling.h
++++ b/include/solver/scheduler/HierarchicalHeuristicScheduling.h
+@@ -5,6 +5,8 @@
+ #include "solver/FlowSorting/FlowSorterFactory.h"
+ #include "solver/Placement.h"
+ #include "solver/UtilizationList.h"
++#include <cstdint>
++#include <nlohmann/json.hpp>
+ 
+ class HierarchicalHeuristicScheduling final : public solver::AbstractScheduler
+ {
+@@ -12,7 +14,9 @@ public:
+     HierarchicalHeuristicScheduling(MultiLayeredGraph& graph,
+                                     flow_sorting::FlowSorterTypes sorter_type,
+                                     configuration_rating::ConfigurationRatingTypes rating_type,
+-                                    placement::ConfigPlacementTypes placement_type);
++                                    placement::ConfigPlacementTypes placement_type,
++                                    bool seeded_tiebreak = false,
++                                    std::uint64_t tiebreak_seed = 0);
+ 
+     auto solve(const MultiLayeredGraph& graph,
+                const robin_hood::unordered_set<common::FlowNodeID>& active_f,
+@@ -33,4 +37,8 @@ private:
+     flow_sorting::FlowSorterTypes flow_sorter_type_;
+     configuration_rating::ConfigurationRatingTypes config_rating_type_;
+     placement::ConfigPlacementTypes placement_strategy_;
++    bool seeded_tiebreak_ = false;
++    std::uint64_t tiebreak_seed_ = 0;
++    nlohmann::json order_export_ = nlohmann::json::array();
++    std::size_t order_position_ = 0;
+ };
+diff --git a/main.cpp b/main.cpp
+index e90f454..9f9e446 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -54,7 +54,9 @@ auto main(int argc, char* argv[])
+             graph,
+             options.getFlowSorting(),
+             static_cast<configuration_rating::ConfigurationRatingTypes>(options.getConfigurationRating()),
+-            options.getPlacementType());
++            options.getPlacementType(),
++            options.isSeededH2sTieBreak(),
++            options.getH2sTieBreakSeed());
+     }
+ 
+     // ================
+diff --git a/src/IO/ProgramOptions.cpp b/src/IO/ProgramOptions.cpp
+index 98ea1c1..f1acf49 100644
+--- a/src/IO/ProgramOptions.cpp
++++ b/src/IO/ProgramOptions.cpp
+@@ -2,6 +2,7 @@
+ #include "util/UtilFunctions.h"
+ #include <CLI/CLI.hpp>
+ #include <IO/ProgramOptions.h>
++#include <fmt/core.h>
+ 
+ ProgramOptions::ProgramOptions(const int argc, char **argv)
+ {
+@@ -39,6 +40,11 @@ ProgramOptions::ProgramOptions(const int argc, char **argv)
+     app.add_option("--candidate-paths", candidate_paths_,
+                    "Number of candidate paths to be considered for routing: int [default: 5]. Some algorithms might overwrite this value.");
+ 
++    app.add_option("--h2s-tiebreak-mode", h2s_tiebreak_mode_,
++                   "H2S equal-priority tie-break mode: BASELINE or SEEDED_TIEBREAK [default: BASELINE]");
++    app.add_option("--h2s-tiebreak-seed", h2s_tiebreak_seed_,
++                   "Stable H2S equal-priority tie-break seed [default: 0]");
++
+     app.add_flag("--verify-schedule", verify_schedule,
+                  "if set, the schedule will be double checked after the scheduling. This flag is for development.");
+ 
+@@ -47,6 +53,11 @@ ProgramOptions::ProgramOptions(const int argc, char **argv)
+     } catch(const CLI::ParseError &e) {
+         std::exit(app.exit(e));
+     }
++    h2s_tiebreak_mode_ = util::to_upper(h2s_tiebreak_mode_);
++    if(h2s_tiebreak_mode_ != "BASELINE" and h2s_tiebreak_mode_ != "SEEDED_TIEBREAK") {
++        fmt::print(stderr, "--h2s-tiebreak-mode must be BASELINE or SEEDED_TIEBREAK\n");
++        std::exit(2);
++    }
+ 
+     if(util::to_lower(algorithm_) == "hermes") {
+         candidate_paths_ = 1;
+@@ -101,4 +112,12 @@ auto ProgramOptions::getCandidatePaths() const -> std::size_t
+ auto ProgramOptions::isVerifySchedule() const -> bool
+ {
+     return verify_schedule;
+-}
+\ No newline at end of file
++}
++auto ProgramOptions::isSeededH2sTieBreak() const -> bool
++{
++    return h2s_tiebreak_mode_ == "SEEDED_TIEBREAK";
++}
++auto ProgramOptions::getH2sTieBreakSeed() const -> std::uint64_t
++{
++    return h2s_tiebreak_seed_;
++}
+diff --git a/src/solver/FlowSorting/FlowSorterFactory.cpp b/src/solver/FlowSorting/FlowSorterFactory.cpp
+index a96d21d..af5ac0f 100644
+--- a/src/solver/FlowSorting/FlowSorterFactory.cpp
++++ b/src/solver/FlowSorting/FlowSorterFactory.cpp
+@@ -5,7 +5,8 @@
+ #include "solver/FlowSorting/LowestIdFirst.h"
+ #include "solver/FlowSorting/SourceNodeSorting.h"
+ 
+-auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTypes type) -> std::unique_ptr<AbstractFlowSorter>
++auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTypes type,
++                                   const bool seeded_tiebreak, const std::uint64_t tiebreak_seed) -> std::unique_ptr<AbstractFlowSorter>
+ {
+     switch(type) {
+         using enum FlowSorterTypes;
+@@ -16,7 +17,7 @@ auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTyp
+     case SOURCE_NODE_SORTING:
+         return std::make_unique<SourceNodeSorting>(graph);
+     case LOW_PERIOD_FLOWS_FIRST:
+-        return std::make_unique<LowPeriodFlowsFirst>(graph);
++        return std::make_unique<LowPeriodFlowsFirst>(graph, seeded_tiebreak, tiebreak_seed);
+     default:
+         return std::make_unique<LowestIdFirst>();
+     }
+diff --git a/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp b/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
+index 9afb028..1f05861 100644
+--- a/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
++++ b/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
+@@ -1,4 +1,5 @@
+ #include "solver/scheduler/HierarchicalHeuristicScheduling.h"
++#include "solver/FlowSorting/LowPeriodFlowsFirst.h"
+ #include "fmt/core.h"
+ #include "graph/GraphStructOperations.h"
+ #include "util/UtilFunctions.h"
+@@ -7,11 +8,15 @@
+ HierarchicalHeuristicScheduling::HierarchicalHeuristicScheduling(MultiLayeredGraph& graph,
+                                                                  const flow_sorting::FlowSorterTypes sorter_type,
+                                                                  const configuration_rating::ConfigurationRatingTypes rating_type,
+-                                                                 const placement::ConfigPlacementTypes placement_type)
++                                                                 const placement::ConfigPlacementTypes placement_type,
++                                                                 const bool seeded_tiebreak,
++                                                                 const std::uint64_t tiebreak_seed)
+     : graph_(graph),
+       flow_sorter_type_(sorter_type),
+       config_rating_type_(rating_type),
+-      placement_strategy_(placement_type)
++      placement_strategy_(placement_type),
++      seeded_tiebreak_(seeded_tiebreak),
++      tiebreak_seed_(tiebreak_seed)
+ {}
+ 
+ 
+@@ -22,6 +27,8 @@ auto HierarchicalHeuristicScheduling::solve(const MultiLayeredGraph& graph,
+     -> solver::solutionSet
+ {
+     graph_ = graph;
++    order_export_ = nlohmann::json::array();
++    order_position_ = 0;
+ 
+     // auto trivial_solution = trivialSolutions();
+ 
+@@ -39,6 +46,7 @@ auto HierarchicalHeuristicScheduling::solve(const MultiLayeredGraph& graph,
+     auto req_solution = scheduleSet(req_f, network_utilization);
+     result.insert(result.end(), req_solution.begin(), req_solution.end());
+ 
++    fmt::print("H2S_ORDER_JSON:{}\n", order_export_.dump());
+     return result;
+ }
+ 
+@@ -53,7 +61,7 @@ auto HierarchicalHeuristicScheduling::scheduleSet(const robin_hood::unordered_se
+         flow_list.emplace_back(key);
+     }
+ 
+-    const auto flow_comparison = get_flow_sorter(graph_, flow_sorter_type_);
++    const auto flow_comparison = get_flow_sorter(graph_, flow_sorter_type_, seeded_tiebreak_, tiebreak_seed_);
+     using PriorityQueue = std::priority_queue<common::FlowNodeID, std::vector<common::FlowNodeID>, decltype(std::ref(*flow_comparison))>;
+ 
+     PriorityQueue flow_heap(std::ref(*flow_comparison), std::move(flow_list));
+@@ -64,6 +72,14 @@ auto HierarchicalHeuristicScheduling::scheduleSet(const robin_hood::unordered_se
+         auto current_flow_id = flow_heap.top();
+         auto current_flow = graph_.getFlow(current_flow_id);
+         flow_heap.pop();
++        const auto tie_key = seeded_tiebreak_
++                                 ? flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, current_flow.id.get())
++                                 : current_flow.id.get();
++        order_export_.push_back({{"position", order_position_++}, {"flow_id", current_flow.id.get()},
++                                 {"period", current_flow.period}, {"frame_size", current_flow.frame_size},
++                                 {"primary_period", current_flow.period}, {"primary_frame_size", current_flow.frame_size},
++                                 {"tie_break_key", tie_key}, {"tie_break_mode", seeded_tiebreak_ ? "SEEDED_TIEBREAK" : "BASELINE"},
++                                 {"tie_break_seed", tiebreak_seed_}});
+ 
+         // calculate ratings for all configs of current Flow
+         std::unique_ptr<AbstractConfigurationRating> rating_strategy = getRatingStrategy(

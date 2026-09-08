@@ -1,0 +1,7 @@
+attempts_until_success,best_count_if_no_success,policy_attempt_sequence,scenario,selection_policy,serial_ms_until_success,success_found,total_serial_ms_all_33
+,348,"BASELINE,S00..S31",M_RING,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,2099.469018
+,348,"BASELINE,S00..S31",M_REDSTAR,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,3193.236489
+,348,"BASELINE,S00..S31",M_ROR,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,2998.914549
+,914,"BASELINE,S00..S31",L_RING,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,5702.953412
+,914,"BASELINE,S00..S31",L_REDSTAR,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,15697.780669
+,914,"BASELINE,S00..S31",L_ROR,stop at first complete P0; otherwise report no valid whole-P0 schedule,,False,12346.882162

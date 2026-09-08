@@ -1,0 +1,7 @@
+baseline_HNF_rescued_ever,baseline_scheduled,baseline_success_regressed_ever,best_scheduled,complete_hit_fraction,complete_seed_count,first_complete_seed,maximum_HNF_count,median_scheduled,minimum_HNF_count,persistent_HNF_count,scenario,unique_HNF_sets,unique_order_sequences,unique_scheduled_counts,variable_HNF_union_count,worst_scheduled
+3,348,3,348,0.0,0,,4,348.0,4,1,M_RING,8,32,1,7,348
+3,348,3,348,0.0,0,,4,348.0,4,1,M_REDSTAR,8,32,1,7,348
+3,348,3,348,0.0,0,,4,348.0,4,1,M_ROR,8,32,1,7,348
+12,914,12,914,0.0,0,,14,914.0,14,2,L_RING,31,32,1,26,914
+12,914,12,914,0.0,0,,14,914.0,14,2,L_REDSTAR,31,32,1,26,914
+12,914,12,914,0.0,0,,14,914.0,14,2,L_ROR,31,32,1,26,914
