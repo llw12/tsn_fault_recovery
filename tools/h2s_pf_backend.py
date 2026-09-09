@@ -1,4 +1,9 @@
-"""Affected-only per-failure adapter for the pinned H2S/CELF backend."""
+"""Per-failure adapter for the pinned H2S/CELF backend.
+
+The adapter supports the historical ``affected-only`` mode and the exp19
+``all-reroute`` mode.  The latter deliberately leaves every TT path free for
+the backend to select after removing the physical failed link.
+"""
 
 from __future__ import annotations
 
@@ -39,10 +44,19 @@ def reachable_nodes(scenario: dict[str, Any], disabled_links: set[str], source: 
     return reached
 
 
+SEMANTIC_PROFILE_FIELDS = (
+    "forwarding_model", "logical_routes", "stream_forwarding",
+    "release_offsets_ns", "gate_schedules", "schedule_windows",
+)
+
+
+def semantic_profile_projection(profile: dict[str, Any]) -> dict[str, Any]:
+    """The code-owned Level-B profile payload contract used by exp19."""
+    return {key: profile[key] for key in SEMANTIC_PROFILE_FIELDS}
+
+
 def semantic_profile_hash(profile: dict[str, Any]) -> str:
-    semantic = {key: profile[key] for key in (
-        "forwarding_model", "logical_routes", "stream_forwarding",
-        "release_offsets_ns", "gate_schedules", "schedule_windows")}
+    semantic = semantic_profile_projection(profile)
     return hashlib.sha256(canonical_json_bytes(semantic)).hexdigest()
 
 
@@ -51,9 +65,18 @@ class H2sPfBackend(H2sJrsBackend):
 
     def __init__(self, executable: Path, *, quantum_ns: int = DEFAULT_QUANTUM_NS,
                  candidate_paths: int = DEFAULT_CANDIDATE_PATHS,
-                 memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB):
+                 memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB,
+                 h2s_tiebreak_mode: str = "BASELINE", h2s_tiebreak_seed: int = 0,
+                 h2s_flow_sorting: int = 4,
+                 attempt_celf_fallback: bool = True,
+                 diagnostic_trace_path: Path | None = None):
         super().__init__(executable, quantum_ns=quantum_ns,
-                         candidate_paths=candidate_paths, memory_limit_mb=memory_limit_mb)
+                         candidate_paths=candidate_paths, memory_limit_mb=memory_limit_mb,
+                         h2s_tiebreak_mode=h2s_tiebreak_mode,
+                         h2s_tiebreak_seed=h2s_tiebreak_seed,
+                         h2s_flow_sorting=h2s_flow_sorting,
+                         attempt_celf_fallback=attempt_celf_fallback,
+                         diagnostic_trace_path=diagnostic_trace_path)
 
     def synthesize(self, request: RecoverySynthesisRequest) -> RecoverySynthesisResult:
         started = time.perf_counter_ns()
@@ -93,7 +116,7 @@ class H2sPfBackend(H2sJrsBackend):
             return RecoverySynthesisResult(self.name, BackendStatus.INVALID_INPUT, diagnostic=str(error))
         conversion_ms = (time.perf_counter_ns() - conversion_started) / 1e6
         attempts: list[dict[str, Any]] = []; invalid = False; resource_statuses = []
-        for algorithm in ("H2S", "CELF"):
+        for algorithm in (("H2S", "CELF") if self.attempt_celf_fallback else ("H2S",)):
             run_status, raw, meta = self._run(prepared, algorithm, request.solver_timeout_s)
             attempts.append({"algorithm": algorithm, **meta})
             if run_status is not None:
@@ -132,7 +155,10 @@ class H2sPfBackend(H2sJrsBackend):
                     "unaffected_flow_count": len(prepared.flow_map) - len(affected),
                     "route_scope": request.route_scope,
                     "backend_quantum_ns": self.quantum_ns, "candidate_path_count": self.candidate_paths,
-                    "routing_algorithm": "DIJKSTRA_OVERLAP", "seed": FORMAL_SEED,
+                    "requested_candidate_route_budget": self.candidate_paths,
+                    "routing_algorithm": "DIJKSTRA_OVERLAP", "h2s_tiebreak_mode": self.h2s_tiebreak_mode,
+                    "h2s_tiebreak_seed": self.h2s_tiebreak_seed, "h2s_flow_sorting": self.h2s_flow_sorting,
+                    "seed": FORMAL_SEED,
                     "threads": FORMAL_THREADS, "memory_limit_mb": self.memory_limit_mb,
                     "mean_candidate_paths_per_flow": statistics.mean(candidates) if candidates else 0,
                     "min_candidate_paths": min(candidates, default=0), "max_candidate_paths": max(candidates, default=0),
