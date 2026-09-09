@@ -159,6 +159,11 @@ def repeatable_trace_sha256(rows: list[dict[str, Any]]) -> str:
     return canonical_sha256([{key: value for key, value in row.items() if key not in {"run_id", "scenario"}} for row in rows])
 
 
+def repeatable_admission_sha256(rows: list[dict[str, Any]]) -> str:
+    """The repeat tag identifies an artifact, not an admission decision."""
+    return canonical_sha256([{key: value for key, value in row.items() if key != "run_tag"} for row in rows])
+
+
 def admission_rows(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
     result = []
     for observed in observations:
@@ -313,7 +318,7 @@ def run(quick: bool) -> int:
         left_admission = [row for row in admission if row["scenario"] == sid and row["run_tag"] == pair[0]["tag"]]
         right_admission = [row for row in admission if row["scenario"] == sid and row["run_tag"] == pair[1]["tag"]]
         repeat_rows.append({"scenario": sid, "trace_order_sha_exact": repeatable_trace_sha256(pair[0]["trace"]) == repeatable_trace_sha256(pair[1]["trace"]),
-                            "admission_sha_exact": canonical_sha256(left_admission) == canonical_sha256(right_admission),
+                            "admission_sha_exact": repeatable_admission_sha256(left_admission) == repeatable_admission_sha256(right_admission),
                             "schedule_sha_exact": pair[0]["slots_sha256"] == pair[1]["slots_sha256"], "hnf_exact": pair[0]["signature"]["hnf_set_sha256"] == pair[1]["signature"]["hnf_set_sha256"]})
         repeat_rows[-1]["repeatability_pass"] = all(value for key, value in repeat_rows[-1].items() if key.endswith("_exact"))
     if not all(row["repeatability_pass"] for row in repeat_rows): raise RuntimeError("DIAGNOSTIC_NONDETERMINISTIC")

@@ -11,7 +11,7 @@ from tools.h2s_admission_placement_diagnostic import (
     audit_current_patched_source, formal_backend_config, load_source_scenario,
     sha256_file, source_scenario_path, trace_event_counts,
 )
-from tools.run_h2s_admission_placement_diagnostic import EXPECTED, parity_row, queue_map, repeatable_trace_sha256
+from tools.run_h2s_admission_placement_diagnostic import EXPECTED, parity_row, queue_map, repeatable_admission_sha256, repeatable_trace_sha256
 
 
 class AdmissionPlacementDiagnosticTests(unittest.TestCase):
@@ -47,6 +47,8 @@ class AdmissionPlacementDiagnosticTests(unittest.TestCase):
         self.assertTrue(parity_row(left, right)["parity_pass"])
         self.assertEqual(repeatable_trace_sha256([{"event_type": "FLOW_BEGIN", "run_id": "one", "scenario": "one"}]),
                          repeatable_trace_sha256([{"event_type": "FLOW_BEGIN", "run_id": "two", "scenario": "two"}]))
+        self.assertEqual(repeatable_admission_sha256([{"flow_id": "F", "run_tag": "repeat_1"}]),
+                         repeatable_admission_sha256([{"flow_id": "F", "run_tag": "repeat_2"}]))
 
     def test_queue_map_is_deterministic_and_complete(self) -> None:
         scenario = load_source_scenario("L_RING_D050"); mapping = queue_map(scenario)
