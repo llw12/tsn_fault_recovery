@@ -349,10 +349,12 @@ def verdict_for(egress_rows: list[dict[str, Any]], parity_rows: list[dict[str, A
                      "observed_admission_cardinality_optimal_L": by_scale["L"]["optimal"]}
 
 
-def summary_markdown(verdict: str, flags: dict[str, Any], graph_rows: list[dict[str, Any]], curve: list[dict[str, Any]], trace_rows: list[dict[str, Any]], release: dict[str, Any]) -> str:
+def summary_markdown(verdict: str, flags: dict[str, Any], graph_rows: list[dict[str, Any]], curve: list[dict[str, Any]], trace_rows: list[dict[str, Any]], release: dict[str, Any], variants: list[dict[str, Any]]) -> str:
     d100 = {row["scale"]: row for row in curve if row["density"] == "D100"}
     curve_text = "; ".join(f"{scale}: " + ", ".join(f"{row['density']}={row['mvc_size']}" for row in curve if row["scale"] == scale) for scale in ("M", "L"))
     trace_text = "; ".join(f"{row['flow_id']} -> {row['static_conflicting_peer_flows']}" for row in trace_rows)
+    variant_covers = all(bool(row["is_vertex_cover"]) for row in variants)
+    variant_minimum = all(row["is_minimum_vertex_cover"] is True for row in variants)
     recommendation = ("REDESIGN_DETERMINISTIC_SOURCE_EGRESS_RELEASE_ASSIGNMENT" if verdict == "FIXED_RELEASE_COLLISION_EXACTLY_EXPLAINS_ADMISSION_GAP" else
                       "TARGETED_FIXED_RELEASE_AND_PLACEMENT_DIAGNOSIS" if verdict == "FIXED_RELEASE_COLLISION_PARTIALLY_EXPLAINS_ADMISSION_GAP" else
                       "BACKEND_MODEL_SEMANTIC_REVIEW")
@@ -372,7 +374,8 @@ def summary_markdown(verdict: str, flags: dict[str, Any], graph_rows: list[dict[
         f"9. Full original workloads are proven infeasible only under the current exact fixed-release source-egress semantics: M `{flags['full_density_fixed_release_infeasible_proven_M']}`, L `{flags['full_density_fixed_release_infeasible_proven_L']}`. Corresponding admission cardinality-optimality flags are M `{flags['observed_admission_cardinality_optimal_M']}`, L `{flags['observed_admission_cardinality_optimal_L']}`.",
         f"10. The located generator audit status is `{release['status']}`: releases are deterministic per `(flow_id, seed, period)` and are neither source-aware nor collision-avoiding.",
         "11. Deadline relaxation cannot remove a mandatory exact-start source collision when period, release and frame size are invariant; `deadline_collision_invariance.json` verifies those frozen input fields.",
-        "12. K and downstream topology alternatives cannot remove a collision after a proven unavoidable source egress. Identical cross-topology graphs explain stable cardinality; alternative constructive orders can select different minimum vertex covers and thus change HNF identity.",
+        f"12. K and downstream topology alternatives cannot remove a collision after a proven unavoidable source egress. Identical cross-topology graphs explain stable cardinality. All `{len(variants)}` frozen exp18d/exp18f/baseline HNF variants are vertex covers: `{variant_covers}`; all are exact minimum covers: `{variant_minimum}`. This explains identity-only changes as different minimum covers.",
+        "13. The workload-construction defect is therefore not an industrial-role impossibility: independent per-flow release hashing permits mutually overlapping mandatory launches on one local source egress.",
         "", "This is a property of the current synthetic release assignment and exact-launch constraint, not evidence that the corresponding industrial traffic roles are inherently unschedulable. No H2S, CELF, PF, OMNeT++, or INET run was performed.", "",
     ))
 
@@ -409,7 +412,7 @@ def run(*, quick: bool, implementation_commit: str | None) -> int:
     write_csv(output / "hnf_collision_cover_check.csv", checks); write_csv(output / "density_collision_curve.csv", curve); write_csv(output / "historical_hnf_cover_variants.csv", variants); write_csv(output / "exp18h_trace_crosscheck.csv", trace_rows); write_json(output / "deadline_collision_invariance.json", deadline)
     write_csv(output / "cross_topology_collision_graphs.csv", graph_rows)
     write_json(output / "collision_verdict.json", {"verdict": verdict, **flags, "no_solver_run": True, "next_stage_recommendation": "REDESIGN_DETERMINISTIC_SOURCE_EGRESS_RELEASE_ASSIGNMENT" if verdict == "FIXED_RELEASE_COLLISION_EXACTLY_EXPLAINS_ADMISSION_GAP" else "TARGETED_FIXED_RELEASE_AND_PLACEMENT_DIAGNOSIS" if verdict == "FIXED_RELEASE_COLLISION_PARTIALLY_EXPLAINS_ADMISSION_GAP" else "BACKEND_MODEL_SEMANTIC_REVIEW"})
-    write_text(output / "summary.md", summary_markdown(verdict, flags, graph_rows, curve, trace_rows, release))
+    write_text(output / "summary.md", summary_markdown(verdict, flags, graph_rows, curve, trace_rows, release, variants))
     assert_frozen(frozen)
     artifacts = {str(path.relative_to(output)): sha256_file(path) for path in sorted(output.rglob("*")) if path.is_file() and path.name != "analysis_manifest.json"}
     write_json(output / "analysis_manifest.json", {"experiment": "exp18i_fixed_release_source_egress_collision_audit", "parent_commit": parent, "implementation_commit": implementation_commit or parent, "results_commit": "RECORDED_BY_SUBSEQUENT_GIT_HISTORY", "quantum_ns": 100, "hypercycle_ticks": HYPERCYCLE_TICKS, "frozen_tree_sha256": frozen, "release_generator_audit_sha256": sha256_file(output / "release_generator_audit.md"), "timing_semantics_audit_sha256": sha256_file(output / "timing_semantics_audit.md"), "source_egress_audit_sha256": sha256_file(output / "source_egress_audit.csv"), "conflict_graphs_sha256": canonical_sha256([row["graph_sha256"] for row in graph_summary]), "mvc_solver": "componentwise Konig/Hopcroft-Karp or deterministic branch-and-bound, 10 CPU seconds per non-bipartite component", "backend_semantic_patch_sha256": sha256_file(ROOT / "third_party_patches" / "advanced_flow_scheduler" / "exp15_semantics.patch"), "exp18h_trace_artifact_sha256": {name: sha256_file(DIAGNOSTIC_RESULTS / name) for name in ("first_hnf_snapshot.jsonl", "flow_admission_trace.csv", "hnf_flow_summary.csv")}, "artifact_sha256": artifacts})
