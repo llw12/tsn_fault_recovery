@@ -1,0 +1,1 @@
+{"implementation_commit":"ce655dd0cc5fc4949f519e39e41db407e8c16553","inet_invocations":0,"memory_limit_mb":8192,"omnet_invocations":0,"platform":"Linux-6.6.87.2-microsoft-standard-WSL2-x86_64-with-glibc2.43","python":"3.14.4","run_mode":"full","scenario_budget_s":10800,"seed":1024,"threads":1,"timeout_per_algorithm_s":30}

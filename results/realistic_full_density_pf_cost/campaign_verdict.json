@@ -1,0 +1,1 @@
+{"all_scenarios_complete":true,"attempted_faults":1099,"expected_faults":1099,"formal_verdict":"PF_FULL_CENSUS_COMPLETE_ALL_PROFILES","full_census_required":true,"mode":"full","no_inet_invocations":true,"no_omnet_invocations":true,"no_profile_deduplication":true,"no_profile_grouping":true,"no_sampling":true,"runtime_contract_status":"NOT_ESTABLISHED","valid_profiles":1099}

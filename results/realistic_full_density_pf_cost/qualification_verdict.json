@@ -1,0 +1,1 @@
+{"candidate_audit_frozen":true,"p0_parity_all_scenarios":true,"qualified":true,"storage_contract_audited":true,"tiny_semantic_pf":{"all_reroute_semantics_pass":true,"backend_output":"logs/tiny_semantic_pf.json","route":{"flow_id":"TT","link_path":["la","l02","l21","ld"],"node_path":["a","s0","s2","s1","d"]},"status":"SUCCESS_H2S"}}
