@@ -1,0 +1,15 @@
+changed_count,changed_ratio,flow_count,flow_kind,max_absolute_shift_ticks,median_absolute_shift_ticks,scale
+2,0.020833333333333332,96,ControlCommand,10,0,M
+0,0.0,8,InterCellNext,0,0,M
+1,0.125,8,InterCellPrevious,12,0,M
+1,0.041666666666666664,24,MachineCoordination,21,0,M
+0,0.0,24,MachineStatus,0,0,M
+0,0.0,96,SensorCyclic,0,0,M
+0,0.0,96,SensorFast,0,0,M
+12,0.046875,256,ControlCommand,10,0,L
+0,0.0,16,InterCellNext,0,0,L
+1,0.0625,16,InterCellPrevious,12,0,L
+1,0.015625,64,MachineCoordination,21,0,L
+0,0.0,64,MachineStatus,0,0,L
+0,0.0,256,SensorCyclic,0,0,L
+0,0.0,256,SensorFast,0,0,L

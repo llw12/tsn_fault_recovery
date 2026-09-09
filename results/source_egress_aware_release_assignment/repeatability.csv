@@ -1,0 +1,7 @@
+CELF_HNF_set_sha_exact,H2S_HNF_set_sha_exact,candidate_vector_sha_exact,formal_HNF_count_exact,formal_backend_status_exact,formal_scheduled_count_exact,instance_completion_sha_exact,normalized_schedule_sha_exact,repeatability_pass,scenario,static_checker_exact,upstream_verifier_exact
+True,True,True,True,True,True,True,True,True,L_REDSTAR,True,True
+True,True,True,True,True,True,True,True,True,L_RING,True,True
+True,True,True,True,True,True,True,True,True,L_ROR,True,True
+True,True,True,True,True,True,True,True,True,M_REDSTAR,True,True
+True,True,True,True,True,True,True,True,True,M_RING,True,True
+True,True,True,True,True,True,True,True,True,M_ROR,True,True
