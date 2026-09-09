@@ -337,7 +337,7 @@ def run(quick: bool) -> int:
     for trace in output.rglob("trace.jsonl"):
         gzip_file(trace)
     write_text(output / "summary.md", summary_markdown(audit, observed, parity, mechanisms, verdict))
-    manifest = {"parent_commit": git("rev-parse", "HEAD"), "implementation_commit": "PENDING", "results_commit": "PENDING", "source_scenarios": {sid: sha256_file(source_scenario_path(sid)) for sid in SCENARIOS}, "exp18g_verdict_sha256": sha256_file(ROOT / "results" / "tt_workload_density_calibration" / "diagnostic_verdict.json"), "audit": audit, "backend": formal_backend_config(), "trace_schema_version": TRACE_SCHEMA_VERSION, "frozen_tree_sha256": frozen_roots, "artifact_sha256": {str(path.relative_to(output)): sha256_file(path) for path in sorted(output.rglob("*")) if path.is_file()}}
+    manifest = {"parent_commit": git("rev-parse", "HEAD^"), "implementation_commit": git("rev-parse", "HEAD"), "results_commit": "PENDING_RESULTS_COMMIT", "source_scenarios": {sid: sha256_file(source_scenario_path(sid)) for sid in SCENARIOS}, "exp18g_verdict_sha256": sha256_file(ROOT / "results" / "tt_workload_density_calibration" / "calibration_verdict.json"), "audit": audit, "backend": formal_backend_config(), "trace_schema_version": TRACE_SCHEMA_VERSION, "frozen_tree_sha256": frozen_roots, "artifact_sha256": {str(path.relative_to(output)): sha256_file(path) for path in sorted(output.rglob("*")) if path.is_file()}}
     write_json(output / "analysis_manifest.json", manifest)
     return 0
 
