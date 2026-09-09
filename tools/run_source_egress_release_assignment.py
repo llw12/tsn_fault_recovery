@@ -275,12 +275,13 @@ An `unknown` result or process timeout is reported as
 
 
 def _base_artifacts(output: Path, *, mode: str, parent: str, implementation: str, frozen: dict[str, str],
-                    scenarios: dict[str, dict[str, Any]], grouping: list[dict[str, Any]], toy: dict[str, Any] | None = None) -> None:
+                    scenarios: dict[str, dict[str, Any]], grouping: list[dict[str, Any]], scheduler_runs: int,
+                    toy: dict[str, Any] | None = None) -> None:
     write_json(output / "environment.json", {"platform": platform.platform(), "python": platform.python_version(),
                "os_uname": list(os.uname()), "mode": mode, "executable": str(EXECUTABLE),
                "executable_sha256": sha256_file(EXECUTABLE) if EXECUTABLE.is_file() else "MISSING",
                "solver_python": str(SOLVER_PYTHON), "solver_script_sha256": sha256_file(SOLVER_SCRIPT),
-               "backend_config": FORMAL_BACKEND_CONFIG, "scheduler_runs": 0})
+               "backend_config": FORMAL_BACKEND_CONFIG, "scheduler_runs": scheduler_runs})
     write_json(output / "source_manifest.json", {"input_source": "frozen original exp18 D100 scenarios only",
                "source_scenario_sha256": {scenario_id: sha256_file(source_scenario_path(scenario_id)) for scenario_id in scenarios},
                "source_counts": {scale: {"flow_count": EXPECTED_FLOW_COUNTS[scale], "instance_count": EXPECTED_INSTANCE_COUNTS[scale]} for scale in ("M", "L")},
@@ -296,7 +297,8 @@ def _write_final(output: Path, *, mode: str, parent: str, implementation: str, f
                  assignment: list[dict[str, Any]], integrity: list[dict[str, Any]], static: list[dict[str, Any]],
                  p0: list[dict[str, Any]], repeat: list[dict[str, Any]], verdict_name: str, toy: dict[str, Any], failure: str = "") -> int:
     assert verdict_name in VERDICTS
-    _base_artifacts(output, mode=mode, parent=parent, implementation=implementation, frozen=frozen, scenarios=scenarios, grouping=grouping, toy=toy)
+    _base_artifacts(output, mode=mode, parent=parent, implementation=implementation, frozen=frozen, scenarios=scenarios,
+                    grouping=grouping, scheduler_runs=len(p0), toy=toy)
     write_csv(output / "source_group_optimization.csv", group_rows); write_csv(output / "release_assignment.csv", assignment)
     summaries, kinds = shift_summaries(assignment) if assignment else ([], [])
     write_csv(output / "release_shift_summary.csv", summaries); write_csv(output / "release_shift_by_flow_kind.csv", kinds)
