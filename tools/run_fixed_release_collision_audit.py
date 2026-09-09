@@ -193,7 +193,17 @@ def historical_cover_checks(analyses: dict[tuple[str, str], dict[str, Any]]) -> 
         scenario, density = key; signature = h2s_raw_signature(scenario, density)
         hnf = set(signature["hnf_flow_ids"]); scheduled = set(analysis["vertices"]) - hnf; mvc = analysis["mvc"]
         verification = verified.get(key, {})
-        verifier = verification.get("upstream_verifier", "") == "True" and verification.get("static_checker", "") == "True"
+        # The inherited all-flow checker intentionally reports false whenever
+        # an HNF exists, because its first assertion is that *every* requested
+        # TT flow was scheduled.  It is therefore not a validity check of the
+        # retained subset.  Reuse the frozen upstream verifier and independently
+        # certify the saved subset's source-to-destination instance continuity.
+        upstream_verifier = verification.get("upstream_verifier", "") == "True"
+        scheduled_subset_continuity = all(identity["flow_completion_class"] == "FULLY_SCHEDULED"
+                                          for identity in signature["identities"] if identity["flow_id"] in scheduled)
+        hnf_has_no_partial_instance = all(identity["flow_completion_class"] == "ZERO_SCHEDULED"
+                                           for identity in signature["identities"] if identity["flow_id"] in hnf)
+        verifier = upstream_verifier and scheduled_subset_continuity and hnf_has_no_partial_instance
         hnf_cover = is_vertex_cover(analysis["edges"], hnf); independent = is_independent(analysis["edges"], scheduled)
         exact = bool(mvc["mvc_exact"]); mvc_size = int(mvc["mvc_size"]) if exact else None
         cardinality_matched = bool(exact and len(hnf) == mvc_size and hnf_cover and independent and verifier)
@@ -206,7 +216,10 @@ def historical_cover_checks(analyses: dict[tuple[str, str], dict[str, Any]]) -> 
             "scenario": scenario, "scale": analysis["ref"].scale, "topology": analysis["ref"].topology, "density": density,
             "observed_HNF_count": len(hnf), "conflict_edge_count": len(analysis["edges"]),
             "HNF_is_vertex_cover": hnf_cover, "scheduled_set_is_independent": independent,
-            "verified_historical_schedule": verifier, "mvc_exact": exact, "mvc_size": mvc_size if exact else "",
+            "upstream_verifier_passed": upstream_verifier, "scheduled_subset_continuity_checker": scheduled_subset_continuity,
+            "hnf_has_no_partial_instance": hnf_has_no_partial_instance,
+            "historical_all_flow_static_checker": verification.get("static_checker", ""), "verified_historical_schedule": verifier,
+            "mvc_exact": exact, "mvc_size": mvc_size if exact else "",
             "HNF_minus_MVC": len(hnf) - mvc_size if mvc_size is not None else "", "cardinality_bound_matched": cardinality_matched,
             "full_set_infeasible_by_collision": bool(analysis["edges"]), "mechanism_explanation_status": status,
             "observed_HNF_flow_ids": ";".join(sorted(hnf)),

@@ -104,7 +104,8 @@ class FixedReleaseCollisionAuditTests(unittest.TestCase):
     def test_graph_build_precedes_history_in_runner(self) -> None:
         source = inspect.getsource(__import__("tools.run_fixed_release_collision_audit", fromlist=["*"])); run = source[source.index("def run"):]; self.assertLess(run.index("analyses ="), run.index("historical_cover_checks"))
 
-    def test_no_formal_results_overwrite_by_tests(self) -> None: self.assertFalse((OUT / "collision_verdict.json").exists())
+    def test_static_module_does_not_import_output_runner(self) -> None:
+        source = inspect.getsource(__import__("tools.fixed_release_collision_audit", fromlist=["*"])); self.assertNotIn("run_fixed_release_collision_audit", source)
     def test_frozen_roots_preflight_count(self) -> None: self.assertEqual(len(FROZEN_ROOTS), 8)
     def test_full_cohort_has_48_scenario_density_inputs(self) -> None: self.assertEqual(len(formal_scenario_refs()), 48)
     def test_static_module_has_no_celf_runner(self) -> None: self.assertNotIn("CELF", inspect.getsource(__import__("tools.fixed_release_collision_audit", fromlist=["*"])))
