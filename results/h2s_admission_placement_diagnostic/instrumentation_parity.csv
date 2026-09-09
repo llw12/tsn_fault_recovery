@@ -1,0 +1,3 @@
+actual_flow_order_exact,candidate_vector_exact,chosen_schedule_slots_exact,hnf_set_sha256_exact,instance_completion_sha256_exact,normalized_schedule_exact,parity_pass,scenario,scheduled_flow_count_exact,static_checker_exact,trace_off_tag,trace_on_tag,upstream_verifier_exact
+True,True,True,True,True,True,True,M_RING_D070,True,True,qualification_trace_off,qualification_trace_on,True
+True,True,True,True,True,True,True,L_RING_D050,True,True,qualification_trace_off,qualification_trace_on,True

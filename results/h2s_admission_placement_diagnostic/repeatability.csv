@@ -1,0 +1,7 @@
+admission_sha_exact,hnf_exact,repeatability_pass,scenario,schedule_sha_exact,trace_order_sha_exact
+True,True,True,M_RING_D070,True,True
+True,True,True,M_REDSTAR_D070,True,True
+True,True,True,M_ROR_D070,True,True
+True,True,True,L_RING_D050,True,True
+True,True,True,L_REDSTAR_D050,True,True
+True,True,True,L_ROR_D050,True,True
