@@ -1,0 +1,1064 @@
+# Composite reproducibility patch for the current exp18h AdvancedFlowScheduler tree.
+# Base: 650a9665e7bafb70fcf19c9f0a247e1d7b885ffd
+# It intentionally includes the pre-existing exp15 semantics and exp18d tie-break state
+# plus the exp18h default-off observer. Apply to a clean pinned upstream with `git apply`;
+# reverse with `git apply -R`. The experiment's analysis manifest records this file SHA-256.
+
+diff --git a/cmake/flags.cmake b/cmake/flags.cmake
+index c9d78a7..d9a0b0d 100644
+--- a/cmake/flags.cmake
++++ b/cmake/flags.cmake
+@@ -11,8 +11,6 @@ function(setup_linker target)
+         if (GNU_GOLD)
+             message(STATUS "found GNU gold linker, using it as linker")
+             target_link_options(${target} PUBLIC -fuse-ld=gold;LINKER:--threads,--thread-count=${HOST_PROC_COUNT})
+-        elseif (CMAKE_BUILD_TYPE MATCHES "Release")
+-            message(FATAL_ERROR "Gold or lld linker must be installed for building in Release mode.")
+         else ()
+             message(STATUS "LLD and Gold not available, using the system linker.")
+         endif ()
+diff --git a/include/IO/ProgramOptions.h b/include/IO/ProgramOptions.h
+index 091a5b9..bec2935 100644
+--- a/include/IO/ProgramOptions.h
++++ b/include/IO/ProgramOptions.h
+@@ -3,6 +3,7 @@
+ #include "solver/Placement.h"
+ #include <solver/FlowSorting/FlowSorterFactory.h>
+ #include <string>
++#include <cstdint>
+ 
+ 
+ class ProgramOptions
+@@ -21,6 +22,9 @@ public:
+     auto getPlacementType() const -> placement::ConfigPlacementTypes;
+     auto getCandidatePaths() const -> std::size_t;
+     auto isVerifySchedule() const -> bool;
++    auto isSeededH2sTieBreak() const -> bool;
++    auto getH2sTieBreakSeed() const -> std::uint64_t;
++    auto getDiagnosticTracePath() const -> const std::string&;
+ 
+ private:
+     std::string network_path_;
+@@ -34,4 +38,7 @@ private:
+     bool use_offensive_planning_ = false;
+     placement::ConfigPlacementTypes placement_type_ = placement::ConfigPlacementTypes::BALANCED;
+     bool verify_schedule = false;
+-};
+\ No newline at end of file
++    std::string h2s_tiebreak_mode_ = "BASELINE";
++    std::uint64_t h2s_tiebreak_seed_ = 0;
++    std::string diagnostic_trace_path_;
++};
+diff --git a/include/graph/GraphStructs.h b/include/graph/GraphStructs.h
+index ec4ceb4..ad6fe53 100644
+--- a/include/graph/GraphStructs.h
++++ b/include/graph/GraphStructs.h
+@@ -22,6 +22,12 @@ struct Flow
+     common::NetworkNodeID destination;
+ 
+     std::vector<common::ConfigurationNodeID> configurations;
++    std::vector<common::NetworkQueueID> fixed_path;
++    std::size_t release_offset = 0; // in scheduler ticks
++    std::size_t deadline = 0; // relative deadline; zero preserves the stock period deadline
++    std::size_t propagation_delay = 1;
++    std::size_t processing_delay = 4;
++    bool fixed_release = false;
+ };
+ 
+ 
+@@ -30,6 +36,11 @@ struct Flow
+     j = json{{"flowID", f.id.get()},
+              {"frame size", f.frame_size},
+              {"period", f.period},
++             {"release offset", f.release_offset},
++             {"deadline", f.deadline},
++             {"propagation delay", f.propagation_delay},
++             {"processing delay", f.processing_delay},
++             {"fixed release", f.fixed_release},
+              {"source", f.source.get()},
+              {"destination", f.destination.get()}};
+ }
+@@ -41,6 +52,15 @@ struct Flow
+     f.id = common::FlowNodeID{temp};
+     j.at("package size").get_to(f.frame_size);
+     j.at("period").get_to(f.period);
++    j.at("release offset").get_to(f.release_offset);
++    j.at("deadline").get_to(f.deadline);
++    f.propagation_delay = j.value("propagation delay", std::size_t{1});
++    f.processing_delay = j.value("processing delay", std::size_t{4});
++    f.fixed_release = j.value("fixed release", false);
++    for (const auto queue : j.value("fixed path", std::vector<std::size_t>{}))
++    {
++        f.fixed_path.emplace_back(queue);
++    }
+     j.at("source").get_to(temp);
+     f.source = common::NetworkNodeID{temp};
+     j.at("destination").get_to(temp);
+diff --git a/include/graph/MultiLayeredGraph.h b/include/graph/MultiLayeredGraph.h
+index fe59830..882ade0 100644
+--- a/include/graph/MultiLayeredGraph.h
++++ b/include/graph/MultiLayeredGraph.h
+@@ -45,6 +45,8 @@ public:
+ 
+     [[nodiscard]] auto getEgressQueues() const -> std::span<const graph_structs::EgressQueue>;
+ 
++    [[nodiscard]] auto getSourceNodeOfQueue(common::NetworkQueueID queue_id) const -> common::NetworkNodeID;
++
+     /**
+      * Adds a network device node in the network layer csr with the according edges.
+      *
+diff --git a/include/solver/FlowSorting/FlowSorterFactory.h b/include/solver/FlowSorting/FlowSorterFactory.h
+index 03de2ee..46b9fe0 100644
+--- a/include/solver/FlowSorting/FlowSorterFactory.h
++++ b/include/solver/FlowSorting/FlowSorterFactory.h
+@@ -2,6 +2,7 @@
+ 
+ #include "AbstractFlowSorter.h"
+ #include "graph/MultiLayeredGraph.h"
++#include <cstdint>
+ 
+ 
+ namespace flow_sorting {
+@@ -19,6 +20,7 @@ enum class FlowSorterTypes {
+     return static_cast<int>(type);
+ }
+ 
+-[[nodiscard]] auto get_flow_sorter(MultiLayeredGraph& graph, FlowSorterTypes type) -> std::unique_ptr<AbstractFlowSorter>;
++[[nodiscard]] auto get_flow_sorter(MultiLayeredGraph& graph, FlowSorterTypes type,
++                                   bool seeded_tiebreak = false, std::uint64_t tiebreak_seed = 0) -> std::unique_ptr<AbstractFlowSorter>;
+ 
+-} // namespace flow_sorting
+\ No newline at end of file
++} // namespace flow_sorting
+diff --git a/include/solver/FlowSorting/LowPeriodFlowsFirst.h b/include/solver/FlowSorting/LowPeriodFlowsFirst.h
+index 8bf7b9f..89ae95d 100644
+--- a/include/solver/FlowSorting/LowPeriodFlowsFirst.h
++++ b/include/solver/FlowSorting/LowPeriodFlowsFirst.h
+@@ -1,12 +1,27 @@
+ #pragma once
+ 
+ #include "solver/FlowSorting/AbstractFlowSorter.h"
++#include <cstdint>
++
++namespace flow_sorting {
++[[nodiscard]] inline auto stable_seeded_tiebreak_key(const std::uint64_t seed, const std::uint64_t flow_id) -> std::uint64_t
++{
++    auto value = seed ^ flow_id;
++    value += 0x9e3779b97f4a7c15ULL;
++    value = (value ^ (value >> 30U)) * 0xbf58476d1ce4e5b9ULL;
++    value = (value ^ (value >> 27U)) * 0x94d049bb133111ebULL;
++    return value ^ (value >> 31U);
++}
++} // namespace flow_sorting
+ 
+ class LowPeriodFlowsFirst final : public AbstractFlowSorter
+ {
+ public:
+-    explicit LowPeriodFlowsFirst(MultiLayeredGraph& graph)
+-        : graph_(graph)
++    explicit LowPeriodFlowsFirst(MultiLayeredGraph& graph, const bool seeded_tiebreak = false,
++                                 const std::uint64_t tiebreak_seed = 0)
++        : graph_(graph),
++          seeded_tiebreak_(seeded_tiebreak),
++          tiebreak_seed_(tiebreak_seed)
+     {}
+ 
+     auto toString() -> std::string_view override
+@@ -26,10 +41,19 @@ public:
+             // long transmissions
+             return lhs_flow.frame_size < rhs_flow.frame_size;
+         }
++        if(seeded_tiebreak_) {
++            const auto lhs_key = flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, lhs_flow.id.get());
++            const auto rhs_key = flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, rhs_flow.id.get());
++            if(lhs_key != rhs_key) {
++                return lhs_key > rhs_key;
++            }
++        }
+         return lhs_flow.id > rhs_flow.id;
+     }
+ 
+ 
+ private:
+     MultiLayeredGraph& graph_;
+-};
+\ No newline at end of file
++    bool seeded_tiebreak_ = false;
++    std::uint64_t tiebreak_seed_ = 0;
++};
+diff --git a/include/solver/Placement.h b/include/solver/Placement.h
+index 30d013e..d0e9054 100644
+--- a/include/solver/Placement.h
++++ b/include/solver/Placement.h
+@@ -1,5 +1,6 @@
+ #pragma once
+ 
++#include "solver/DiagnosticObserver.h"
+ #include "UtilizationList.h"
+ #include "graph/GraphStructs.h"
+ 
+@@ -19,7 +20,9 @@ enum class ConfigPlacementTypes {
+ [[nodiscard]] auto placeConfig(const graph_structs::Configuration& currentConfig,
+                                const graph_structs::Flow& currentFlow,
+                                common::NetworkUtilizationList& utilizationList,
+-                               ConfigPlacementTypes placementType)
++                               ConfigPlacementTypes placementType,
++                               diagnostic::Observer* observer = nullptr,
++                               std::size_t attempt_index = 0)
+     -> bool;
+ 
+ /**
+@@ -33,13 +36,17 @@ enum class ConfigPlacementTypes {
+  */
+ [[nodiscard]] auto placeConfigASAP(const graph_structs::Configuration& current_config,
+                                    const graph_structs::Flow& current_flow,
+-                                   common::NetworkUtilizationList& utilizationList)
++                                   common::NetworkUtilizationList& utilizationList,
++                                   diagnostic::Observer* observer = nullptr,
++                                   std::size_t attempt_index = 0)
+     -> bool;
+ 
+ 
+ [[nodiscard]] auto placeConfigBalanced(const graph_structs::Configuration& current_config,
+                                        const graph_structs::Flow& current_flow,
+-                                       common::NetworkUtilizationList& utilizationList)
++                                       common::NetworkUtilizationList& utilizationList,
++                                       diagnostic::Observer* observer = nullptr,
++                                       std::size_t attempt_index = 0)
+     -> bool;
+ 
+ 
+@@ -58,4 +65,4 @@ enum class ConfigPlacementTypes {
+                                    common::NetworkQueueID egress_queue,
+                                    std::size_t latest_offset)
+     -> bool;
+-} // namespace placement
+\ No newline at end of file
++} // namespace placement
+diff --git a/include/solver/UtilizationList.h b/include/solver/UtilizationList.h
+index c3b14ad..3e3942d 100644
+--- a/include/solver/UtilizationList.h
++++ b/include/solver/UtilizationList.h
+@@ -2,6 +2,7 @@
+ 
+ #include <Typedefs.h>
+ #include <graph/MultiLayeredGraph.h>
++#include <solver/DiagnosticObserver.h>
+ #include <ranges>
+ #include <vector>
+ 
+@@ -106,7 +107,9 @@ public:
+     auto searchTransmissionOpportunities(const graph_structs::Configuration& current_config,
+                                          const graph_structs::Flow& current_flow,
+                                          std::size_t first_release_time,
+-                                         std::size_t deadline) const noexcept
++                                         std::size_t deadline,
++                                         diagnostic::Observer* observer = nullptr,
++                                         diagnostic::PlacementTraceContext context = {}) const noexcept
+         -> std::vector<SlotReservationRequest>;
+ 
+ private:
+diff --git a/include/solver/scheduler/HierarchicalHeuristicScheduling.h b/include/solver/scheduler/HierarchicalHeuristicScheduling.h
+index 49f1da2..f2e14f2 100644
+--- a/include/solver/scheduler/HierarchicalHeuristicScheduling.h
++++ b/include/solver/scheduler/HierarchicalHeuristicScheduling.h
+@@ -5,6 +5,9 @@
+ #include "solver/FlowSorting/FlowSorterFactory.h"
+ #include "solver/Placement.h"
+ #include "solver/UtilizationList.h"
++#include <cstdint>
++#include <memory>
++#include <nlohmann/json.hpp>
+ 
+ class HierarchicalHeuristicScheduling final : public solver::AbstractScheduler
+ {
+@@ -12,7 +15,11 @@ public:
+     HierarchicalHeuristicScheduling(MultiLayeredGraph& graph,
+                                     flow_sorting::FlowSorterTypes sorter_type,
+                                     configuration_rating::ConfigurationRatingTypes rating_type,
+-                                    placement::ConfigPlacementTypes placement_type);
++                                    placement::ConfigPlacementTypes placement_type,
++                                    bool seeded_tiebreak = false,
++                                    std::uint64_t tiebreak_seed = 0,
++                                    std::string diagnostic_trace_path = {},
++                                    std::string diagnostic_scenario = {});
+ 
+     auto solve(const MultiLayeredGraph& graph,
+                const robin_hood::unordered_set<common::FlowNodeID>& active_f,
+@@ -33,4 +40,9 @@ private:
+     flow_sorting::FlowSorterTypes flow_sorter_type_;
+     configuration_rating::ConfigurationRatingTypes config_rating_type_;
+     placement::ConfigPlacementTypes placement_strategy_;
++    bool seeded_tiebreak_ = false;
++    std::uint64_t tiebreak_seed_ = 0;
++    nlohmann::json order_export_ = nlohmann::json::array();
++    std::size_t order_position_ = 0;
++    std::unique_ptr<diagnostic::Observer> diagnostic_observer_;
+ };
+diff --git a/main.cpp b/main.cpp
+index e90f454..ce75b0f 100644
+--- a/main.cpp
++++ b/main.cpp
+@@ -54,7 +54,11 @@ auto main(int argc, char* argv[])
+             graph,
+             options.getFlowSorting(),
+             static_cast<configuration_rating::ConfigurationRatingTypes>(options.getConfigurationRating()),
+-            options.getPlacementType());
++            options.getPlacementType(),
++            options.isSeededH2sTieBreak(),
++            options.getH2sTieBreakSeed(),
++            options.getDiagnosticTracePath(),
++            options.getScenarioPath());
+     }
+ 
+     // ================
+diff --git a/src/IO/ProgramOptions.cpp b/src/IO/ProgramOptions.cpp
+index 98ea1c1..f0f3c4e 100644
+--- a/src/IO/ProgramOptions.cpp
++++ b/src/IO/ProgramOptions.cpp
+@@ -2,6 +2,7 @@
+ #include "util/UtilFunctions.h"
+ #include <CLI/CLI.hpp>
+ #include <IO/ProgramOptions.h>
++#include <fmt/core.h>
+ 
+ ProgramOptions::ProgramOptions(const int argc, char **argv)
+ {
+@@ -39,6 +40,13 @@ ProgramOptions::ProgramOptions(const int argc, char **argv)
+     app.add_option("--candidate-paths", candidate_paths_,
+                    "Number of candidate paths to be considered for routing: int [default: 5]. Some algorithms might overwrite this value.");
+ 
++    app.add_option("--h2s-tiebreak-mode", h2s_tiebreak_mode_,
++                   "H2S equal-priority tie-break mode: BASELINE or SEEDED_TIEBREAK [default: BASELINE]");
++    app.add_option("--h2s-tiebreak-seed", h2s_tiebreak_seed_,
++                   "Stable H2S equal-priority tie-break seed [default: 0]");
++    app.add_option("--diagnostic-trace", diagnostic_trace_path_,
++                   "Append read-only H2S diagnostic JSONL to this path [default: disabled]");
++
+     app.add_flag("--verify-schedule", verify_schedule,
+                  "if set, the schedule will be double checked after the scheduling. This flag is for development.");
+ 
+@@ -47,6 +55,11 @@ ProgramOptions::ProgramOptions(const int argc, char **argv)
+     } catch(const CLI::ParseError &e) {
+         std::exit(app.exit(e));
+     }
++    h2s_tiebreak_mode_ = util::to_upper(h2s_tiebreak_mode_);
++    if(h2s_tiebreak_mode_ != "BASELINE" and h2s_tiebreak_mode_ != "SEEDED_TIEBREAK") {
++        fmt::print(stderr, "--h2s-tiebreak-mode must be BASELINE or SEEDED_TIEBREAK\n");
++        std::exit(2);
++    }
+ 
+     if(util::to_lower(algorithm_) == "hermes") {
+         candidate_paths_ = 1;
+@@ -101,4 +114,16 @@ auto ProgramOptions::getCandidatePaths() const -> std::size_t
+ auto ProgramOptions::isVerifySchedule() const -> bool
+ {
+     return verify_schedule;
+-}
+\ No newline at end of file
++}
++auto ProgramOptions::isSeededH2sTieBreak() const -> bool
++{
++    return h2s_tiebreak_mode_ == "SEEDED_TIEBREAK";
++}
++auto ProgramOptions::getH2sTieBreakSeed() const -> std::uint64_t
++{
++    return h2s_tiebreak_seed_;
++}
++auto ProgramOptions::getDiagnosticTracePath() const -> const std::string&
++{
++    return diagnostic_trace_path_;
++}
+diff --git a/src/graph/MultiLayeredGraph.cpp b/src/graph/MultiLayeredGraph.cpp
+index 726ddd8..52242bc 100644
+--- a/src/graph/MultiLayeredGraph.cpp
++++ b/src/graph/MultiLayeredGraph.cpp
+@@ -69,6 +69,18 @@ auto MultiLayeredGraph::getEgressQueues() const -> std::span<const graph_structs
+     return complete;
+ }
+ 
++auto MultiLayeredGraph::getSourceNodeOfQueue(const common::NetworkQueueID queue_id) const -> common::NetworkNodeID
++{
++    for(std::size_t node = 0; node < getNumberOfNetworkNodes(); ++node) {
++        for(const auto& queue : getEgressQueuesOf(common::NetworkNodeID{node})) {
++            if(queue.id == queue_id) {
++                return common::NetworkNodeID{node};
++            }
++        }
++    }
++    throw std::out_of_range("Unknown egress queue");
++}
++
+ auto MultiLayeredGraph::addFlow(graph_structs::Flow f) -> void
+ {
+     flows_[f.id] = std::move(f);
+diff --git a/src/scenario/ScenarioManager.cpp b/src/scenario/ScenarioManager.cpp
+index ecfe74f..e85fc1c 100644
+--- a/src/scenario/ScenarioManager.cpp
++++ b/src/scenario/ScenarioManager.cpp
+@@ -5,6 +5,7 @@
+ #include <IO/OutputLogger.h>
+ #include <graph/GraphStructOperations.h>
+ #include <util/Timer.h>
++#include <nlohmann/json.hpp>
+ 
+ auto ScenarioManager::runScenario(const ProgramOptions& options,
+                                   MultiLayeredGraph& graph,
+@@ -122,6 +123,11 @@ auto ScenarioManager::runScenario(const ProgramOptions& options,
+             .avg_scheduling_table_size = util::get_average_value(scheduling_table_sizes),
+             .max_scheduling_table_size = *std::ranges::max_element(scheduling_table_sizes)};
+ 
++        const auto requested_flow_count = graph.getNumberOfFlows();
++        nlohmann::json candidate_path_counts = nlohmann::json::object();
++        for(const auto& [flow_id, flow] : graph.getFlows()) {
++            candidate_path_counts[std::to_string(flow_id.get())] = flow.configurations.size();
++        }
+         if(active_f_.size() < graph.getNumberOfFlows()) {
+             // remove rejected flows
+             removeRejectedFlows(graph);
+@@ -140,6 +146,31 @@ auto ScenarioManager::runScenario(const ProgramOptions& options,
+             verifySchedule(currently_active_utilization_, graph, hyper_cycle);
+         }
+ 
++        currently_active_utilization_.sortReservedEgressSlots();
++        nlohmann::json exported{{"upstream_verifier_pass", options.isVerifySchedule()},
++                                {"requested_flow_count", requested_flow_count},
++                                {"scheduled_flow_count", active_f_.size()},
++                                {"candidate_path_counts", candidate_path_counts},
++                                {"candidate_route_generation_seconds", total_insert_config_time_},
++                                {"hyper_cycle_ticks", hyper_cycle},
++                                {"slots", nlohmann::json::array()}};
++        const auto& reserved = currently_active_utilization_.getReservedEgressSlots();
++        for(std::size_t queue_index = 0; queue_index < reserved.size(); ++queue_index) {
++            const auto queue_id = common::NetworkQueueID{queue_index};
++            const auto source = graph.getSourceNodeOfQueue(queue_id);
++            const auto destination = graph.getEgressQueue(queue_id).destination;
++            for(const auto& slot : reserved[queue_index]) {
++                exported["slots"].push_back({{"queue_id", queue_index},
++                                             {"source", source.get()},
++                                             {"destination", destination.get()},
++                                             {"start_tick", slot.start_time},
++                                             {"end_tick", slot.next_slot_start},
++                                             {"flow_id", slot.flow_id.get()},
++                                             {"config_id", slot.config_id.get()}});
++            }
++        }
++        fmt::print("H2S_SCHEDULE_JSON:{}\n", exported.dump());
++
+ 
+ 
+         /*
+@@ -174,7 +205,9 @@ auto ScenarioManager::handleFlowChanges(MultiLayeredGraph& graph, io::TimeStep&
+     // add flows
+     robin_hood::unordered_set<common::FlowNodeID> req_f;
+     std::ranges::for_each(time_step.add_flows, [&](auto& flow) {
+-        auto routes = navigator->findRoutes(flow.source, flow.destination, graph, no_candidate_paths);
++        auto routes = flow.fixed_path.empty()
++                          ? navigator->findRoutes(flow.source, flow.destination, graph, no_candidate_paths)
++                          : std::vector<std::vector<common::NetworkQueueID>>{flow.fixed_path};
+         auto flow_id = flow.id;
+         graph.addFlow(std::move(flow));
+         req_f.insert(flow_id);
+diff --git a/src/solver/FlowSorting/FlowSorterFactory.cpp b/src/solver/FlowSorting/FlowSorterFactory.cpp
+index a96d21d..af5ac0f 100644
+--- a/src/solver/FlowSorting/FlowSorterFactory.cpp
++++ b/src/solver/FlowSorting/FlowSorterFactory.cpp
+@@ -5,7 +5,8 @@
+ #include "solver/FlowSorting/LowestIdFirst.h"
+ #include "solver/FlowSorting/SourceNodeSorting.h"
+ 
+-auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTypes type) -> std::unique_ptr<AbstractFlowSorter>
++auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTypes type,
++                                   const bool seeded_tiebreak, const std::uint64_t tiebreak_seed) -> std::unique_ptr<AbstractFlowSorter>
+ {
+     switch(type) {
+         using enum FlowSorterTypes;
+@@ -16,7 +17,7 @@ auto flow_sorting::get_flow_sorter(MultiLayeredGraph& graph, const FlowSorterTyp
+     case SOURCE_NODE_SORTING:
+         return std::make_unique<SourceNodeSorting>(graph);
+     case LOW_PERIOD_FLOWS_FIRST:
+-        return std::make_unique<LowPeriodFlowsFirst>(graph);
++        return std::make_unique<LowPeriodFlowsFirst>(graph, seeded_tiebreak, tiebreak_seed);
+     default:
+         return std::make_unique<LowestIdFirst>();
+     }
+diff --git a/src/solver/Placement.cpp b/src/solver/Placement.cpp
+index cca3523..e77b4f6 100644
+--- a/src/solver/Placement.cpp
++++ b/src/solver/Placement.cpp
+@@ -1,4 +1,5 @@
+ #include "solver/Placement.h"
++#include "solver/DiagnosticTrace.h"
+ #include "util/UtilFunctions.h"
+ 
+ 
+@@ -6,25 +7,43 @@
+ auto placement::placeConfig(const graph_structs::Configuration& currentConfig,
+                             const graph_structs::Flow& currentFlow,
+                             common::NetworkUtilizationList& utilizationList,
+-                            const ConfigPlacementTypes placementType)
++                            const ConfigPlacementTypes placementType,
++                            diagnostic::Observer* observer,
++                            const std::size_t attempt_index)
+     -> bool
+ {
++    const auto before = observer ? diagnostic::utilization_state(utilizationList) : nlohmann::json{};
++    if(observer) observer->emit({{"event_type", "PLACEMENT_BEGIN"}, {"flow_id", currentFlow.id.get()}, {"config_id", currentConfig.id.get()},
++                                 {"attempt_index", attempt_index}, {"placement_strategy", to_int(placementType)}, {"utilization_before", before}});
++    bool success = false;
+     switch(placementType) {
+         using enum ConfigPlacementTypes;
+     case ASAP:
+-        return placeConfigASAP(currentConfig, currentFlow, utilizationList);
++        success = placeConfigASAP(currentConfig, currentFlow, utilizationList, observer, attempt_index);
++        break;
+     case BALANCED:
+-        return placeConfigBalanced(currentConfig, currentFlow, utilizationList);
++        success = placeConfigBalanced(currentConfig, currentFlow, utilizationList, observer, attempt_index);
++        break;
+     case HERMES:
+         // the HERMES placement requires additional information and thus needs to be called directly
+-        return false;
++        success = false;
++        break;
++    }
++    if(observer) {
++        const auto after = diagnostic::utilization_state(utilizationList);
++        observer->emit({{"event_type", "PLACEMENT_END"}, {"flow_id", currentFlow.id.get()}, {"config_id", currentConfig.id.get()},
++                        {"attempt_index", attempt_index}, {"placement_strategy", to_int(placementType)}, {"success", success},
++                        {"utilization_before", before}, {"utilization_after", after},
++                        {"state_unchanged", before["state_sha256"] == after["state_sha256"]}});
+     }
+-    return false;
++    return success;
+ }
+ 
+ auto placement::placeConfigASAP(const graph_structs::Configuration& current_config,
+                                 const graph_structs::Flow& current_flow,
+-                                common::NetworkUtilizationList& utilizationList)
++                                common::NetworkUtilizationList& utilizationList,
++                                diagnostic::Observer* observer,
++                                const std::size_t attempt_index)
+     -> bool
+ {
+     const auto frames_per_hyper_cycle = utilizationList.compute_frames_per_hc(current_flow.period);
+@@ -33,8 +52,25 @@ auto placement::placeConfigASAP(const graph_structs::Configuration& current_conf
+     required_slots.reserve(frames_per_hyper_cycle);
+ 
+     const auto success = std::ranges::all_of(std::views::iota(std::size_t{0}, frames_per_hyper_cycle), [&](const std::size_t frame_index) {
+-        const auto reserve_slots = utilizationList.searchTransmissionOpportunities(current_config, current_flow, frame_index * current_flow.period, (frame_index + 1) * current_flow.period);
+-        if(reserve_slots.empty()) {
++        const auto release = current_flow.release_offset + frame_index * current_flow.period;
++        const auto deadline = release + (current_flow.deadline == 0 ? current_flow.period : current_flow.deadline);
++        const auto reserve_slots = utilizationList.searchTransmissionOpportunities(current_config, current_flow, release, deadline, observer,
++            diagnostic::PlacementTraceContext{.attempt_index = attempt_index, .sub_cycle_index = 0, .frame_index = frame_index});
++        const bool fixed_release_matches = not reserve_slots.empty() and reserve_slots.front().start_time == release;
++        const bool accepted_for_instance = not reserve_slots.empty() and (not current_flow.fixed_release or fixed_release_matches);
++        if(observer) observer->emit({{"event_type", "PLACEMENT_INSTANCE"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                                     {"attempt_index", attempt_index}, {"sub_cycle_index", 0}, {"frame_index", frame_index},
++                                     {"release_window_ticks", release}, {"deadline_window_ticks", deadline},
++                                     {"flow_release_offset_ticks", current_flow.release_offset}, {"flow_deadline_ticks", current_flow.deadline},
++                                     {"fixed_release", current_flow.fixed_release}, {"search_success", not reserve_slots.empty()},
++                                     {"fixed_release_matches", fixed_release_matches}, {"accepted_for_instance", accepted_for_instance}});
++        if(not reserve_slots.empty() and current_flow.fixed_release and not fixed_release_matches and observer) {
++            observer->emit({{"event_type", "PLACEMENT_REJECTION"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                            {"attempt_index", attempt_index}, {"sub_cycle_index", 0}, {"frame_index", frame_index}, {"hop_index", 0},
++                            {"queue_id", reserve_slots.front().egress_queue.get()}, {"reason_flags", nlohmann::json::array({"FIXED_RELEASE_START_MISMATCH"})},
++                            {"required_release_ticks", release}, {"observed_first_start_ticks", reserve_slots.front().start_time}});
++        }
++        if(not accepted_for_instance) {
+             return false;
+         }
+         required_slots.push_back(reserve_slots);
+@@ -59,7 +95,9 @@ auto placement::placeConfigASAP(const graph_structs::Configuration& current_conf
+ 
+ auto placement::placeConfigBalanced(const graph_structs::Configuration& current_config,
+                                     const graph_structs::Flow& current_flow,
+-                                    common::NetworkUtilizationList& utilizationList)
++                                    common::NetworkUtilizationList& utilizationList,
++                                    diagnostic::Observer* observer,
++                                    const std::size_t attempt_index)
+     -> bool
+ {
+     /*
+@@ -77,19 +115,31 @@ auto placement::placeConfigBalanced(const graph_structs::Configuration& current_
+ 
+     for(std::size_t sub_cycle_index = 0; sub_cycle_index < number_of_sub_cycles; ++sub_cycle_index) {
+         std::vector<std::vector<common::SlotReservationRequest>> reserved_slots_for_offset;
++        if(observer) observer->emit({{"event_type", "OFFSET_BEGIN"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                                     {"attempt_index", attempt_index}, {"sub_cycle_index", sub_cycle_index},
++                                     {"offset_ticks", sub_cycle_index * utilizationList.getSubCycle()}, {"frames_per_hyper_cycle", frames_per_hyper_cycle}});
+ 
+-        if(std::ranges::all_of(std::views::iota(std::size_t{0}, frames_per_hyper_cycle), [&](const std::size_t frame_index) {
++        const bool offset_valid = std::ranges::all_of(std::views::iota(std::size_t{0}, frames_per_hyper_cycle), [&](const std::size_t frame_index) {
+                const auto current_release_time = sub_cycle_index * utilizationList.getSubCycle() + frame_index * current_flow.period;
+                const auto deadline = (frame_index + 1) * current_flow.period;
+-               const auto reserved_slot = utilizationList.searchTransmissionOpportunities(current_config, current_flow, current_release_time, deadline);
++               const auto reserved_slot = utilizationList.searchTransmissionOpportunities(current_config, current_flow, current_release_time, deadline, observer,
++                   diagnostic::PlacementTraceContext{.attempt_index = attempt_index, .sub_cycle_index = sub_cycle_index, .frame_index = frame_index});
++               if(observer) observer->emit({{"event_type", "PLACEMENT_INSTANCE"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                                             {"attempt_index", attempt_index}, {"sub_cycle_index", sub_cycle_index}, {"frame_index", frame_index},
++                                             {"release_window_ticks", current_release_time}, {"deadline_window_ticks", deadline},
++                                             {"flow_release_offset_ticks", current_flow.release_offset}, {"flow_deadline_ticks", current_flow.deadline},
++                                             {"search_success", not reserved_slot.empty()}});
+ 
+                if(not reserved_slot.empty()) {
+                    reserved_slots_for_offset.push_back(reserved_slot);
+                }
+                return not reserved_slot.empty();
+-           })) {
++           });
++        if(offset_valid) {
+             reserved_slots[sub_cycle_index] = std::move(reserved_slots_for_offset);
+         }
++        if(observer) observer->emit({{"event_type", "OFFSET_END"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                                     {"attempt_index", attempt_index}, {"sub_cycle_index", sub_cycle_index}, {"valid_for_all_instances", offset_valid}});
+     }
+ 
+     auto valid_options = std::ranges::filter_view(reserved_slots, [](auto& hyper_cycle_reservation) {
+diff --git a/src/solver/UtilizationList.cpp b/src/solver/UtilizationList.cpp
+index bc7ded2..012712f 100644
+--- a/src/solver/UtilizationList.cpp
++++ b/src/solver/UtilizationList.cpp
+@@ -33,7 +33,9 @@ auto common::NetworkUtilizationList::getReservedEgressSlots() const -> const std
+ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph_structs::Configuration& current_config,
+                                                                      const graph_structs::Flow& current_flow,
+                                                                      const std::size_t first_release_time,
+-                                                                     const std::size_t deadline) const noexcept
++                                                                     const std::size_t deadline,
++                                                                     diagnostic::Observer* observer,
++                                                                     const diagnostic::PlacementTraceContext context) const noexcept
+     -> std::vector<SlotReservationRequest>
+ {
+     // Tuple: (Network Queue ID, start sending time, end sending time, arrival time)
+@@ -42,7 +44,7 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+     auto running_arrival_time = first_release_time;
+ 
+     const auto current_transmission_delay = util::calculate_transmission_delay(current_flow.frame_size);
+-    const auto effective_deadline = deadline - current_transmission_delay - constant::propagation_delay;
++    const auto effective_deadline = deadline - current_transmission_delay - current_flow.propagation_delay;
+ 
+     const auto constraint_arrival_to_slot_end_large_enough = [current_transmission_delay, &running_arrival_time](const auto& slot) {
+         // slot has not ended before the package could be sent
+@@ -63,7 +65,9 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+     };
+ 
+     // Note: we use all_of to be able to break early
++    std::size_t hop_index = 0;
+     const bool is_schedulable = std::ranges::all_of(current_config.path, [&](auto network_link_id) {
++        const auto current_hop = hop_index++;
+         auto filtered = free_egress_slots_[network_link_id.get()]
+             | std::ranges::views::drop_while(constraint_arrival_to_slot_end_large_enough)
+             | std::ranges::views::take_while(constraint_slot_start_before_deadline)
+@@ -72,6 +76,43 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+ 
+         const auto it = filtered.begin();
+         if(it == filtered.end()) {
++            if(observer) {
++                const auto& slots = free_egress_slots_[network_link_id.get()];
++                const auto& reserved = reserved_egress_slots_[network_link_id.get()];
++                std::size_t ended_before_arrival = 0, started_after_deadline = 0, overlapping_legal = 0, maximum_duration = 0;
++                nlohmann::json intervals = nlohmann::json::array(), blockers = nlohmann::json::array();
++                bool any_after_arrival = false, any_start_before_deadline = false, any_sufficient = false;
++                for(const auto& slot : slots) {
++                    const auto end_exclusive = slot.last_free_macro_tick + 1;
++                    ended_before_arrival += end_exclusive < running_arrival_time + current_transmission_delay;
++                    started_after_deadline += slot.start_time > effective_deadline;
++                    const bool overlaps = end_exclusive >= running_arrival_time && slot.start_time <= effective_deadline;
++                    overlapping_legal += overlaps;
++                    if(overlaps) maximum_duration = std::max(maximum_duration, end_exclusive - std::max(slot.start_time, running_arrival_time));
++                    any_after_arrival |= end_exclusive >= running_arrival_time + current_transmission_delay;
++                    any_start_before_deadline |= slot.start_time <= effective_deadline;
++                    any_sufficient |= std::max(slot.start_time, running_arrival_time) + current_transmission_delay <= std::min(end_exclusive, effective_deadline + current_transmission_delay);
++                    if(overlaps) intervals.push_back({{"start_tick", slot.start_time}, {"end_tick", end_exclusive}});
++                }
++                for(const auto& slot : reserved) {
++                    if(slot.next_slot_start > running_arrival_time && slot.start_time <= effective_deadline + current_transmission_delay) {
++                        blockers.push_back({{"flow_id", slot.flow_id.get()}, {"config_id", slot.config_id.get()}, {"start_tick", slot.start_time}, {"end_tick", slot.next_slot_start}});
++                    }
++                }
++                nlohmann::json reasons = nlohmann::json::array();
++                if(not any_after_arrival) reasons.push_back("NO_FREE_SLOT_AFTER_ARRIVAL");
++                if(not any_start_before_deadline) reasons.push_back("NO_SLOT_START_BEFORE_DEADLINE");
++                if(not any_sufficient) reasons.push_back("NO_SLOT_WITH_SUFFICIENT_DURATION");
++                if(reasons.empty()) reasons.push_back("SEARCH_OPPORTUNITY_EMPTY");
++                observer->emit({{"event_type", "SEARCH_FAILURE"}, {"flow_id", current_flow.id.get()}, {"config_id", current_config.id.get()},
++                                {"attempt_index", context.attempt_index}, {"sub_cycle_index", context.sub_cycle_index}, {"frame_index", context.frame_index},
++                                {"hop_index", current_hop}, {"queue_id", network_link_id.get()}, {"arrival_ticks", running_arrival_time},
++                                {"deadline_ticks", deadline}, {"effective_deadline_ticks", effective_deadline}, {"transmission_ticks", current_transmission_delay},
++                                {"reason_flags", std::move(reasons)}, {"free_slot_count", slots.size()},
++                                {"slots_ending_before_arrival", ended_before_arrival}, {"slots_starting_after_deadline", started_after_deadline},
++                                {"slots_overlapping_legal_window", overlapping_legal}, {"max_contiguous_free_duration", maximum_duration},
++                                {"relevant_free_intervals", std::move(intervals)}, {"observed_overlapping_reservations", std::move(blockers)}});
++            }
+             return false;
+         }
+         const auto free_slot = *it;
+@@ -80,7 +121,7 @@ auto common::NetworkUtilizationList::searchTransmissionOpportunities(const graph
+ 
+         required_slots.emplace_back(network_link_id, earliest_send_time, earliest_send_time + current_transmission_delay, running_arrival_time);
+         // adding the transmission delay here makes it store-and-forward switching. Replace it by some realistic constant for cut-through.
+-        running_arrival_time = earliest_send_time + current_transmission_delay + constant::propagation_delay + constant::processing_delay;
++        running_arrival_time = earliest_send_time + current_transmission_delay + current_flow.propagation_delay + current_flow.processing_delay;
+ 
+         // for the frame a slot was found in each network segment
+         return true;
+diff --git a/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp b/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
+index 9afb028..0b13630 100644
+--- a/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
++++ b/src/solver/scheduler/HierarchicalHeuristicScheduling.cpp
+@@ -1,4 +1,6 @@
+ #include "solver/scheduler/HierarchicalHeuristicScheduling.h"
++#include "solver/DiagnosticTrace.h"
++#include "solver/FlowSorting/LowPeriodFlowsFirst.h"
+ #include "fmt/core.h"
+ #include "graph/GraphStructOperations.h"
+ #include "util/UtilFunctions.h"
+@@ -7,12 +9,22 @@
+ HierarchicalHeuristicScheduling::HierarchicalHeuristicScheduling(MultiLayeredGraph& graph,
+                                                                  const flow_sorting::FlowSorterTypes sorter_type,
+                                                                  const configuration_rating::ConfigurationRatingTypes rating_type,
+-                                                                 const placement::ConfigPlacementTypes placement_type)
++                                                                 const placement::ConfigPlacementTypes placement_type,
++                                                                 const bool seeded_tiebreak,
++                                                                 const std::uint64_t tiebreak_seed,
++                                                                 std::string diagnostic_trace_path,
++                                                                 std::string diagnostic_scenario)
+     : graph_(graph),
+       flow_sorter_type_(sorter_type),
+       config_rating_type_(rating_type),
+-      placement_strategy_(placement_type)
+-{}
++      placement_strategy_(placement_type),
++      seeded_tiebreak_(seeded_tiebreak),
++      tiebreak_seed_(tiebreak_seed)
++{
++    if(not diagnostic_trace_path.empty()) {
++        diagnostic_observer_ = std::make_unique<diagnostic::JsonlTraceSink>(std::move(diagnostic_trace_path), std::move(diagnostic_scenario));
++    }
++}
+ 
+ 
+ auto HierarchicalHeuristicScheduling::solve(const MultiLayeredGraph& graph,
+@@ -22,6 +34,8 @@ auto HierarchicalHeuristicScheduling::solve(const MultiLayeredGraph& graph,
+     -> solver::solutionSet
+ {
+     graph_ = graph;
++    order_export_ = nlohmann::json::array();
++    order_position_ = 0;
+ 
+     // auto trivial_solution = trivialSolutions();
+ 
+@@ -39,6 +53,7 @@ auto HierarchicalHeuristicScheduling::solve(const MultiLayeredGraph& graph,
+     auto req_solution = scheduleSet(req_f, network_utilization);
+     result.insert(result.end(), req_solution.begin(), req_solution.end());
+ 
++    fmt::print("H2S_ORDER_JSON:{}\n", order_export_.dump());
+     return result;
+ }
+ 
+@@ -53,7 +68,7 @@ auto HierarchicalHeuristicScheduling::scheduleSet(const robin_hood::unordered_se
+         flow_list.emplace_back(key);
+     }
+ 
+-    const auto flow_comparison = get_flow_sorter(graph_, flow_sorter_type_);
++    const auto flow_comparison = get_flow_sorter(graph_, flow_sorter_type_, seeded_tiebreak_, tiebreak_seed_);
+     using PriorityQueue = std::priority_queue<common::FlowNodeID, std::vector<common::FlowNodeID>, decltype(std::ref(*flow_comparison))>;
+ 
+     PriorityQueue flow_heap(std::ref(*flow_comparison), std::move(flow_list));
+@@ -64,6 +79,23 @@ auto HierarchicalHeuristicScheduling::scheduleSet(const robin_hood::unordered_se
+         auto current_flow_id = flow_heap.top();
+         auto current_flow = graph_.getFlow(current_flow_id);
+         flow_heap.pop();
++        const auto accepted_before = result_set.size();
++        if(diagnostic_observer_) {
++            diagnostic_observer_->emit({{"event_type", "FLOW_BEGIN"}, {"sequence_index", order_position_},
++                                        {"flow_id", current_flow.id.get()}, {"source", current_flow.source.get()}, {"destination", current_flow.destination.get()},
++                                        {"period_ticks", current_flow.period}, {"release_offset_ticks", current_flow.release_offset},
++                                        {"deadline_ticks", current_flow.deadline}, {"fixed_release", current_flow.fixed_release},
++                                        {"frame_size_bytes", current_flow.frame_size}, {"configuration_count", current_flow.configurations.size()},
++                                        {"result_set_size", result_set.size()}, {"accepted_count_before", accepted_before}});
++        }
++        const auto tie_key = seeded_tiebreak_
++                                 ? flow_sorting::stable_seeded_tiebreak_key(tiebreak_seed_, current_flow.id.get())
++                                 : current_flow.id.get();
++        order_export_.push_back({{"position", order_position_++}, {"flow_id", current_flow.id.get()},
++                                 {"period", current_flow.period}, {"frame_size", current_flow.frame_size},
++                                 {"primary_period", current_flow.period}, {"primary_frame_size", current_flow.frame_size},
++                                 {"tie_break_key", tie_key}, {"tie_break_mode", seeded_tiebreak_ ? "SEEDED_TIEBREAK" : "BASELINE"},
++                                 {"tie_break_seed", tiebreak_seed_}});
+ 
+         // calculate ratings for all configs of current Flow
+         std::unique_ptr<AbstractConfigurationRating> rating_strategy = getRatingStrategy(
+@@ -87,12 +119,40 @@ auto HierarchicalHeuristicScheduling::scheduleSet(const robin_hood::unordered_se
+             return lhs.second < rhs.second;
+         });
+ 
+-        for(const auto configID : config_ratings | std::views::keys) {
++        if(diagnostic_observer_) {
++            for(std::size_t rank = 0; rank < config_ratings.size(); ++rank) {
++                const auto [config_id, rating] = config_ratings[rank];
++                const auto& config = graph_.getConfiguration(config_id);
++                nlohmann::json path = nlohmann::json::array();
++                for(const auto queue_id : config.path) {
++                    path.push_back({{"queue_id", queue_id.get()}, {"source", graph_.getSourceNodeOfQueue(queue_id).get()},
++                                    {"destination", graph_.getEgressQueue(queue_id).destination.get()}});
++                }
++                diagnostic_observer_->emit({{"event_type", "CONFIGURATION"}, {"flow_id", current_flow.id.get()},
++                                            {"config_id", config_id.get()}, {"rating", rating}, {"rating_rank", rank},
++                                            {"path", std::move(path)}});
++            }
++        }
++
++        bool accepted = false;
++        std::size_t attempted_configurations = 0;
++        common::ConfigurationNodeID chosen_config{0};
++        for(const auto [configID, rating] : config_ratings) {
+             // try placing configs until one works
+-            if(placeConfig(graph_.getConfiguration(configID), current_flow, utilization, placement_strategy_)) {
++            if(placeConfig(graph_.getConfiguration(configID), current_flow, utilization, placement_strategy_, diagnostic_observer_.get(), attempted_configurations)) {
+                 result_set.emplace_back(std::pair(current_flow_id, configID));
++                chosen_config = configID;
++                accepted = true;
+                 break;
+             }
++            ++attempted_configurations;
++        }
++        if(accepted) ++attempted_configurations;
++        if(diagnostic_observer_) {
++            diagnostic_observer_->emit({{"event_type", "FLOW_END"}, {"sequence_index", order_position_ - 1}, {"flow_id", current_flow.id.get()},
++                                        {"accepted", accepted}, {"chosen_config_id", accepted ? chosen_config.get() : -1},
++                                        {"attempted_configuration_count", attempted_configurations}, {"total_configuration_count", config_ratings.size()},
++                                        {"accepted_count_before", accepted_before}, {"accepted_count_after", result_set.size()}});
+         }
+     }
+ 
+diff --git a/src/util/ScheduleVerifier.cpp b/src/util/ScheduleVerifier.cpp
+index 508a830..75e8c79 100644
+--- a/src/util/ScheduleVerifier.cpp
++++ b/src/util/ScheduleVerifier.cpp
+@@ -257,8 +257,8 @@ auto create_flow_tracker(const std::size_t hyper_cycle_len, const graph_structs:
+     new_flow_tracker.strands = std::vector(number_of_strands, StrandTracker());
+     for(size_t strand_index = 0; strand_index < number_of_strands; ++strand_index) {
+         StrandTracker &current_strand = new_flow_tracker.strands[strand_index];
+-        current_strand.first_strand_tick = strand_index * current_flow.period;
+-        current_strand.last_strand_tick = ((strand_index + 1) * current_flow.period) - 1;
++        current_strand.first_strand_tick = current_flow.release_offset + strand_index * current_flow.period;
++        current_strand.last_strand_tick = current_strand.first_strand_tick + (current_flow.deadline == 0 ? current_flow.period : current_flow.deadline) - 1;
+         current_strand.path_taken = std::vector<common::NetworkNodeID>();
+         current_strand.previous_frame_last_tick = 0;
+     }
+@@ -380,6 +380,9 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+         }
+ 
+         if(current_flow_tracker.state == FlowTrackerState::STRAND_CLOSED) {
++            if(current_flow.fixed_release and current_slot.start_time != current_strand_tracker.first_strand_tick) {
++                throw validationError("Source transmission does not equal fixed release offset");
++            }
+             // Check correct source node
+             if(current_flow.source != current_port_source) {
+                 fmt::print(stderr,
+@@ -417,7 +420,7 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+                     last_node_in_path.get());
+                 throw validationError("A frame got forwarded by a node different from the node that last received the frame");
+             }
+-            const std::size_t earliest_frame_availability = current_strand_tracker.previous_frame_last_tick + constant::propagation_delay + constant::processing_delay + 1;
++            const std::size_t earliest_frame_availability = current_strand_tracker.previous_frame_last_tick + current_flow.propagation_delay + current_flow.processing_delay + 1;
+             if(earliest_frame_availability > current_slot.start_time) {
+                 fmt::print(stderr,
+                     "The schedule verifier found an inconsistency in the schedule.\n"
+@@ -465,7 +468,7 @@ void check_flow_integrity(const MultiLayeredGraph &graph, const std::size_t hype
+         // Check whether this is the destination
+         if(current_port_destination == current_flow.destination) {
+             // Deadline check
+-            const std::size_t true_arrival_time = current_slot.next_slot_start + constant::propagation_delay - 1;
++            const std::size_t true_arrival_time = current_slot.next_slot_start + current_flow.propagation_delay - 1;
+             if(current_strand_tracker.last_strand_tick < true_arrival_time) {
+                 fmt::print(
+                     "The schedule verifier found an inconsistency in the schedule.\n"
+
+diff --git a/include/solver/DiagnosticObserver.h b/include/solver/DiagnosticObserver.h
+new file mode 100644
+index 0000000..8e544d4
+--- /dev/null
++++ b/include/solver/DiagnosticObserver.h
+@@ -0,0 +1,24 @@
++#pragma once
++
++#include <cstddef>
++#include <nlohmann/json.hpp>
++
++namespace diagnostic {
++
++// This interface is deliberately write-only: callers cannot obtain a value
++// that could influence a scheduling decision.
++class Observer
++{
++public:
++    virtual ~Observer() = default;
++    virtual auto emit(nlohmann::json event) noexcept -> void = 0;
++};
++
++struct PlacementTraceContext
++{
++    std::size_t attempt_index = 0;
++    std::size_t sub_cycle_index = 0;
++    std::size_t frame_index = 0;
++};
++
++} // namespace diagnostic
+
+diff --git a/include/solver/DiagnosticTrace.h b/include/solver/DiagnosticTrace.h
+new file mode 100644
+index 0000000..aeb7e85
+--- /dev/null
++++ b/include/solver/DiagnosticTrace.h
+@@ -0,0 +1,33 @@
++#pragma once
++
++#include "solver/DiagnosticObserver.h"
++#include <fstream>
++#include <memory>
++#include <string>
++
++namespace common {
++class NetworkUtilizationList;
++}
++
++namespace diagnostic {
++
++class JsonlTraceSink final : public Observer
++{
++public:
++    JsonlTraceSink(std::string path, std::string scenario);
++    ~JsonlTraceSink() override;
++
++    auto emit(nlohmann::json event) noexcept -> void override;
++    [[nodiscard]] auto healthy() const -> bool;
++
++private:
++    std::string path_;
++    std::string scenario_;
++    std::string run_id_;
++    std::unique_ptr<std::ofstream> stream_;
++    bool healthy_ = false;
++};
++
++[[nodiscard]] auto utilization_state(const common::NetworkUtilizationList& utilization) -> nlohmann::json;
++
++} // namespace diagnostic
+
+diff --git a/src/solver/DiagnosticTrace.cpp b/src/solver/DiagnosticTrace.cpp
+new file mode 100644
+index 0000000..1c05412
+--- /dev/null
++++ b/src/solver/DiagnosticTrace.cpp
+@@ -0,0 +1,107 @@
++#include "solver/DiagnosticTrace.h"
++#include "solver/UtilizationList.h"
++#include <array>
++#include <fstream>
++#include <iomanip>
++#include <sstream>
++#include <stdexcept>
++#include <vector>
++
++namespace {
++
++[[nodiscard]] auto sha256(const std::string& input) -> std::string
++{
++    static constexpr std::array<std::uint32_t, 64> k{
++        0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
++        0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
++        0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
++        0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
++        0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
++        0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
++        0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
++        0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
++    auto rotate_right = [](const std::uint32_t value, const std::uint32_t bits) { return (value >> bits) | (value << (32 - bits)); };
++    std::vector<std::uint8_t> bytes(input.begin(), input.end());
++    const auto bit_length = static_cast<std::uint64_t>(bytes.size()) * 8;
++    bytes.push_back(0x80);
++    while((bytes.size() % 64) != 56) bytes.push_back(0);
++    for(int shift = 56; shift >= 0; shift -= 8) bytes.push_back(static_cast<std::uint8_t>(bit_length >> shift));
++    std::array<std::uint32_t, 8> state{0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
++                                       0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
++    for(std::size_t base = 0; base < bytes.size(); base += 64) {
++        std::array<std::uint32_t, 64> words{};
++        for(std::size_t i = 0; i < 16; ++i)
++            words[i] = (static_cast<std::uint32_t>(bytes[base + 4 * i]) << 24) | (static_cast<std::uint32_t>(bytes[base + 4 * i + 1]) << 16) |
++                       (static_cast<std::uint32_t>(bytes[base + 4 * i + 2]) << 8) | static_cast<std::uint32_t>(bytes[base + 4 * i + 3]);
++        for(std::size_t i = 16; i < words.size(); ++i) {
++            const auto s0 = rotate_right(words[i - 15], 7) ^ rotate_right(words[i - 15], 18) ^ (words[i - 15] >> 3);
++            const auto s1 = rotate_right(words[i - 2], 17) ^ rotate_right(words[i - 2], 19) ^ (words[i - 2] >> 10);
++            words[i] = words[i - 16] + s0 + words[i - 7] + s1;
++        }
++        auto [a, b, c, d, e, f, g, h] = state;
++        for(std::size_t i = 0; i < words.size(); ++i) {
++            const auto s1 = rotate_right(e, 6) ^ rotate_right(e, 11) ^ rotate_right(e, 25);
++            const auto choose = (e & f) ^ (~e & g);
++            const auto temporary_1 = h + s1 + choose + k[i] + words[i];
++            const auto s0 = rotate_right(a, 2) ^ rotate_right(a, 13) ^ rotate_right(a, 22);
++            const auto majority = (a & b) ^ (a & c) ^ (b & c);
++            const auto temporary_2 = s0 + majority;
++            h = g; g = f; f = e; e = d + temporary_1; d = c; c = b; b = a; a = temporary_1 + temporary_2;
++        }
++        state[0] += a; state[1] += b; state[2] += c; state[3] += d;
++        state[4] += e; state[5] += f; state[6] += g; state[7] += h;
++    }
++    std::ostringstream output;
++    for(const auto word : state) output << std::hex << std::setw(8) << std::setfill('0') << word;
++    return output.str();
++}
++
++} // namespace
++
++diagnostic::JsonlTraceSink::JsonlTraceSink(std::string path, std::string scenario)
++    : path_(std::move(path)), scenario_(std::move(scenario)), run_id_(path_)
++{
++    stream_ = std::make_unique<std::ofstream>(path_, std::ios::out | std::ios::app);
++    healthy_ = static_cast<bool>(*stream_);
++    if(not healthy_) throw std::runtime_error("TRACE_IO_ERROR: unable to open diagnostic trace " + path_);
++}
++
++diagnostic::JsonlTraceSink::~JsonlTraceSink() = default;
++
++auto diagnostic::JsonlTraceSink::emit(nlohmann::json event) noexcept -> void
++{
++    if(not healthy_) return;
++    try {
++        event["schema_version"] = "exp18h-h2s-diagnostic-v1";
++        event["experiment"] = "exp18h_h2s_admission_placement_diagnostic_audit";
++        event["scenario"] = scenario_;
++        event["run_id"] = run_id_;
++        *stream_ << event.dump() << '\n';
++        stream_->flush();
++        healthy_ = static_cast<bool>(*stream_);
++    } catch(...) {
++        healthy_ = false;
++    }
++}
++
++auto diagnostic::JsonlTraceSink::healthy() const -> bool { return healthy_; }
++
++auto diagnostic::utilization_state(const common::NetworkUtilizationList& utilization) -> nlohmann::json
++{
++    nlohmann::json material = nlohmann::json::array();
++    std::size_t reservation_count = 0;
++    std::size_t total_reserved_ticks = 0;
++    const auto& reserved = utilization.getReservedEgressSlots();
++    const auto& free = utilization.getFreeEgressSlots();
++    for(std::size_t queue = 0; queue < reserved.size(); ++queue) {
++        nlohmann::json queue_state{{"queue_id", queue}, {"reserved", nlohmann::json::array()}, {"free", nlohmann::json::array()}};
++        for(const auto& item : reserved[queue]) {
++            queue_state["reserved"].push_back({item.start_time, item.next_slot_start, item.flow_id.get(), item.config_id.get()});
++            ++reservation_count; total_reserved_ticks += item.next_slot_start - item.start_time;
++        }
++        for(const auto& item : free[queue]) queue_state["free"].push_back({item.start_time, item.last_free_macro_tick});
++        material.push_back(std::move(queue_state));
++    }
++    const auto text = material.dump();
++    return {{"state_sha256", sha256(text)}, {"reservation_count", reservation_count}, {"total_reserved_ticks", total_reserved_ticks}};
++}
+

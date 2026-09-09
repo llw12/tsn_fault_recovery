@@ -433,7 +433,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
                  candidate_paths: int = DEFAULT_CANDIDATE_PATHS, memory_limit_mb: int = FORMAL_MEMORY_LIMIT_MB,
                  h2s_tiebreak_mode: str = "BASELINE", h2s_tiebreak_seed: int = 0,
                  h2s_flow_sorting: int = 4,
-                 attempt_celf_fallback: bool = True):
+                 attempt_celf_fallback: bool = True,
+                 diagnostic_trace_path: Path | None = None):
         if candidate_paths < 1:
             raise H2sAdapterError("candidate_paths must be positive")
         if h2s_tiebreak_mode not in {"BASELINE", "SEEDED_TIEBREAK"} or h2s_tiebreak_seed < 0:
@@ -448,6 +449,9 @@ class H2sJrsBackend(RecoverySynthesisBackend):
         # behavior while experiments can explicitly select a built-in policy.
         self.h2s_flow_sorting = h2s_flow_sorting
         self.attempt_celf_fallback = attempt_celf_fallback
+        # Optional exp18h-only upstream observer.  It is omitted entirely for
+        # every historical and normal H2S invocation.
+        self.diagnostic_trace_path = Path(diagnostic_trace_path) if diagnostic_trace_path else None
 
     def _run(self, prepared: H2sPreparedInputs, algorithm: str, timeout_s: int) -> tuple[BackendStatus | None, dict[str, Any] | None, dict[str, Any]]:
         backend_command = [str(self.executable), "-n", str(prepared.topology_path),
@@ -457,6 +461,8 @@ class H2sJrsBackend(RecoverySynthesisBackend):
             backend_command += ["--flow-sorting", str(self.h2s_flow_sorting),
                                 "--h2s-tiebreak-mode", self.h2s_tiebreak_mode,
                                 "--h2s-tiebreak-seed", str(self.h2s_tiebreak_seed)]
+            if self.diagnostic_trace_path is not None:
+                backend_command += ["--diagnostic-trace", str(self.diagnostic_trace_path)]
         rss_marker = "__H2S_MAX_RSS_KB__="
         runner = Path(__file__).with_name("h2s_process_runner.py")
         command = [sys.executable, str(runner), str(self.memory_limit_mb), "--", *backend_command]
