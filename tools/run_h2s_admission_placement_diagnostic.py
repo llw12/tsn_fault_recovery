@@ -154,6 +154,11 @@ def parity_row(off: dict[str, Any], on: dict[str, Any]) -> dict[str, Any]:
     return row
 
 
+def repeatable_trace_sha256(rows: list[dict[str, Any]]) -> str:
+    """Hash decision/observer events, excluding their intentionally unique sink identity."""
+    return canonical_sha256([{key: value for key, value in row.items() if key not in {"run_id", "scenario"}} for row in rows])
+
+
 def admission_rows(observations: list[dict[str, Any]]) -> list[dict[str, Any]]:
     result = []
     for observed in observations:
@@ -307,7 +312,7 @@ def run(quick: bool) -> int:
         pair = [row for row in observed if row["scenario"] == sid]
         left_admission = [row for row in admission if row["scenario"] == sid and row["run_tag"] == pair[0]["tag"]]
         right_admission = [row for row in admission if row["scenario"] == sid and row["run_tag"] == pair[1]["tag"]]
-        repeat_rows.append({"scenario": sid, "trace_order_sha_exact": canonical_sha256(pair[0]["trace"]) == canonical_sha256(pair[1]["trace"]),
+        repeat_rows.append({"scenario": sid, "trace_order_sha_exact": repeatable_trace_sha256(pair[0]["trace"]) == repeatable_trace_sha256(pair[1]["trace"]),
                             "admission_sha_exact": canonical_sha256(left_admission) == canonical_sha256(right_admission),
                             "schedule_sha_exact": pair[0]["slots_sha256"] == pair[1]["slots_sha256"], "hnf_exact": pair[0]["signature"]["hnf_set_sha256"] == pair[1]["signature"]["hnf_set_sha256"]})
         repeat_rows[-1]["repeatability_pass"] = all(value for key, value in repeat_rows[-1].items() if key.endswith("_exact"))
