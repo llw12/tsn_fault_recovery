@@ -241,7 +241,7 @@ def mechanism(observations: list[dict[str, Any]], configs: list[dict[str, Any]],
                               "first_failure_instance": f"{first.get('sub_cycle_index','')}:{first.get('frame_index','')}", "dominant_failure_hop": first.get("hop_index", ""),
                               "dominant_failure_link": queues.most_common(1)[0][0] if queues else "", "dominant_reason": reasons.most_common(1)[0][0] if reasons else "",
                               "unique_blocker_flow_count": len(blockers), "failed_placement_state_mutation": mutation,
-                              "mechanism_class": "PLACEMENT_SEARCH_FAILURE" if rows and failed else "TRACE_INSUFFICIENT"})
+                              "mechanism_class": "FIXED_RELEASE_CONSTRAINT_REJECTION" if reasons.get("FIXED_RELEASE_START_MISMATCH") else "PLACEMENT_SEARCH_FAILURE" if rows and failed else "TRACE_INSUFFICIENT"})
             snapshots.extend({"scenario": observed["scenario"], "flow_id": flow_id, **row} for row in failed[:1])
     by_flow: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in summaries: by_flow[row["flow_id"]].append(row)
@@ -272,8 +272,9 @@ def audit_markdown(audit: dict[str, Any]) -> str:
 
 def summary_markdown(audit: dict[str, Any], rows: list[dict[str, Any]], parity: list[dict[str, Any]], mechanisms: list[dict[str, Any]], verdict: str) -> str:
     controls = [row for row in rows if row["scenario"] in SUCCESS_CONTROLS and row["tag"].endswith("repeat_1")]
-    first_hnf = min((row for row in admission_rows(rows) if not row["accepted"]), key=lambda row: row["sequence_index"], default={})
-    later = sum(1 for row in admission_rows(rows) if first_hnf and row["scenario"] == first_hnf.get("scenario") and row["sequence_index"] > first_hnf["sequence_index"] and row["accepted"])
+    admissions = admission_rows(rows)
+    first_hnf = min((row for row in admissions if not row["accepted"]), key=lambda row: row["sequence_index"], default={})
+    later = sum(1 for row in admissions if first_hnf and row["scenario"] == first_hnf.get("scenario") and row["run_tag"] == first_hnf.get("run_tag") and row["sequence_index"] > first_hnf["sequence_index"] and row["accepted"])
     return "\n".join(("# exp18h read-only H2S admission and placement audit", "", "M_D070 is the first preregistered Medium 3/3 complete point; L_D050 is the lowest preregistered Large point still at 461/464. Both are direct byte reuse from exp18g.",
         "", "## Decision and parity gates", "", "No solver decision was changed: all formal commands use H2S only, LOW_PERIOD (`-f 4`), PATH_LENGTH (`-c 1`), ASAP (`-p 0`), DIJKSTRA_OVERLAP K=5, baseline tie-break, 100 ns, seed 1024, one thread, 30 s, and no CELF fallback.",
         f"TRACE_OFF/TRACE_ON parity passed for all qualification comparisons: `{all(row['parity_pass'] for row in parity)}`. It compares count, HNF set, instance completion, order, slots, candidate vector, verifier, and checker state.",
