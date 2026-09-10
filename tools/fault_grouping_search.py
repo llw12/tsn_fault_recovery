@@ -87,6 +87,8 @@ def run_grouping_search(
                            "cut_slack_ticks": filtered.get("cut_slack_ticks"),
                            "deadline_slack_ticks": filtered.get("deadline_slack_ticks"),
                            "filter_total_ms": sum(filtered.get("timings_ms", {}).values()), "decision": "FILTERED"})
+            for stage, elapsed_ms in filtered.get("timings_ms", {}).items():
+                record[f"filter_{stage.lower()}_ms"] = elapsed_ms
             candidates.append(record); generated.append((record, left, right, faults, filtered))
         ranked = sorted((item for item in generated if item[0]["filter_pass"]), key=lambda item: ranking_key(item[0]))
         winner = None

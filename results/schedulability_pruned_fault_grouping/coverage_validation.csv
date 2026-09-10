@@ -1,0 +1,2 @@
+coverage_complete,expected_faults,mapped_faults,scope,valid_profile_groups
+True,1099,1099,FORMAL,986

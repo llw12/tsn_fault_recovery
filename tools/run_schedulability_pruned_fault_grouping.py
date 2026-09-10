@@ -322,6 +322,24 @@ def run_campaign(output: Path, quick: bool = False, resume: bool = False) -> dic
     mapped_faults = len(mappings); coverage.append({"scope": "FORMAL" if not quick else "QUICK", "expected_faults": expected_faults,
         "mapped_faults": mapped_faults, "valid_profile_groups": len(final_profiles), "coverage_complete": mapped_faults == expected_faults})
     repeat_rows = []
+    # Replay every filter/search decision from scratch while replacing actual
+    # synthesis with the already frozen exact-group backend cache.
+    synthesis_cache = {row["group_id"]: row for row in synthesis_rows}
+    for scenario_id in scenario_ids:
+        scenario_match = True; pool_count = 0
+        for pool in build_affected_set_pools(candidates[scenario_id]):
+            if len(pool["fault_ids"]) < 2: continue
+            pool_count += 1; affected = tuple(pool["affected_flow_ids"])
+            replay_search = run_grouping_search(pool["fault_ids"],
+                lambda faults, sid=scenario_id, affected_ids=affected: evaluate_necessary_conditions(scenarios[sid], faults, affected_ids),
+                lambda faults: {"accepted": bool(synthesis_cache.get(group_id(faults), {}).get("accepted")),
+                                "profile": {}, "semantic_profile_hash": synthesis_cache.get(group_id(faults), {}).get("semantic_profile_hash", "")})
+            expected = {row["group_id"] for row in final_groups if row["scenario"] == scenario_id and row["affected_set_key"] == pool["affected_set_key"]}
+            observed = {row["group_id"] for row in replay_search["final_groups"]}
+            scenario_match &= expected == observed
+        repeat_rows.append({"scenario": scenario_id, "check_type": "DECISION_REPLAY", "pool_count": pool_count,
+                            "decision_replay_match": scenario_match, "backend_repeat_required": False,
+                            "backend_repeat_match": True})
     for scenario_id in scenario_ids:
         choices = sorted([row for row in final_groups if row["scenario"] == scenario_id and row["group_size"] > 1], key=lambda row: (row["group_size"], row["group_id"]))
         subset = []
@@ -339,7 +357,7 @@ def run_campaign(output: Path, quick: bool = False, resume: bool = False) -> dic
             expected_profile = final_profiles[(scenario_id, row["group_id"])]
             semantic_match = bool(result.profile) and semantic_profile_hash(result.profile) == semantic_profile_hash(expected_profile)
             replay_match = len(replay) == len(faults) and all(item["singleton_replay_valid"] for item in replay)
-            repeat_rows.append({"scenario": scenario_id, "group_id": row["group_id"], "group_size": row["group_size"],
+            repeat_rows.append({"scenario": scenario_id, "check_type": "BACKEND_RESYNTHESIS", "group_id": row["group_id"], "group_size": row["group_size"],
                 "selection": "MIN_MEDIAN_MAX_GROUP_SIZE", "decision_replay_match": True, "backend_repeat_required": True,
                 "status": result.status.value, "status_match": result.status.value in SUCCESS,
                 "semantic_hash_match": semantic_match, "checker_and_singleton_replay_match": replay_match,
@@ -348,10 +366,13 @@ def run_campaign(output: Path, quick: bool = False, resume: bool = False) -> dic
     repeatability_pass = all(row["decision_replay_match"] and row["backend_repeat_match"] for row in repeat_rows)
     profile_count = len(final_groups); exp19_count = 1099
     exp19_backend_ms = sum(float(row["total_backend_ms"]) for row in csv.DictReader((EXP19 / "per_fault_results.csv").open()))
+    filter_and_candidate_ms = sum(float(row.get("filter_total_ms", 0)) for row in candidate_rows)
     current_backend_ms = sum(float(row.get("total_backend_ms", 0)) for row in synthesis_rows) + sum(float(row["total_backend_ms"]) for row in singleton_parity)
+    current_total_ms = filter_and_candidate_ms + current_backend_ms
     compute_rows = [{"baseline": "exp19_per_fault", "baseline_profile_count": exp19_count, "exp21_profile_count": profile_count,
-                     "baseline_backend_ms": exp19_backend_ms, "exp21_backend_ms": current_backend_ms,
-                     "compute_reduction_fraction": (exp19_backend_ms - current_backend_ms) / exp19_backend_ms}]
+                     "baseline_backend_ms": exp19_backend_ms, "exp21_filter_candidate_certificate_ms": filter_and_candidate_ms,
+                     "exp21_merge_and_singleton_backend_ms": current_backend_ms, "exp21_total_algorithm_ms": current_total_ms,
+                     "compute_reduction_fraction": (exp19_backend_ms - current_total_ms) / exp19_backend_ms}]
     exp20_verdict = json.loads((EXP20 / "audit_verdict.json").read_text())
     posthoc = [{"comparison": "EXP19_PER_FAULT", "profile_count": 1099}, {"comparison": "EXP20_S1", "profile_count": 1008},
                {"comparison": "EXP20_S2", "profile_count": 986}, {"comparison": "EXP20_S3", "profile_count": 823},
@@ -361,11 +382,11 @@ def run_campaign(output: Path, quick: bool = False, resume: bool = False) -> dic
         row.get("first_failure") or ("FILTER_PASS" if row.get("filter_pass") else "UNKNOWN") for row in candidate_rows).items()]
     timing = []
     for stage in ("F1_CONNECTIVITY", "F2_MINIMUM_DELAY", "F3_CHECKED_CUT_CAPACITY", "F4_TIME_WINDOW"):
-        values = []
-        for row in candidate_rows:
-            # Candidate CSV contains aggregate time; detailed per-stage time remains in certificate/checkpoint audit.
-            if row.get("filter_total_ms") is not None: values.append(float(row["filter_total_ms"]))
-        timing.append({"stage": stage, "candidate_count": len(values), "aggregate_pipeline_ms": sum(values) if stage == "F1_CONNECTIVITY" else 0})
+        field = f"filter_{stage.lower()}_ms"
+        values = [float(row[field]) for row in candidate_rows if row.get(field) is not None]
+        timing.append({"stage": stage, "candidate_count": len(values), "aggregate_stage_ms": sum(values),
+                       "mean_stage_ms": sum(values) / len(values) if values else 0,
+                       "max_stage_ms": max(values, default=0)})
     verdict = "SEARCH_INCOMPLETE" if quick else ("SCHEDULABILITY_PRUNED_GROUPING_ESTABLISHED" if mapped_faults == 1099 and profile_count < 1099 and repeatability_pass else "NO_PROFILE_REDUCTION_ESTABLISHED")
     verdict_payload = {"formal_verdict": verdict, "verdict_enums": FORMAL_VERDICTS, "algorithm_version": ALGORITHM_VERSION,
         "expected_faults": 1099, "mapped_faults": mapped_faults, "final_profile_count": profile_count,
