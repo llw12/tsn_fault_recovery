@@ -1,0 +1,7 @@
+affected_set_candidate_solve_reduction,affected_set_group_count,fault_count,faults_in_multi_member_groups,fraction_faults_in_multi_groups,largest_group,mean_group_size,median_group_size,multi_fault_group_count,scenario,singleton_group_count
+0.0,80,80,0,0.0,1,1.0,1,0,M_RING,80
+0.25,96,128,64,0.5,2,1.3333333333333333,1,32,M_REDSTAR,64
+0.009090909090909038,109,110,2,0.01818181818181818,2,1.0091743119266054,1,1,M_ROR,108
+0.0,208,208,0,0.0,1,1.0,1,0,L_RING,208
+0.2484276729559748,239,318,158,0.4968553459119497,2,1.3305439330543933,1,79,L_REDSTAR,160
+0.0039215686274509665,254,255,2,0.00784313725490196,2,1.0039370078740157,1,1,L_ROR,253

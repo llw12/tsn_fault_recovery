@@ -1,0 +1,7 @@
+canonical_duplicate_profile_count,duplicate_profile_count,fault_profiles,largest_semantic_group,scenario,semantic_duplicate_fraction,unique_canonical_profiles,unique_semantic_profiles
+0,0,80,1,M_RING,0.0,80,80
+0,27,128,2,M_REDSTAR,0.2109375,128,101
+0,0,110,1,M_ROR,0.0,110,110
+0,0,208,1,L_RING,0.0,208,208
+0,64,318,2,L_REDSTAR,0.20125786163522008,318,254
+0,0,255,1,L_ROR,0.0,255,255
