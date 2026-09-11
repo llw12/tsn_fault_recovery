@@ -397,19 +397,22 @@ def qualification(*, live: bool = False) -> dict[str, Any]:
 
 
 def _candidate_trace(rows: Iterable[dict[str, Any]]) -> str:
-    fields = ("iteration", "left_group_id", "right_group_id", "candidate_group_id", "fault_ids", "jaccard_num", "jaccard_den",
-              "threshold_pass", "first_failure", "filter_pass", "decision", "rank")
     digest = hashlib.sha256()
     for row in rows:
-        # Candidate CSV is deliberately the frozen replay source.  Canonical
-        # text makes an in-memory integer/bool and its CSV representation
-        # compare identically without weakening any decision comparison.
-        normalized = {}
-        for field in fields:
-            value = row.get(field, "")
-            normalized[field] = "" if value is None else ("true" if value is True else "false" if value is False else str(value).lower() if str(value).lower() in {"true", "false"} else str(value))
-        digest.update(canonical_json_bytes(normalized))
+        _update_candidate_trace(digest, row)
     return digest.hexdigest()
+
+
+def _update_candidate_trace(digest: Any, row: dict[str, Any]) -> None:
+    fields = ("iteration", "left_group_id", "right_group_id", "candidate_group_id", "fault_ids", "jaccard_num", "jaccard_den",
+              "threshold_pass", "first_failure", "filter_pass", "decision", "rank")
+    # Candidate CSV is deliberately the frozen replay source.  Canonical text
+    # makes an in-memory integer/bool and its CSV representation identical.
+    normalized = {}
+    for field in fields:
+        value = row.get(field, "")
+        normalized[field] = "" if value is None else ("true" if value is True else "false" if value is False else str(value).lower() if str(value).lower() in {"true", "false"} else str(value))
+    digest.update(canonical_json_bytes(normalized))
 
 
 def decision_replay(result: dict[str, Any], scenarios: dict[str, dict[str, Any]], candidates: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
@@ -419,17 +422,20 @@ def decision_replay(result: dict[str, Any], scenarios: dict[str, dict[str, Any]]
     for scenario_id in ORDER:
         if not any(row["scenario"] == scenario_id for row in result["final_groups"]): continue
         fault_affected = {str(row["fault_id"]): canonical_affected(str(row["affected_flow_ids"]).split(";")) for row in candidates[scenario_id]}
-        trace = []
+        trace_digest = hashlib.sha256()
         replay = run_jaccard_grouping_search(fault_affected, threshold,
             lambda faults, affected, sid=scenario_id: evaluate_necessary_conditions(scenarios[sid], faults, affected),
             lambda faults, affected, record, sid=scenario_id: {"accepted": bool(outcome.get((sid, record["candidate_group_id"]), {}).get("accepted")), "profile": {},
                                                "semantic_profile_hash": outcome.get((sid, record["candidate_group_id"]), {}).get("semantic_profile_hash", "")},
-            candidate_sink=lambda row: trace.append(row))
+            candidate_sink=lambda row: _update_candidate_trace(trace_digest, row))
         with gzip.open(root / "merge_candidates.csv.gz", "rt", encoding="utf-8") as handle:
-            baseline = [row for row in csv.DictReader(handle) if row["scenario"] == scenario_id]
+            baseline_digest = hashlib.sha256()
+            for row in csv.DictReader(handle):
+                if row["scenario"] == scenario_id:
+                    _update_candidate_trace(baseline_digest, row)
         expected_groups = {(row["group_id"], tuple(sorted(row["fault_ids"]))) for row in result["final_groups"] if row["scenario"] == scenario_id}
         observed_groups = {(row["group_id"], tuple(sorted(row["fault_ids"]))) for row in replay["final_groups"]}
-        trace_match = _candidate_trace(trace) == _candidate_trace(baseline)
+        trace_match = trace_digest.hexdigest() == baseline_digest.hexdigest()
         accepted_match = [row["new_group_id"] for row in replay["accepted_merge_history"]] == [row["new_group_id"] for row in result["accepted_rows"] if row["scenario"] == scenario_id]
         partition_match = expected_groups == observed_groups
         output.append({"threshold_id": threshold.identifier, "scenario": scenario_id, "candidate_trace_match": trace_match,
